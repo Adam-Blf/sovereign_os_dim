@@ -37,25 +37,44 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# MATRICE ATIH — 15 formats normalisés, positions 0-indexées
+# MATRICE ATIH — 23 formats normalisés, positions 0-indexées
 # ══════════════════════════════════════════════════════════════════════════════
 # Chaque format ATIH a une longueur fixe et des positions dédiées pour l'IPP
 # (Identifiant Permanent du Patient) et la DDN (Date De Naissance).
 # Cette matrice est la source de vérité absolue pour le parsing positionnel.
-# Ref: Documentation technique ATIH — Formats de recueil 2018–2026
+# Ref: Documentation technique ATIH — Formats de recueil 2010–2026
 #
-# IMPORTANT : On couvre TOUS les formats nécessaires à un DIM en psychiatrie :
-#   - PSY natif : RPS (P05), RAA (P06), RPSA, R3A, FICHSUP-PSY, EDGAR
-#   - Transversal : VID-HOSP (V015/V016), ANO-HOSP, FICHCOMP, FicUM-PSY
-#   - MCO (interop) : RSS/RUM, RSFA/B/C
-#   - RSF-ACE PSY : activité externe psychiatrique
+# COUVERTURE COMPLÈTE — 4 champs PMSI depuis 2010 :
+#   ┌─────────────┬───────────────────────────────────────────────────────┐
+#   │ Champ       │ Formats                                               │
+#   ├─────────────┼───────────────────────────────────────────────────────┤
+#   │ PSY         │ RPS, RAA, RPSA, R3A, FICHSUP-PSY, EDGAR, FICUM-PSY, │
+#   │             │ RSF-ACE-PSY                                           │
+#   │ MCO         │ RSS/RUM, RSFA, RSFB, RSFC                            │
+#   │ SSR/SMR     │ RHS, SSRHA, RAPSS, FICHCOMP-SMR                      │
+#   │ HAD         │ RPSS, RAPSS-HAD, FICHCOMP-HAD, SSRHA-HAD             │
+#   │ Transversal │ VID-HOSP, ANO-HOSP, FICHCOMP                         │
+#   └─────────────┴───────────────────────────────────────────────────────┘
+#
+# HISTORIQUE DES ÉVOLUTIONS MAJEURES :
+#   2010 : RSS v012, RPS P03, RHS S03, RPSS H06 (formats fondateurs)
+#   2012 : Introduction du FICHCOMP MO (Matériel onéreux)
+#   2013 : VID-HOSP V012, nouveau format de chaînage anonyme
+#   2015 : RAA étendu, grille EDGAR normalisée
+#   2017 : RSS v013, ajout code retour dans RHS
+#   2019 : VID-HOSP V014, extension du chaînage
+#   2020 : Harmonisation FICHCOMP transversal, RSF-ACE PSY
+#   2022 : SSR renommé en SMR (Soins Médicaux et de Réadaptation)
+#   2024 : RSF v2024, FICHCOMP Transports pour SMR
+#   2025 : VID-HOSP V015, DRUIDES remplace PIVOINE/VisualQualité (PSY)
+#   2026 : VID-HOSP V016, VID-IPP I00A/I00B (PSY)
 # ══════════════════════════════════════════════════════════════════════════════
 
 ATIH_MATRIX = {
-    # ─── FORMATS PSY NATIFS ─────────────────────────────────────────────────
-    # Les formats RPS et RAA sont les piliers du recueil PSY depuis 2007.
-    # Le format P05 (RPS) est le format de base pour l'hospitalisation PSY.
-    # Le format P06 (RAA) couvre l'ambulatoire (DAF uniquement).
+    # ─── FORMATS PSY NATIFS (depuis 2007) ──────────────────────────────────
+    # RPS (P05) : pilier de l'hospitalisation psychiatrique.
+    # RAA (P06) : ambulatoire, établissements sous DAF uniquement.
+    # Positions stables depuis le format P03 (2010).
 
     "RPS": {
         "length": 154,
@@ -63,40 +82,41 @@ ATIH_MATRIX = {
         "ddn": (41, 49),
         "desc": "Résumé Par Séquence — Hospitalisation PSY (Format P05)",
         "field": "PSY",
+        "since": 2007,
     },
     "RAA": {
         "length": 96,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "Recueil Activité Ambulatoire — PSY (Format P06)",
+        "desc": "Recueil Activité Ambulatoire — PSY (Format P06, DAF)",
         "field": "PSY",
+        "since": 2007,
     },
 
-    # ─── FORMATS PSY ANONYMISÉS ─────────────────────────────────────────────
-    # Les RPSA et R3A sont les versions anonymisées transmises aux ARS.
-    # Positions IPP remplacées par le N° anonyme, DDN conservée.
-    # Le RPSA reprend le RPS avec anonymisation du N° de séjour et de l'IPP.
-    # Le R3A reprend le RAA avec anonymisation similaire.
+    # ─── FORMATS PSY ANONYMISÉS (transmission ARS) ─────────────────────────
+    # RPSA et R3A : versions anonymisées du RPS et RAA.
+    # IPP remplacé par un numéro anonyme, DDN conservée.
+    # Obligatoires pour la transmission aux ARS et à l'ATIH.
 
     "RPSA": {
         "length": 154,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "Résumé Par Séquence Anonyme — PSY (transmission ARS)",
+        "desc": "Résumé Par Séquence Anonyme — PSY (ARS)",
         "field": "PSY",
+        "since": 2007,
     },
     "R3A": {
         "length": 96,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "Résumé Activité Ambulatoire Anonyme — PSY (transmission ARS)",
+        "desc": "Résumé Activité Ambulatoire Anonyme — PSY (ARS)",
         "field": "PSY",
+        "since": 2009,
     },
 
-    # ─── FICHIERS SUPPLÉMENTAIRES PSY ───────────────────────────────────────
-    # FICHSUP-PSY : données complémentaires aux RPS (mesures d'isolement,
-    # contention, fugues, permissions...). Format variable selon l'année.
-    # Les positions IPP/DDN reprennent le socle RPS par convention.
+    # ─── FICHSUP-PSY / EDGAR / FICUM-PSY / RSF-ACE-PSY ────────────────────
+    # Fichiers complémentaires spécifiques à la psychiatrie.
 
     "FICHSUP-PSY": {
         "length": 120,
@@ -104,58 +124,130 @@ ATIH_MATRIX = {
         "ddn": (41, 49),
         "desc": "Fichier supplémentaire PSY (isolement, contention, fugue)",
         "field": "PSY",
+        "since": 2012,
     },
-
-    # ─── EDGAR — Cotation des actes PSY ambulatoires ────────────────────────
-    # EDGAR : Entretien, Démarche, Groupe, Accompagnement, Réunion
-    # Grille de cotation des actes ambulatoires en psychiatrie.
-    # Utilisé en complément du RAA pour les établissements DAF.
-
     "EDGAR": {
         "length": 96,
         "ipp": (21, 41),
         "ddn": (41, 49),
         "desc": "EDGAR — Cotation actes ambulatoires PSY (Entretien, Groupe...)",
         "field": "PSY",
+        "since": 2015,
     },
-
-    # ─── FicUM-PSY — Fichier des Unités Médicales ───────────────────────────
-    # Décrit les unités médicales PSY (secteurs, intersecteurs, dispositifs).
-    # Pas d'IPP/DDN direct mais des méta-données de structure.
-    # On l'inclut quand même pour la complétude du scan.
-
     "FICUM-PSY": {
         "length": 80,
         "ipp": (18, 38),
         "ddn": (38, 46),
-        "desc": "FicUM-PSY — Description des unités médicales psychiatriques",
+        "desc": "FicUM-PSY — Unités médicales psychiatriques (secteurs)",
         "field": "PSY",
+        "since": 2017,
     },
-
-    # ─── RSF-ACE PSY — Activité externe PSY (OQN) ──────────────────────────
-    # Pour les établissements sous OQN (Objectif Quantifié National),
-    # un RSF complète le RPS pour la facturation de l'activité externe.
-
     "RSF-ACE-PSY": {
         "length": 310,
         "ipp": (221, 241),
         "ddn": (41, 49),
         "desc": "RSF-ACE PSY — Activité externe psychiatrique (OQN)",
         "field": "PSY",
+        "since": 2020,
     },
 
-    # ─── FORMATS TRANSVERSAUX (MCO + PSY) ───────────────────────────────────
-    # Ces formats sont communs à tous les champs d'activité.
-    # VID-HOSP : chaînage anonyme (obligatoire depuis 2009)
-    # ANO-HOSP : anonymisation des données patient
-    # FICHCOMP : données complémentaires (DMI, isolement médical...)
+    # ═══════════════════════════════════════════════════════════════════════
+    # FORMATS SSR / SMR — Soins de Suite et Réadaptation (renommé SMR 2022)
+    # ═══════════════════════════════════════════════════════════════════════
+    # RHS : Résumé Hebdomadaire Standardisé (équivalent du RSS pour le SSR).
+    #   Créé en 2003, le RHS est le format fondateur du recueil SSR.
+    #   Chaque semaine de présence dans une UM génère un RHS.
+    # SSRHA : version anonymisée du RHS pour la transmission ARS/ATIH.
+    # RAPSS : Résumé Anonyme Par Sous-Séquence (groupage SSR).
+    # FICHCOMP-SMR : fichiers complémentaires SSR/SMR (MO, transports).
+
+    "RHS": {
+        "length": 192,
+        "ipp": (21, 41),
+        "ddn": (41, 49),
+        "desc": "Résumé Hebdomadaire Standardisé — SSR/SMR (S04)",
+        "field": "SSR",
+        "since": 2003,
+    },
+    "SSRHA": {
+        "length": 192,
+        "ipp": (21, 41),
+        "ddn": (41, 49),
+        "desc": "SSR-HA — RHS Anonymisé (transmission ARS/ATIH)",
+        "field": "SSR",
+        "since": 2009,
+    },
+    "RAPSS": {
+        "length": 140,
+        "ipp": (21, 41),
+        "ddn": (41, 49),
+        "desc": "RAPSS — Résumé Anonyme Par Sous-Séquence SSR/SMR",
+        "field": "SSR",
+        "since": 2009,
+    },
+    "FICHCOMP-SMR": {
+        "length": 105,
+        "ipp": (11, 31),
+        "ddn": (31, 39),
+        "desc": "FichComp SMR — Données complémentaires SSR (MO, transports)",
+        "field": "SSR",
+        "since": 2012,
+    },
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # FORMATS HAD — Hospitalisation À Domicile
+    # ═══════════════════════════════════════════════════════════════════════
+    # RPSS : Résumé Par Sous-Séquence HAD (équivalent RHS/RSS pour le HAD).
+    #   Créé en 2005, le RPSS est le format natif du recueil HAD.
+    #   Chaque sous-séquence de prise en charge génère un RPSS.
+    # RAPSS-HAD : version anonymisée pour la transmission.
+    # FICHCOMP-HAD : fichiers complémentaires HAD (DMI, médicaments).
+    # SSRHA-HAD : résumé anonymisé HAD post-groupage (GHT, GHPC).
+
+    "RPSS": {
+        "length": 162,
+        "ipp": (21, 41),
+        "ddn": (41, 49),
+        "desc": "RPSS — Résumé Par Sous-Séquence HAD (H07)",
+        "field": "HAD",
+        "since": 2005,
+    },
+    "RAPSS-HAD": {
+        "length": 162,
+        "ipp": (21, 41),
+        "ddn": (41, 49),
+        "desc": "RAPSS-HAD — Résumé Anonyme HAD (transmission ARS)",
+        "field": "HAD",
+        "since": 2009,
+    },
+    "FICHCOMP-HAD": {
+        "length": 105,
+        "ipp": (11, 31),
+        "ddn": (31, 39),
+        "desc": "FichComp HAD — Données complémentaires HAD (DMI, médic.)",
+        "field": "HAD",
+        "since": 2010,
+    },
+    "SSRHA-HAD": {
+        "length": 160,
+        "ipp": (21, 41),
+        "ddn": (41, 49),
+        "desc": "SSRHA-HAD — Résumé anonymisé HAD post-groupage",
+        "field": "HAD",
+        "since": 2012,
+    },
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # FORMATS TRANSVERSAUX (communs à tous les champs)
+    # ═══════════════════════════════════════════════════════════════════════
 
     "VID-HOSP": {
         "length": 518,
         "ipp": (265, 285),
         "ddn": (19, 27),
-        "desc": "Vidhosp V015/V016 — Chaînage anonyme (transversal)",
+        "desc": "Vidhosp V015/V016 — Chaînage anonyme (obligatoire depuis 2009)",
         "field": "TRANSVERSAL",
+        "since": 2009,
     },
     "ANO-HOSP": {
         "length": 206,
@@ -163,25 +255,28 @@ ATIH_MATRIX = {
         "ddn": (38, 46),
         "desc": "ANO-HOSP — Anonymisation patient (couverture AMO)",
         "field": "TRANSVERSAL",
+        "since": 2009,
     },
     "FICHCOMP": {
         "length": 105,
         "ipp": (11, 31),
         "ddn": (31, 39),
-        "desc": "FichComp (DMI, isolement médical, prothèses…)",
+        "desc": "FichComp — Données complémentaires (DMI, isolement, prothèses)",
         "field": "TRANSVERSAL",
+        "since": 2010,
     },
 
-    # ─── FORMATS MCO (interopérabilité PSY–MCO) ─────────────────────────────
-    # Les DIM PSY traitent parfois des fichiers MCO pour les établissements
-    # multi-activités ou les échanges inter-établissements.
+    # ═══════════════════════════════════════════════════════════════════════
+    # FORMATS MCO — Médecine Chirurgie Obstétrique (interopérabilité)
+    # ═══════════════════════════════════════════════════════════════════════
 
     "RSS": {
         "length": 177,
         "ipp": (12, 32),
         "ddn": (62, 70),
-        "desc": "RSS/RUM — MCO",
+        "desc": "RSS/RUM — MCO (format fondateur depuis 1991)",
         "field": "MCO",
+        "since": 1991,
     },
     "RSFA": {
         "length": 310,
@@ -189,6 +284,7 @@ ATIH_MATRIX = {
         "ddn": (41, 49),
         "desc": "RSF-A — Activité externe MCO",
         "field": "MCO",
+        "since": 2009,
     },
     "RSFB": {
         "length": 350,
@@ -196,6 +292,7 @@ ATIH_MATRIX = {
         "ddn": (89, 97),
         "desc": "RSF-B — Séjour MCO",
         "field": "MCO",
+        "since": 2009,
     },
     "RSFC": {
         "length": 280,
@@ -203,6 +300,7 @@ ATIH_MATRIX = {
         "ddn": (50, 58),
         "desc": "RSF-C — Honoraires MCO",
         "field": "MCO",
+        "since": 2009,
     },
 }
 
@@ -213,15 +311,12 @@ ATIH_MATRIX = {
 # L'identification du format est critique : elle se base sur le NOM du fichier,
 # pas son contenu. Les conventions de nommage ATIH sont flexibles (tirets,
 # underscores, points), d'où des patterns permissifs.
-# L'ORDRE est important : VID-HOSP doit être testé avant RSS pour éviter les
-# faux positifs, et RSFC avant RSFB avant RSFA pour la même raison.
+# L'ORDRE est critique : les formats les plus spécifiques d'abord pour éviter
+# les faux positifs (ex: "RPSA" avant "RPS", "R3A" avant "RAA").
 # ══════════════════════════════════════════════════════════════════════════════
 
 _FORMAT_RULES = [
-    # Ordre critique : les formats les plus spécifiques d'abord
-    # pour éviter les faux positifs (ex: "R3A" avant "RAA")
-
-    # PSY spécifiques — priorité haute
+    # ─── PSY spécifiques (priorité haute) ──────────────────────────────────
     (re.compile(r"rpsa", re.I), "RPSA"),
     (re.compile(r"r3a", re.I), "R3A"),
     (re.compile(r"fichsup[\-_.]?psy|fichsup|fic[\-_]?sup", re.I), "FICHSUP-PSY"),
@@ -229,20 +324,32 @@ _FORMAT_RULES = [
     (re.compile(r"ficum[\-_.]?psy|ficum", re.I), "FICUM-PSY"),
     (re.compile(r"rsf[\-_.]?ace[\-_.]?psy", re.I), "RSF-ACE-PSY"),
 
-    # Transversaux
+    # ─── SSR / SMR ─────────────────────────────────────────────────────────
+    (re.compile(r"fichcomp[\-_.]?smr|fichcomp[\-_.]?ssr", re.I), "FICHCOMP-SMR"),
+    (re.compile(r"ssrha[\-_.]?had", re.I), "SSRHA-HAD"),
+    (re.compile(r"ssrha", re.I), "SSRHA"),
+    (re.compile(r"rapss[\-_.]?had", re.I), "RAPSS-HAD"),
+    (re.compile(r"rapss", re.I), "RAPSS"),
+    (re.compile(r"rhs", re.I), "RHS"),
+
+    # ─── HAD ───────────────────────────────────────────────────────────────
+    (re.compile(r"fichcomp[\-_.]?had", re.I), "FICHCOMP-HAD"),
+    (re.compile(r"rpss", re.I), "RPSS"),
+
+    # ─── Transversaux ──────────────────────────────────────────────────────
     (re.compile(r"vid[\-_.]?hosp|vidhosp|\.vid", re.I), "VID-HOSP"),
     (re.compile(r"ano[\-_.]?hosp|anohosp", re.I), "ANO-HOSP"),
 
-    # MCO RSF (ordre C > B > A pour éviter les collisions)
+    # ─── MCO RSF (ordre C > B > A) ────────────────────────────────────────
     (re.compile(r"rsf[\-_.]?c|rsfc", re.I), "RSFC"),
     (re.compile(r"rsf[\-_.]?b|rsfb", re.I), "RSFB"),
     (re.compile(r"rsf[\-_.]?a|rsfa|rsf[\-_.]?ace", re.I), "RSFA"),
 
-    # MCO + Transversal
+    # ─── MCO + Transversal ─────────────────────────────────────────────────
     (re.compile(r"fichcomp|fic[\-_]?comp|\.com", re.I), "FICHCOMP"),
     (re.compile(r"rss|rum", re.I), "RSS"),
 
-    # PSY de base (en dernier, car RPS et RAA sont des sous-chaînes courantes)
+    # ─── PSY de base (en dernier car sous-chaînes courantes) ───────────────
     (re.compile(r"rps", re.I), "RPS"),
     (re.compile(r"raa", re.I), "RAA"),
 ]
