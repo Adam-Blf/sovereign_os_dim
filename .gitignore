@@ -1,0 +1,40 @@
+# ══════════════════════════════════════════════════════════════════════════════
+#  SOVEREIGN OS DIM — .gitignore
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+
+# PyInstaller
+*.spec
+*.manifest
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Design System (generated)
+design-system/
+
+# Output
+PILOT_OUTPUT/

@@ -1,0 +1,1058 @@
+/**
+ * =============================================================================
+ * SOVEREIGN OS v17.0 — Frontend Application Logic (Optimized)
+ * =============================================================================
+ * Features:
+ *   - Boot sequence with anime.js
+ *   - Dashboard with Chart.js (format breakdown doughnut)
+ *   - Modo Files with drag & drop + progress bar
+ *   - Identitovigilance with search filter
+ *   - PMSI Pilot CSV export with progress
+ *   - Inspector terminal + sanitized .txt export
+ *   - Toast notifications with type coloring
+ *   - Keyboard shortcuts (Ctrl+1/2/3/4)
+ * =============================================================================
+ */
+
+(function () {
+    "use strict";
+
+    // =========================================================================
+    // STATE
+    // =========================================================================
+    const S = {
+        view: "dashboard",
+        files: [],
+        collisions: [],
+        stats: null,
+        mpiStats: null,
+        booted: false,
+        chart: null,
+    };
+
+    // =========================================================================
+    // DOM HELPERS
+    // =========================================================================
+    const $ = (id) => document.getElementById(id);
+    const N = (n) => (n === undefined || n === null) ? "0" : n.toLocaleString("fr-FR");
+    const API = () => window.pywebview && window.pywebview.api;
+
+    function badge(format) {
+        const c = "fmt-" + (format || "inconnu").toLowerCase().replace(/[^a-z]/g, "-");
+        return `<span class="fmt-badge ${c}">${format || "?"}</span>`;
+    }
+
+    // =========================================================================
+    // TOAST (typed: success, error, info, warning)
+    // =========================================================================
+    let _tt = null;
+    function toast(title, msg, type = "info") {
+        const el = $("os-toast");
+        const ic = $("toast-icon-container");
+        if (!el) return;
+        const tt = $("toast-title-text"), tm = $("toast-msg-text");
+        if (tt) tt.textContent = title;
+        if (tm) tm.textContent = msg;
+
+        const colors = { success: "bg-gh-success", error: "bg-gh-error", warning: "bg-gh-warning", info: "bg-gh-navy" };
+        if (ic) { ic.className = `p-8 text-white rounded-[3rem] shadow-4xl leading-none ${colors[type] || colors.info}`; }
+
+        el.classList.remove("hidden");
+        clearTimeout(_tt);
+        _tt = setTimeout(() => el.classList.add("hidden"), 4500);
+    }
+
+    // =========================================================================
+    // CLOCK
+    // =========================================================================
+    function startClock() {
+        const el = $("os-clock");
+        if (!el) return;
+        const tick = () => { el.textContent = new Date().toLocaleTimeString("fr-FR", { hour12: false }); };
+        tick();
+        setInterval(tick, 1000);
+    }
+
+    // =========================================================================
+    // BOOT SEQUENCE (anime.js)
+    // =========================================================================
+    function runBoot() {
+        const bar = $("boot-progress-bar");
+        const status = $("boot-status-text");
+        const btnIgnite = $("btn-ignite");
+
+        const steps = [
+            "Initialisation du moteur ATIH…",
+            "Compilation des patterns regex (8 formats)…",
+            "Activation ThreadPoolExecutor…",
+            "Calibration MPI & détection collisions…",
+            "Chargement matrice positionnelle stricte…",
+            "Sovereign OS — Prêt.",
+        ];
+
+        // Anime.js progress bar
+        if (typeof anime !== "undefined") {
+            anime({
+                targets: bar,
+                width: ["0%", "100%"],
+                duration: 3600,
+                easing: "easeInOutQuart",
+                update: function (anim) {
+                    const idx = Math.min(Math.floor(anim.progress / 100 * steps.length), steps.length - 1);
+                    if (status) status.textContent = steps[idx];
+                },
+                complete: function () {
+                    if (btnIgnite) {
+                        btnIgnite.classList.remove("hidden");
+                        anime({ targets: btnIgnite, opacity: [0, 1], translateY: [30, 0], duration: 600, easing: "easeOutQuart" });
+                        btnIgnite.addEventListener("click", enterApp);
+                    }
+                }
+            });
+        } else {
+            // Fallback without anime.js
+            let i = 0;
+            const iv = setInterval(() => {
+                if (i >= steps.length) { clearInterval(iv); if (btnIgnite) { btnIgnite.classList.remove("hidden"); btnIgnite.addEventListener("click", enterApp); } return; }
+                if (bar) bar.style.width = ((i + 1) / steps.length * 100) + "%";
+                if (status) status.textContent = steps[i];
+                i++;
+            }, 600);
+        }
+    }
+
+    function enterApp() {
+        const overlay = $("boot-overlay");
+        const root = $("app-root");
+
+        if (typeof anime !== "undefined") {
+            anime({ targets: overlay, opacity: 0, duration: 800, easing: "easeInQuart", complete: () => overlay.classList.add("hidden") });
+        } else {
+            overlay.style.opacity = "0";
+            setTimeout(() => overlay.classList.add("hidden"), 800);
+        }
+
+        if (root) {
+            root.classList.remove("hidden");
+            setTimeout(() => { root.style.opacity = "1"; }, 50);
+        }
+
+        S.booted = true;
+        navigateTo("dashboard");
+        startClock();
+    }
+
+    // =========================================================================
+    // NAVIGATION
+    // =========================================================================
+    const VIEWS = {
+        dashboard: { title: "Dashboard", sub: "Tableau de bord de production" },
+        modo: { title: "Modo Files", sub: "Ingestion & traitement batch" },
+        idv: { title: "Identitovigilance", sub: "Master Patient Index — Résolution des collisions" },
+        pilot: { title: "PMSI Pilot CSV", sub: "Export des données réconciliées" },
+        csv: { title: "Import CSV", sub: "Visualiseur de fichiers CSV externes" },
+        tuto: { title: "Tutoriel d'utilisation", sub: "Guide pas-à-pas Sentinel v17.0" }
+    };
+
+    function navigateTo(view) {
+        S.view = view;
+        const v = VIEWS[view] || {};
+        const t = $("view-title-main"), s = $("view-subtitle-main");
+        if (t) t.textContent = v.title || view;
+        if (s) s.textContent = v.sub || "";
+
+        document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("nav-active"));
+        const btn = $("nav-" + view);
+        if (btn) btn.classList.add("nav-active");
+
+        const vp = $("os-viewport");
+        if (vp) {
+            vp.classList.remove("animate-fade-in");
+            void vp.offsetWidth; // trigger reflow
+            vp.classList.add("animate-fade-in");
+        }
+        render(view);
+    }
+
+    function render(view) {
+        const vp = $("os-viewport");
+        if (!vp) return;
+        switch (view) {
+            case "dashboard": renderDashboard(vp); break;
+            case "modo": renderModo(vp); break;
+            case "idv": renderIdv(vp); break;
+            case "pilot": renderPilot(vp); break;
+            case "csv": renderCsv(vp); break;
+            case "tuto": renderTuto(vp); break;
+        }
+        if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================================
+    // DASHBOARD
+    // =========================================================================
+    async function renderDashboard(vp) {
+        let d = { folders: 0, files: 0, formats: 8, mpi: {}, format_breakdown: [], file_stats: {} };
+        try { if (API()) d = await API().get_dashboard_stats(); } catch (e) { /* ok */ }
+        const m = d.mpi || {};
+
+        vp.innerHTML = `
+            <div class="grid grid-cols-4 gap-6 mb-10">
+                ${statCard("folders", "Dossiers", d.folders, "blue")}
+                ${statCard("file-text", "Fichiers", d.files, "teal")}
+                ${statCard("fingerprint", "IPP Uniques", m.total_ipp, "amber")}
+                ${statCard("alert-triangle", "Collisions", m.collisions, "red", m.collisions > 0 ? "ring-2 ring-gh-error/20" : "")}
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 mb-10">
+                <!-- Chart -->
+                <div class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl">
+                    <h3 class="font-black text-gh-navy uppercase text-sm tracking-tighter italic mb-6 flex items-center gap-3">
+                        <i data-lucide="pie-chart" class="w-5 h-5 text-gh-teal"></i> Répartition formats
+                    </h3>
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas id="chart-formats" width="280" height="280"></canvas>
+                    </div>
+                </div>
+
+                <!-- Matrice -->
+                <div class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl">
+                    <h3 class="font-black text-gh-navy uppercase text-sm tracking-tighter italic mb-6 flex items-center gap-3">
+                        <i data-lucide="database" class="w-5 h-5 text-gh-navy"></i> Matrice ATIH · ${d.formats} formats
+                    </h3>
+                    <div class="grid grid-cols-2 gap-3" id="matrix-grid"></div>
+                </div>
+            </div>
+
+            <!-- MPI Summary -->
+            <div class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl">
+                <h3 class="font-black text-gh-navy uppercase text-sm tracking-tighter italic mb-6 flex items-center gap-3">
+                    <i data-lucide="activity" class="w-5 h-5 text-gh-success"></i> État MPI
+                </h3>
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="bg-slate-50 rounded-2xl p-5 text-center">
+                        <p class="text-2xl font-black text-gh-navy">${N(m.total_ipp)}</p>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Total IPP</p>
+                    </div>
+                    <div class="bg-slate-50 rounded-2xl p-5 text-center">
+                        <p class="text-2xl font-black text-gh-error">${N(m.collisions)}</p>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Collisions</p>
+                    </div>
+                    <div class="bg-slate-50 rounded-2xl p-5 text-center">
+                        <p class="text-2xl font-black text-gh-success">${N(m.resolved)}</p>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Résolues</p>
+                    </div>
+                    <div class="bg-slate-50 rounded-2xl p-5 text-center">
+                        <p class="text-2xl font-black ${m.pending > 0 ? "text-gh-warning" : "text-gh-success"}">${N(m.pending)}</p>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">En attente</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Chart.js doughnut
+        const canvas = $("chart-formats");
+        if (canvas && typeof Chart !== "undefined") {
+            const bd = d.format_breakdown || [];
+            const palette = ["#000091", "#00897B", "#E11D48", "#F59E0B", "#7C3AED", "#2563EB", "#DB2777", "#059669"];
+            if (S.chart) S.chart.destroy();
+            S.chart = new Chart(canvas, {
+                type: "doughnut",
+                data: {
+                    labels: bd.map(x => x.format),
+                    datasets: [{
+                        data: bd.map(x => x.count),
+                        backgroundColor: bd.map((_, i) => palette[i % palette.length]),
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    cutout: "65%",
+                    responsive: false,
+                    plugins: {
+                        legend: { position: "right", labels: { font: { family: "'Plus Jakarta Sans'", weight: "bold", size: 11 }, padding: 12 } }
+                    }
+                }
+            });
+        }
+
+        // Matrix grid
+        try {
+            if (API()) {
+                const mx = await API().get_matrix_info();
+                const g = $("matrix-grid");
+                if (g && mx) {
+                    g.innerHTML = mx.map(m => `
+                        <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 hover:border-gh-navy/20 transition-all">
+                            <div class="flex items-center justify-between mb-1">${badge(m.key)}<span class="text-[9px] font-mono text-slate-400">${m.length} c</span></div>
+                            <p class="text-[10px] text-slate-500 mt-1">${m.desc}</p>
+                            <p class="text-[8px] font-mono text-slate-400 mt-1">IPP [${m.ipp[0]}:${m.ipp[1]}] DDN [${m.ddn[0]}:${m.ddn[1]}]</p>
+                        </div>
+                    `).join("");
+                }
+            }
+        } catch (e) { /* ok */ }
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function statCard(icon, label, value, color, extra = "") {
+        const bg = { blue: "bg-blue-50", teal: "bg-teal-50", amber: "bg-amber-50", red: "bg-red-50" };
+        const tc = { blue: "text-gh-navy", teal: "text-gh-teal", amber: "text-gh-warning", red: "text-gh-error" };
+        return `
+            <div class="stat-card bg-white rounded-[2rem] p-8 border border-slate-100 shadow-lg ${extra}">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="p-3 ${bg[color]} rounded-xl"><i data-lucide="${icon}" class="w-5 h-5 ${tc[color]}"></i></div>
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${label}</span>
+                </div>
+                <p class="text-4xl font-black ${tc[color]} tracking-tighter">${N(value)}</p>
+            </div>`;
+    }
+
+    // =========================================================================
+    // MODO FILES
+    // =========================================================================
+    function renderModo(vp) {
+        vp.innerHTML = `
+            <div class="drop-zone rounded-[3rem] p-14 mb-10 text-center relative transition-colors duration-500" id="drop-zone-area">
+                <div class="pointer-events-none">
+                    <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center mx-auto mb-6 transition-colors duration-500">
+                        <i data-lucide="upload-cloud" class="w-10 h-10 text-gh-teal"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic mb-3">Déposer les fichiers PMSI</h3>
+                    <p class="text-slate-400 dark:text-slate-500 mb-6">Glissez vos dossiers ici — fichiers et sous-dossiers inclus</p>
+                    <div class="flex justify-center gap-4">
+                        <button class="pointer-events-auto px-8 py-4 bg-gh-navy dark:bg-blue-600 text-white rounded-full font-black uppercase text-[10px] tracking-[0.2em] shadow-lg hover:bg-blue-800 dark:hover:bg-blue-700 transition-all active:scale-95" id="btn-add-folder">
+                            <i data-lucide="folder-plus" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Ajouter dossier
+                        </button>
+                        <button class="pointer-events-auto px-8 py-4 bg-gh-teal dark:bg-teal-600 text-white rounded-full font-black uppercase text-[10px] tracking-[0.2em] shadow-lg hover:bg-teal-600 dark:hover:bg-teal-700 transition-all active:scale-95" id="btn-scan">
+                            <i data-lucide="scan" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Scanner & Traiter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div id="progress-bar-container" class="hidden mb-8">
+                <div class="bg-white dark:bg-slate-800 rounded-full overflow-hidden h-3 shadow-inner border border-slate-100 dark:border-slate-700 transition-colors duration-500">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-gh-navy to-gh-teal transition-all duration-500 rounded-full" style="width:0%"></div>
+                </div>
+                <p id="progress-label" class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-2 text-center">Initialisation…</p>
+            </div>
+
+            <!-- Folders -->
+            <div id="folders-panel" class="hidden bg-white dark:bg-slate-800 rounded-[2rem] p-8 border border-slate-100 dark:border-slate-700 shadow-lg dark:shadow-none mb-8 transition-colors duration-500">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-black text-gh-navy dark:text-blue-400 uppercase text-sm tracking-tighter italic flex items-center gap-3">
+                        <i data-lucide="hard-drive" class="w-4 h-4 text-gh-teal"></i> Dossiers
+                    </h3>
+                    <button class="text-[10px] font-black text-gh-error uppercase tracking-widest hover:underline" id="btn-clear">Vider</button>
+                </div>
+                <div id="folders-list" class="space-y-2"></div>
+            </div>
+
+            <!-- Files grid -->
+            <div id="files-section" class="hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-black text-gh-navy dark:text-blue-400 uppercase text-lg tracking-tighter italic flex items-center gap-3">
+                        <i data-lucide="file-text" class="w-5 h-5 text-gh-teal"></i> Fichiers détectés
+                    </h3>
+                    <span class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest" id="files-count">0</span>
+                </div>
+                <div class="grid grid-cols-3 gap-5" id="files-grid"></div>
+            </div>
+        `;
+
+        // Events
+        const addBtn = $("btn-add-folder");
+        const scanBtn = $("btn-scan");
+        const clearBtn = $("btn-clear");
+        const dz = $("drop-zone-area");
+
+        if (addBtn) addBtn.addEventListener("click", addFolder);
+        if (scanBtn) scanBtn.addEventListener("click", scanAndProcess);
+        if (clearBtn) clearBtn.addEventListener("click", clearAll);
+
+        if (dz) {
+            dz.addEventListener("dragover", e => { e.preventDefault(); dz.classList.add("drag-over"); });
+            dz.addEventListener("dragleave", () => dz.classList.remove("drag-over"));
+            dz.addEventListener("drop", async e => {
+                e.preventDefault();
+                dz.classList.remove("drag-over");
+                const items = e.dataTransfer.files;
+                if (!items || !items.length || !API()) return;
+                const paths = [];
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].path) paths.push(items[i].path);
+                }
+                if (paths.length) {
+                    await API().add_folders(paths);
+                    toast("Déposé", `${paths.length} élément(s)`, "success");
+                    refreshFolders();
+                }
+            });
+            dz.addEventListener("click", e => { if (e.target === dz) addFolder(); });
+        }
+
+        refreshFolders();
+        if (S.files.length) showFiles();
+    }
+
+    async function addFolder() {
+        if (!API()) return;
+        const r = await API().select_folder();
+        if (r && r.folder) {
+            toast("Ajouté", r.folder.split(/[\\/]/).pop(), "success");
+            refreshFolders();
+        }
+    }
+
+    async function refreshFolders() {
+        if (!API()) return;
+        const f = await API().get_folders();
+        const p = $("folders-panel"), l = $("folders-list");
+        if (!p || !l) return;
+        if (f && f.length) {
+            p.classList.remove("hidden");
+            l.innerHTML = f.map((x, i) => `
+                <div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 px-5 py-3 rounded-xl text-sm transition-colors duration-500">
+                    <i data-lucide="folder" class="w-4 h-4 text-gh-navy dark:text-blue-400 shrink-0"></i>
+                    <span class="font-mono text-slate-600 dark:text-slate-300 truncate flex-1 text-[11px]">${x}</span>
+                    <span class="text-[9px] font-black text-gh-teal">#${i + 1}</span>
+                </div>
+            `).join("");
+            if (window.lucide) lucide.createIcons();
+        } else {
+            p.classList.add("hidden");
+        }
+    }
+
+    async function clearAll() {
+        if (!API()) return;
+        await API().clear_folders();
+        S.files = []; S.collisions = []; S.stats = null; S.mpiStats = null;
+        refreshFolders();
+        const fs = $("files-section"); if (fs) fs.classList.add("hidden");
+        updateBadges();
+        toast("Reset", "Tout a été vidé", "info");
+    }
+
+    async function scanAndProcess() {
+        if (!API()) return;
+
+        const prog = $("progress-bar-container");
+        const bar = $("progress-bar");
+        const label = $("progress-label");
+
+        if (prog) prog.classList.remove("hidden");
+        if (bar) bar.style.width = "10%";
+        if (label) label.textContent = "Scan des dossiers…";
+
+        toast("Traitement", "Analyse en cours…", "info");
+
+        // Scan
+        const scan = await API().scan_files();
+        if (scan.error) { toast("Erreur", scan.error, "error"); return; }
+        S.files = scan.files || [];
+
+        if (bar) bar.style.width = "40%";
+        if (label) label.textContent = "Construction MPI…";
+
+        // Process
+        const proc = await API().process_all();
+        S.stats = proc.stats || null;
+
+        if (bar) bar.style.width = "70%";
+        if (label) label.textContent = "Détection des collisions…";
+
+        // Collisions
+        S.collisions = await API().get_collisions() || [];
+        S.mpiStats = await API().get_mpi_stats() || {};
+
+        if (bar) bar.style.width = "100%";
+        if (label) label.textContent = "Terminé !";
+
+        setTimeout(() => { if (prog) prog.classList.add("hidden"); }, 2000);
+
+        showFiles();
+        updateBadges();
+
+        const s = S.stats || {};
+        toast("Terminé",
+            `${S.files.length} fichiers · ${N(s.ipp_unique)} IPP · ${s.collisions} collisions`,
+            S.collisions.length > 0 ? "warning" : "success"
+        );
+    }
+
+    function showFiles() {
+        const sec = $("files-section"), grid = $("files-grid"), cnt = $("files-count");
+        if (!sec || !grid) return;
+        if (!S.files.length) { sec.classList.add("hidden"); return; }
+
+        sec.classList.remove("hidden");
+        if (cnt) cnt.textContent = `${S.files.length} fichiers`;
+
+        grid.innerHTML = S.files.map(f => `
+            <div class="file-card bg-white rounded-[1.5rem] p-6 border border-slate-100 shadow-md cursor-pointer"
+                 onclick="window.__inspect('${f.path.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')">
+                <div class="flex items-center justify-between mb-3">
+                    ${badge(f.format)}
+                    <span class="text-[9px] font-mono text-slate-400">${f.size_kb} KB</span>
+                </div>
+                <p class="font-black text-gh-navy text-[12px] truncate uppercase tracking-tight">${f.name}</p>
+                <p class="text-[9px] text-slate-400 truncate mt-1 font-mono">${f.dir}</p>
+            </div>
+        `).join("");
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================================
+    // IDENTITOVIGILANCE
+    // =========================================================================
+    async function renderIdv(vp) {
+        if (API()) {
+            S.collisions = await API().get_collisions() || [];
+            S.mpiStats = await API().get_mpi_stats() || {};
+        }
+        const m = S.mpiStats || {};
+        const cols = S.collisions || [];
+
+        vp.innerHTML = `
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic">MPI</h3>
+                    <p class="text-slate-400 dark:text-slate-500 text-xs mt-1">${N(m.total_ipp)} IPP · ${N(m.collisions)} collisions · ${N(m.resolved)} résolues</p>
+                </div>
+                <div class="flex gap-3">
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-4 top-1/2 -translate-y-1/2"></i>
+                        <input type="text" id="idv-search" placeholder="Rechercher IPP…" class="pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-xs font-mono w-52 focus:outline-none focus:border-gh-navy dark:focus:border-blue-400 transition-all shadow-inner" />
+                    </div>
+                    <button class="px-8 py-3 bg-gh-warning text-white rounded-full font-black uppercase text-[10px] tracking-[0.15em] shadow-lg hover:bg-amber-600 transition-all active:scale-95" id="btn-auto">
+                        <i data-lucide="wand-2" class="w-4 h-4 inline mr-1 -mt-0.5"></i>Auto-résoudre
+                    </button>
+                </div>
+            </div>
+
+            ${cols.length === 0 ? `
+                <div class="text-center py-16">
+                    <div class="w-20 h-20 bg-green-50 rounded-[2rem] flex items-center justify-center mx-auto mb-5">
+                        <i data-lucide="check-circle" class="w-10 h-10 text-gh-success"></i>
+                    </div>
+                    <h4 class="text-xl font-black text-gh-success uppercase tracking-tighter italic">Aucune collision</h4>
+                    <p class="text-slate-400 text-sm mt-3">Tous les IPP ont une DDN unique.</p>
+                </div>
+            ` : `
+                <div class="bg-white rounded-[2rem] border border-slate-100 shadow-lg overflow-hidden">
+                    <div class="grid grid-cols-12 gap-3 px-8 py-4 bg-slate-50 border-b border-slate-100 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                        <div class="col-span-3">IPP</div>
+                        <div class="col-span-3">Pivot</div>
+                        <div class="col-span-2">DDN</div>
+                        <div class="col-span-2">Sources</div>
+                        <div class="col-span-2 text-right">Action</div>
+                    </div>
+                    <div class="divide-y divide-slate-50 max-h-[55vh] overflow-auto custom-scroll" id="collision-list">
+                        ${renderCollisionRows(cols)}
+                    </div>
+                </div>
+            `}
+        `;
+
+        // Search
+        const searchInput = $("idv-search");
+        if (searchInput) {
+            searchInput.addEventListener("input", async () => {
+                const q = searchInput.value.trim();
+                const list = $("collision-list");
+                if (!list) return;
+                let filtered = cols;
+                if (q) {
+                    if (API()) {
+                        filtered = await API().search_collisions(q);
+                    } else {
+                        filtered = cols.filter(c => c.ipp.toLowerCase().includes(q.toLowerCase()));
+                    }
+                }
+                list.innerHTML = renderCollisionRows(filtered);
+                bindResolveButtons();
+                if (window.lucide) lucide.createIcons();
+            });
+        }
+
+        bindResolveButtons();
+
+        const autoBtn = $("btn-auto");
+        if (autoBtn) {
+            autoBtn.addEventListener("click", async () => {
+                if (!API()) return;
+                const r = await API().auto_resolve();
+                toast("Auto-résolution", `${r.resolved} pivots définis`, "success");
+                S.collisions = r.collisions || [];
+                S.mpiStats = r.mpi_stats || {};
+                renderIdv(vp);
+                updateBadges();
+            });
+        }
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function renderCollisionRows(cols) {
+        return cols.map(c => `
+            <div class="collision-row grid grid-cols-12 gap-3 px-8 py-5 items-center hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors duration-500" data-ipp="${c.ipp}">
+                <div class="col-span-3 font-mono font-bold text-gh-navy dark:text-blue-400 text-xs">${c.ipp}</div>
+                <div class="col-span-3">
+                    ${c.pivot
+                ? `<span class="text-gh-success font-bold font-mono text-xs">${c.pivot}</span>`
+                : `<span class="text-gh-error font-bold italic text-xs">—</span>`}
+                </div>
+                <div class="col-span-2"><span class="bg-red-50 dark:bg-red-900/40 text-gh-error px-2 py-0.5 rounded-full text-[9px] font-black">${c.options.length} DDN</span></div>
+                <div class="col-span-2 text-[10px] text-slate-400 dark:text-slate-500 font-mono">${c.total_sources}</div>
+                <div class="col-span-2 text-right">
+                    <button class="px-5 py-2 bg-gh-navy dark:bg-blue-600 text-white rounded-full text-[9px] font-black uppercase tracking-wider shadow-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-all btn-resolve" data-ipp="${c.ipp}">Résoudre</button>
+                </div>
+            </div>
+        `).join("");
+    }
+
+    function bindResolveButtons() {
+        document.querySelectorAll(".btn-resolve").forEach(btn => {
+            btn.addEventListener("click", () => openModal(btn.dataset.ipp));
+        });
+    }
+
+    // =========================================================================
+    // RECONCILIATION MODAL
+    // =========================================================================
+    function openModal(ipp) {
+        const c = S.collisions.find(x => x.ipp === ipp);
+        if (!c) return;
+
+        const modal = $("reconciliation-modal");
+        const ippEl = $("idv-modal-ipp");
+        const opts = $("idv-options-container");
+        if (!modal || !opts) return;
+        if (ippEl) ippEl.textContent = ipp;
+
+        opts.innerHTML = c.options.map(o => `
+            <button class="btn-pivot w-full text-left p-6 rounded-[2rem] border-2 transition-colors duration-500 ${o.ddn === c.pivot ? "border-gh-success bg-green-50 dark:bg-green-900/20" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gh-navy dark:hover:border-blue-400"
+            }" data-ddn="${o.ddn}">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-2xl font-black text-gh-navy dark:text-blue-400 font-mono">${o.ddn}</span>
+                        <span class="ml-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">${o.count} fichier(s)</span>
+                    </div>
+                    ${o.ddn === c.pivot
+                ? '<i data-lucide="check-circle" class="w-7 h-7 text-gh-success"></i>'
+                : '<i data-lucide="circle" class="w-7 h-7 text-slate-300 dark:text-slate-600"></i>'}
+                </div>
+                <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 font-mono truncate">${o.sources.join(", ")}</p>
+            </button>
+        `).join("");
+
+        opts.querySelectorAll(".btn-pivot").forEach(btn => {
+            btn.addEventListener("click", async () => {
+                if (!API()) return;
+                await API().set_pivot(ipp, btn.dataset.ddn);
+                toast("Pivot", `${ipp} → ${btn.dataset.ddn}`, "success");
+                modal.classList.add("hidden");
+                S.collisions = await API().get_collisions() || [];
+                S.mpiStats = await API().get_mpi_stats() || {};
+                if (S.view === "idv") navigateTo("idv");
+                updateBadges();
+            });
+        });
+
+        modal.classList.remove("hidden");
+        if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================================
+    // PILOT EXPORT
+    // =========================================================================
+    function renderPilot(vp) {
+        const m = S.mpiStats || {};
+        vp.innerHTML = `
+            <div class="bg-white dark:bg-slate-800 rounded-[3rem] p-14 border border-slate-100 dark:border-slate-700 shadow-xl dark:shadow-none text-center max-w-3xl mx-auto transition-colors duration-500">
+                <div class="w-20 h-20 bg-teal-50 dark:bg-teal-900/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 transition-colors duration-500">
+                    <i data-lucide="file-down" class="w-10 h-10 text-gh-teal"></i>
+                </div>
+                <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic mb-3">Export PMSI-Pilot</h3>
+                <p class="text-slate-400 dark:text-slate-500 mb-8">CSV normalisés · séparateur ; · DDN pivot injectées</p>
+
+                <div class="grid grid-cols-3 gap-4 my-8">
+                    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-5 transition-colors duration-500"><p class="text-2xl font-black text-gh-navy dark:text-blue-400">${N(S.files.length)}</p><p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase mt-1">Fichiers</p></div>
+                    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-5 transition-colors duration-500"><p class="text-2xl font-black text-gh-teal">${N(m.total_ipp)}</p><p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase mt-1">IPP</p></div>
+                    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-5 transition-colors duration-500"><p class="text-2xl font-black ${m.pending > 0 ? "text-gh-error" : "text-gh-success"}">${N(m.pending)}</p><p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase mt-1">Conflits</p></div>
+                </div>
+
+                ${m.pending > 0 ? `<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-xl p-4 mb-6 text-left text-xs text-amber-800 dark:text-amber-400 font-bold transition-colors duration-500"><i data-lucide="alert-triangle" class="w-4 h-4 inline mr-1"></i>${m.pending} collision(s) non résolue(s) — auto-résolution appliquée à l'export.</div>` : ""}
+
+                <div class="flex justify-center gap-4">
+                    <button class="px-10 py-5 bg-gh-teal dark:bg-teal-600 text-white rounded-full font-black uppercase text-xs tracking-[0.2em] shadow-lg hover:bg-teal-600 dark:hover:bg-teal-700 transition-all active:scale-95" id="btn-exp-def">
+                        <i data-lucide="download" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Exporter
+                    </button>
+                    <button class="px-10 py-5 bg-gh-navy dark:bg-blue-600 text-white rounded-full font-black uppercase text-xs tracking-[0.2em] shadow-lg hover:bg-blue-800 dark:hover:bg-blue-700 transition-all active:scale-95" id="btn-exp-dir">
+                        <i data-lucide="folder-output" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Choisir dossier
+                    </button>
+                </div>
+
+                <div id="exp-result" class="mt-8 hidden">
+                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-xl p-6 text-left transition-colors duration-500">
+                        <p class="text-sm font-black text-gh-success uppercase italic mb-1" id="exp-title">OK</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-300" id="exp-detail"></p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const defBtn = $("btn-exp-def"), dirBtn = $("btn-exp-dir");
+        if (defBtn) defBtn.addEventListener("click", async () => {
+            if (!API()) return;
+            if ((S.mpiStats || {}).pending > 0) await API().auto_resolve();
+            showExportResult(await API().export_csv());
+        });
+        if (dirBtn) dirBtn.addEventListener("click", async () => {
+            if (!API()) return;
+            const folder = await API().select_export_folder();
+            if (!folder) return;
+            if ((S.mpiStats || {}).pending > 0) await API().auto_resolve();
+            showExportResult(await API().export_csv_to(folder));
+        });
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function showExportResult(r) {
+        if (!r) return;
+        const el = $("exp-result"), t = $("exp-title"), d = $("exp-detail");
+        if (!el) return;
+        if (r.error) {
+            if (t) t.textContent = "Erreur";
+            if (d) d.textContent = r.error;
+            toast("Erreur", r.error, "error");
+        } else {
+            const s = r.stats || {};
+            if (t) t.textContent = `✅ ${s.csv_count} CSV`;
+            if (d) d.textContent = `${N(s.lines_exported)} lignes · ${N(s.ddn_corrected)} DDN corrigées · ${r.output_dir}`;
+            toast("Export", `${s.csv_count} CSV exportés`, "success");
+        }
+        el.classList.remove("hidden");
+    }
+
+    // =========================================================================
+    // INSPECTOR
+    // =========================================================================
+    window.__inspect = async function (fp) {
+        if (!API()) return;
+        const modal = $("inspector-modal");
+        const fname = $("ins-file-name");
+        const sid = $("ins-session-id");
+        const body = $("ins-terminal-body");
+        const mT = $("ins-metrics-total"), mE = $("ins-metrics-err");
+        if (!modal || !body) return;
+
+        if (fname) fname.textContent = fp.split(/[\\/]/).pop();
+        if (sid) sid.textContent = "SID_" + Math.random().toString(36).substring(2, 8).toUpperCase();
+        body.innerHTML = '<p class="text-blue-300 animate-pulse">Analyse en cours…</p>';
+        modal.classList.remove("hidden");
+        if (window.lucide) lucide.createIcons();
+
+        const data = await API().inspect_file(fp);
+        if (data.error) { body.innerHTML = `<p class="text-red-400">${data.error}</p>`; return; }
+
+        if (mT) mT.textContent = N(data.total_lines);
+        if (mE) mE.textContent = N(data.errors);
+
+        body.innerHTML = data.lines.map(l => {
+            const isErr = l.status !== "OK";
+            const cls = isErr ? "line-error" : "";
+            const col = { OK: "text-gh-success", COLLISION: "text-gh-error", FILTERED: "text-gh-warning", ERROR: "text-gh-error" }[l.status] || "text-slate-400";
+            return `<div class="flex gap-4 text-[10px] py-1.5 px-4 rounded ${cls}">
+                <span class="text-slate-600 w-10 text-right shrink-0">${l.num}</span>
+                <span class="font-bold w-16 ${col} shrink-0 uppercase">${l.status}</span>
+                <span class="text-blue-300 w-28 shrink-0 truncate">${l.ipp || "—"}</span>
+                <span class="text-teal-300 w-20 shrink-0">${l.ddn || "—"}</span>
+                <span class="text-slate-500 truncate flex-1">${(l.raw || "").substring(0, 80)}</span>
+                ${l.repair ? `<span class="text-amber-400 shrink-0 text-[8px]">${l.repair}</span>` : ""}
+            </div>`;
+        }).join("");
+
+        // Sanitized export button
+        const expBtn = $("btn-export-sanitized");
+        if (expBtn) {
+            expBtn.onclick = async () => {
+                if (!API()) return;
+                const r = await API().export_sanitized(fp);
+                if (r.error) { toast("Erreur", r.error, "error"); }
+                else { toast("Sanitized", `${r.name} — ${r.stats.pivoted} pivots injectés`, "success"); }
+            };
+        }
+    };
+
+    // =========================================================================
+    // TUTORIEL
+    // =========================================================================
+    function renderTuto(vp) {
+        vp.innerHTML = `
+            <div class="max-w-4xl mx-auto pb-10">
+                <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] p-12 border border-slate-100 dark:border-slate-700 shadow-xl dark:shadow-none relative overflow-hidden transition-colors duration-500">
+                    
+                    <!-- Header -->
+                    <div class="flex items-center gap-6 mb-12 border-b border-slate-100 dark:border-slate-700 pb-8 relative z-10 transition-colors duration-500">
+                        <div class="w-16 h-16 bg-gh-navy dark:bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg text-white">
+                            <i data-lucide="book-open" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic">Guide Opérationnel</h3>
+                            <p class="text-slate-400 dark:text-slate-500 font-bold tracking-widest uppercase text-[10px] mt-1">Sovereign OS v17.0</p>
+                        </div>
+                    </div>
+
+                    <!-- Intro -->
+                    <p class="text-slate-500 dark:text-slate-400 mb-12 leading-relaxed text-sm relative z-10">
+                        Bienvenue dans <strong class="text-gh-navy dark:text-blue-400">Sovereign OS</strong>. Ce logiciel a été conçu spécifiquement pour la station DIM afin de traiter les données e-PMSI, de croiser automatiquement les identités patients (IPP) et de résoudre les conflits de dates de naissance (DDN) via un index maître (MPI).
+                    </p>
+
+                    <!-- Steps Timeline -->
+                    <div class="space-y-12 relative z-10 stagger">
+                        
+                        <!-- Step 1 -->
+                        <div class="tuto-step flex gap-6">
+                            <div class="tuto-step-number bg-gh-teal dark:bg-teal-600 text-white shadow-lg">1</div>
+                            <div class="tuto-connector hidden sm:block"></div>
+                            <div class="flex-1 pt-2">
+                                <h4 class="text-lg font-black text-gh-navy dark:text-blue-400 uppercase italic tracking-tighter mb-2 flex items-center gap-2">
+                                    <i data-lucide="folders" class="w-4 h-4 text-gh-teal"></i> Ingestion des données
+                                </h4>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Rendez-vous dans la section <strong>Modo Files</strong>. Vous pouvez y déposer vos dossiers contenant les fichiers ATIH (.txt) validés ou bruts. Le moteur reconnaît automatiquement 8 formats (RPS, RAA, VID-HOSP, etc.).</p>
+                                <div class="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl p-4 text-[11px] text-slate-600 dark:text-slate-300 font-mono border inline-flex items-center gap-2 transition-colors duration-500">
+                                    <i data-lucide="info" class="w-4 h-4 text-gh-teal"></i> Astuce : Glissez-déposez le dossier racine "Années" directement.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="tuto-step flex gap-6">
+                            <div class="tuto-step-number bg-gh-navy dark:bg-blue-600 text-white shadow-lg">2</div>
+                            <div class="tuto-connector hidden sm:block"></div>
+                            <div class="flex-1 pt-2">
+                                <h4 class="text-lg font-black text-gh-navy dark:text-blue-400 uppercase italic tracking-tighter mb-2 flex items-center gap-2">
+                                    <i data-lucide="activity" class="w-4 h-4 text-gh-navy dark:text-blue-400"></i> Validation & Traitement
+                                </h4>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Cliquez sur <strong class="text-gh-teal">Scanner & Traiter</strong>. Sovereign OS va lire tous les fichiers en parallèle, filtrer les anomalies géométriques (auto-repair), et recenser l'intégralité des couples (IPP, DDN) présents.</p>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">
+                                    Vous pouvez cliquer sur un fichier dans la liste pour ouvrir l'<strong>Inspector Terminal</strong> et analyser les données ligne par ligne.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="tuto-step flex gap-6">
+                            <div class="tuto-step-number bg-gh-warning text-white shadow-lg">3</div>
+                            <div class="tuto-connector hidden sm:block"></div>
+                            <div class="flex-1 pt-2">
+                                <h4 class="text-lg font-black text-gh-navy dark:text-blue-400 uppercase italic tracking-tighter mb-2 flex items-center gap-2">
+                                    <i data-lucide="users-2" class="w-4 h-4 text-gh-warning"></i> Résolution des Collisions (Identitovigilance)
+                                </h4>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Si un même IPP possède plusieurs dates de naissance selon les fichiers, une <strong>collision</strong> est signalée. Allez dans l'onglet Identitovigilance.</p>
+                                <ul class="list-disc list-inside text-sm text-slate-500 dark:text-slate-400 space-y-1 mb-3 ml-2">
+                                    <li>Cliquez sur <strong>Résoudre</strong> pour choisir manuellement la DDN de référence (Pivot).</li>
+                                    <li>Ou utilisez le bouton <strong class="text-gh-warning text-xs uppercase tracking-widest"><i data-lucide="wand-2" class="w-3 h-3 inline mr-1 -mt-0.5"></i> Auto-résoudre</strong> pour forcer la DDN la plus statistiquement présente.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Step 4 -->
+                        <div class="tuto-step flex gap-6">
+                            <div class="tuto-step-number bg-gh-error text-white shadow-lg">4</div>
+                            <div class="flex-1 pt-2">
+                                <h4 class="text-lg font-black text-gh-navy dark:text-blue-400 uppercase italic tracking-tighter mb-2 flex items-center gap-2">
+                                    <i data-lucide="file-down" class="w-4 h-4 text-gh-error"></i> Export PMSI-Pilot
+                                </h4>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Une fois l'index maître purifié, rendez-vous dans <strong>PMSI Pilot CSV</strong>.</p>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">L'export va générer un fichier CSV par fichier MCO traité, tout en <strong>injectant la DDN pivot choisie</strong> sur l'intégralité du chaînage, annulant de facto l'anomalie.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <!-- Shortcuts Footer -->
+                    <div class="mt-16 pt-8 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/80 -mx-12 -mb-12 px-12 pb-12 transition-colors duration-500">
+                        <h4 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><i data-lucide="keyboard" class="w-4 h-4"></i> Raccourcis Clavier</h4>
+                        <div class="flex flex-wrap gap-4 text-[11px] text-slate-500 dark:text-slate-400">
+                            <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">1</kbd> Dashboard</div>
+                            <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">2</kbd> Modo Files</div>
+                            <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">3</kbd> Identitovigilance</div>
+                            <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">4</kbd> Export</div>
+                            <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">5</kbd> Tutoriel</div>
+                            <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Echap</kbd> Fermer les fenêtres modales</div>
+                        </div>
+                    </div>
+
+                    <!-- Watermark -->
+                    <i data-lucide="book" class="absolute -bottom-10 -right-10 w-64 h-64 text-slate-50 dark:text-slate-800 opacity-[0.4] rotate-12 pointer-events-none transition-colors duration-500"></i>
+                </div>
+            </div>
+        `;
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================================
+    // CSV IMPORT VIEWER
+    // =========================================================================
+    function renderCsv(vp) {
+        vp.innerHTML = `
+            <div class="bg-white dark:bg-slate-800 rounded-[3rem] p-14 border border-slate-100 dark:border-slate-700 shadow-xl dark:shadow-none text-center max-w-5xl mx-auto transition-colors duration-500">
+                <div class="w-20 h-20 bg-green-50 dark:bg-green-900/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 transition-colors duration-500">
+                    <i data-lucide="table-2" class="w-10 h-10 text-gh-success"></i>
+                </div>
+                <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic mb-3">Import CSV</h3>
+                <p class="text-slate-400 dark:text-slate-500 mb-8">Importez et visualisez un fichier CSV · Auto-détection du séparateur (; , tab)</p>
+
+                <button class="px-10 py-5 bg-gh-success text-white rounded-full font-black uppercase text-xs tracking-[0.2em] shadow-lg hover:bg-green-600 transition-all active:scale-95 mb-8" id="btn-csv-select">
+                    <i data-lucide="file-up" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Sélectionner un fichier CSV
+                </button>
+
+                <div id="csv-result" class="hidden text-left"></div>
+            </div>
+        `;
+
+        const selectBtn = $("btn-csv-select");
+        if (selectBtn) selectBtn.addEventListener("click", async () => {
+            if (!API()) return;
+            const filepath = await API().select_csv_file();
+            if (!filepath) return;
+
+            toast("Import", "Lecture du CSV…", "info");
+            const data = await API().import_csv_file(filepath);
+            const result = $("csv-result");
+            if (!result) return;
+
+            if (data.error) {
+                result.innerHTML = `<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-xl p-6 text-gh-error font-bold">${data.error}</div>`;
+                result.classList.remove("hidden");
+                toast("Erreur", data.error, "error");
+                return;
+            }
+
+            const maxPreview = Math.min(data.rows.length, 200);
+            result.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h4 class="font-black text-gh-navy dark:text-blue-400 uppercase text-sm tracking-tighter italic flex items-center gap-2">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-gh-success"></i> ${data.filename}
+                        </h4>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1">${N(data.total_rows)} lignes · ${data.headers.length} colonnes · sep: "${data.separator}"</p>
+                    </div>
+                </div>
+                <div class="max-h-[50vh] overflow-auto custom-scroll rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <table class="csv-table">
+                        <thead><tr>${data.headers.map(h => `<th>${h}</th>`).join("")}</tr></thead>
+                        <tbody>${data.rows.slice(0, maxPreview).map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>
+                    </table>
+                </div>
+                ${data.rows.length > maxPreview ? `<p class="text-[10px] text-slate-400 dark:text-slate-500 mt-3 text-center italic">Affichage limité à ${maxPreview} lignes sur ${N(data.total_rows)}</p>` : ""}
+            `;
+            result.classList.remove("hidden");
+            toast("Import", `${data.filename} — ${N(data.total_rows)} lignes`, "success");
+            if (window.lucide) lucide.createIcons();
+        });
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================================
+    // BADGES
+    // =========================================================================
+    function updateBadges() {
+        const bf = $("badge-files-total"), bi = $("badge-idv-conflict");
+        if (bf) {
+            if (S.files.length > 0) { bf.classList.remove("hidden"); bf.textContent = S.files.length; }
+            else bf.classList.add("hidden");
+        }
+        if (bi) {
+            const p = S.collisions.filter(c => !c.pivot).length;
+            if (p > 0) { bi.classList.remove("hidden"); bi.textContent = p; }
+            else bi.classList.add("hidden");
+        }
+    }
+
+    // =========================================================================
+    // KEYBOARD SHORTCUTS
+    // =========================================================================
+    document.addEventListener("keydown", (e) => {
+        if (!S.booted) return;
+        if (e.ctrlKey || e.metaKey) {
+            switch (e.key) {
+                case "1": e.preventDefault(); navigateTo("dashboard"); break;
+                case "2": e.preventDefault(); navigateTo("modo"); break;
+                case "3": e.preventDefault(); navigateTo("idv"); break;
+                case "4": e.preventDefault(); navigateTo("pilot"); break;
+                case "5": e.preventDefault(); navigateTo("csv"); break;
+                case "6": e.preventDefault(); navigateTo("tuto"); break;
+            }
+        }
+        // Escape closes modals
+        if (e.key === "Escape") {
+            const rm = $("reconciliation-modal"), im = $("inspector-modal");
+            if (rm) rm.classList.add("hidden");
+            if (im) im.classList.add("hidden");
+        }
+    });
+
+    // =========================================================================
+    // INIT
+    // =========================================================================
+    let _initialized = false;
+    function init() {
+        if (_initialized) return;
+        _initialized = true;
+
+        const navMap = { "nav-dashboard": "dashboard", "nav-modo": "modo", "nav-idv": "idv", "nav-pilot": "pilot", "nav-csv": "csv", "nav-tuto": "tuto" };
+        Object.entries(navMap).forEach(([id, v]) => {
+            const el = $(id);
+            if (el) el.addEventListener("click", () => navigateTo(v));
+        });
+
+        const themeBtn = $("btn-theme-toggle");
+        if (themeBtn) {
+            themeBtn.addEventListener("click", () => {
+                document.documentElement.classList.toggle("dark");
+                const icon = $("icon-theme");
+                if (icon) {
+                    icon.setAttribute("data-lucide", document.documentElement.classList.contains("dark") ? "sun" : "moon");
+                    if (window.lucide) lucide.createIcons();
+                }
+            });
+        }
+
+        const cI = $("btn-close-idv-modal");
+        if (cI) cI.addEventListener("click", () => { const m = $("reconciliation-modal"); if (m) m.classList.add("hidden"); });
+
+        [$("btn-close-inspector"), $("btn-close-inspector-2")].forEach(b => {
+            if (b) b.addEventListener("click", () => { const m = $("inspector-modal"); if (m) m.classList.add("hidden"); });
+        });
+
+        const reset = $("btn-reset");
+        if (reset) reset.addEventListener("click", async () => {
+            if (API()) await API().reset_all();
+            S.files = []; S.collisions = []; S.stats = null; S.mpiStats = null;
+            updateBadges();
+            navigateTo("dashboard");
+            toast("Reset", "Sovereign OS réinitialisé", "info");
+        });
+
+        if (window.lucide) lucide.createIcons();
+        runBoot();
+    }
+
+    if (window.pywebview) { init(); }
+    else {
+        window.addEventListener("pywebviewready", init);
+        setTimeout(() => { if (!S.booted) init(); }, 2000);
+    }
+
+})();

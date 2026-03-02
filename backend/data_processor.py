@@ -1,0 +1,779 @@
+# ══════════════════════════════════════════════════════════════════════════════
+#  SOVEREIGN OS DIM — DATA PROCESSOR v3.0
+# ══════════════════════════════════════════════════════════════════════════════
+#  Author  : Adam Beloucif
+#  Project : Sovereign OS v17.0 — Station DIM GHT Sud Paris
+#  Date    : 2026-03-02
+#
+#  Description:
+#    Moteur de traitement des fichiers ATIH (e-PMSI). Ce module est le cœur
+#    métier de Sovereign OS. Il gère :
+#      - L'identification automatique de 8 formats ATIH via regex pré-compilés
+#      - L'extraction positionnelle des couples (IPP, DDN) dans chaque ligne
+#      - La construction d'un Master Patient Index (MPI) cross-fichiers
+#      - La détection et résolution des collisions d'identité
+#      - L'export CSV normalisé et la purification de fichiers .txt
+#
+#  Bonnes Pratiques:
+#    - Regex compilés une seule fois au chargement du module (performance)
+#    - Traitement parallèle via ThreadPoolExecutor (multi-cœur)
+#    - Lecture en latin-1 (encodage standard des fichiers ATIH)
+#    - Auto-repair des lignes tronquées ou trop longues
+#    - Résolution bayésienne des collisions (fréquence + récence)
+# ══════════════════════════════════════════════════════════════════════════════
+
+import os
+import sys
+import glob
+import re
+import csv
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from collections import defaultdict
+from datetime import datetime
+from typing import Optional, Callable
+
+# Force UTF-8 console output on Windows to avoid encoding crashes
+sys.stdout.reconfigure(encoding='utf-8')
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MATRICE ATIH — 8 formats normalisés, positions 0-indexées
+# ══════════════════════════════════════════════════════════════════════════════
+# Chaque format ATIH a une longueur fixe et des positions dédiées pour l'IPP
+# (Identifiant Permanent du Patient) et la DDN (Date De Naissance).
+# Cette matrice est la source de vérité absolue pour le parsing positionnel.
+# Ref: Documentation technique ATIH — Formats de recueil 2018–2025
+# ══════════════════════════════════════════════════════════════════════════════
+
+ATIH_MATRIX = {
+    "RPS": {
+        "length": 154,
+        "ipp": (21, 41),
+        "ddn": (41, 49),
+        "desc": "Résumé Par Séquence (PSY)",
+    },
+    "RAA": {
+        "length": 96,
+        "ipp": (21, 41),
+        "ddn": (41, 49),
+        "desc": "Recueil Activité Ambulatoire (PSY)",
+    },
+    "VID-HOSP": {
+        "length": 518,
+        "ipp": (265, 285),
+        "ddn": (19, 27),
+        "desc": "Vidhosp — Chaînage anonyme",
+    },
+    "RSS": {
+        "length": 177,
+        "ipp": (12, 32),
+        "ddn": (62, 70),
+        "desc": "RSS/RUM — MCO",
+    },
+    "RSFA": {
+        "length": 310,
+        "ipp": (221, 241),
+        "ddn": (41, 49),
+        "desc": "RSF-A — Activité externe MCO",
+    },
+    "RSFB": {
+        "length": 350,
+        "ipp": (39, 59),
+        "ddn": (89, 97),
+        "desc": "RSF-B — Séjour MCO",
+    },
+    "RSFC": {
+        "length": 280,
+        "ipp": (30, 50),
+        "ddn": (50, 58),
+        "desc": "RSF-C — Honoraires MCO",
+    },
+    "FICHCOMP": {
+        "length": 105,
+        "ipp": (11, 31),
+        "ddn": (31, 39),
+        "desc": "FichComp (DMI, isolement…)",
+    },
+}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# REGEX PRÉ-COMPILÉS — Performance (compile une seule fois au chargement)
+# ══════════════════════════════════════════════════════════════════════════════
+# L'identification du format est critique : elle se base sur le NOM du fichier,
+# pas son contenu. Les conventions de nommage ATIH sont flexibles (tirets,
+# underscores, points), d'où des patterns permissifs.
+# L'ORDRE est important : VID-HOSP doit être testé avant RSS pour éviter les
+# faux positifs, et RSFC avant RSFB avant RSFA pour la même raison.
+# ══════════════════════════════════════════════════════════════════════════════
+
+_FORMAT_RULES = [
+    (re.compile(r"vid[\-_.]?hosp|vidhosp|\.vid", re.I), "VID-HOSP"),
+    (re.compile(r"rsf[\-_.]?c|rsfc", re.I), "RSFC"),
+    (re.compile(r"rsf[\-_.]?b|rsfb", re.I), "RSFB"),
+    (re.compile(r"rsf[\-_.]?a|rsfa|rsf[\-_.]?ace", re.I), "RSFA"),
+    (re.compile(r"fichcomp|fic[\-_]?comp|\.com", re.I), "FICHCOMP"),
+    (re.compile(r"rss|rum", re.I), "RSS"),
+    (re.compile(r"rps", re.I), "RPS"),
+    (re.compile(r"raa", re.I), "RAA"),
+]
+
+# Seuil minimum de caractères pour qu'une ligne soit considérée comme valide
+# (les lignes trop courtes sont du padding ou des artefacts d'export)
+_MIN_LINE = 50
+
+
+class DataProcessor:
+    """
+    Moteur ATIH haute performance.
+
+    Responsabilités métier :
+      1. Scan récursif des dossiers pour trouver les fichiers .txt PMSI
+      2. Identification automatique du format ATIH de chaque fichier
+      3. Extraction parallèle des couples (IPP, DDN) ligne par ligne
+      4. Construction du Master Patient Index (MPI) cross-fichiers
+      5. Détection des collisions (un IPP → plusieurs DDN)
+      6. Résolution automatique ou manuelle des conflits
+      7. Export CSV normalisé avec DDN pivot injectée
+      8. Export .txt purifié (sanitized) avec auto-repair
+    """
+
+    # __slots__ pour optimiser la mémoire (pas de __dict__)
+    __slots__ = (
+        "matrix", "mpi", "file_stats", "processed_files",
+        "logs", "_progress_cb"
+    )
+
+    def __init__(self):
+        # On copie la matrice globale pour pouvoir la modifier par instance
+        self.matrix = dict(ATIH_MATRIX)
+        # MPI : { ipp: { "pivot": ddn_or_none, "history": { ddn: [sources] } } }
+        self.mpi: dict = {}
+        # Stats par fichier traité (lignes total/valid/filtered par nom)
+        self.file_stats: dict = {}
+        # Liste des fichiers détectés lors du scan
+        self.processed_files: list = []
+        # Buffer de logs envoyé au frontend (vidé à chaque récupération)
+        self.logs: list = []
+        # Callback optionnel pour notifier la progression
+        self._progress_cb: Optional[Callable] = None
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # LOGGING — Messages horodatés envoyés au frontend via l'API
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def _log(self, msg: str, level: str = "INFO"):
+        """Ajoute un message horodaté au buffer de logs."""
+        self.logs.append({
+            "ts": datetime.now().strftime("%H:%M:%S.%f")[:-3],
+            "level": level,
+            "msg": msg,
+        })
+
+    def get_logs(self) -> list:
+        """Retourne et vide le buffer de logs (pattern drain)."""
+        out = self.logs[:]
+        self.logs.clear()
+        return out
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # IDENTIFICATION DU FORMAT — Basée sur le nom de fichier (pas le contenu)
+    # ──────────────────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def identify_format(filename: str) -> Optional[str]:
+        """
+        Identifie le format ATIH d'un fichier à partir de son nom.
+
+        Pourquoi le nom et pas le contenu ? Parce que tous les formats ATIH
+        sont des fichiers texte à largeur fixe sans header. Le seul moyen
+        fiable de distinguer un RSS d'un RPS est le nom du fichier, qui
+        suit les conventions de l'ATIH.
+        """
+        base = os.path.basename(filename).lower()
+        for rx, fmt in _FORMAT_RULES:
+            if rx.search(base):
+                return fmt
+        return None
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # VALIDATION DE LIGNE — Filtre les lignes de padding et artefacts
+    # ──────────────────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _is_line_valid(line: str) -> bool:
+        """
+        Vérifie qu'une ligne est exploitable.
+
+        On rejette les lignes trop courtes (< 50 chars) et celles qui ne
+        contiennent que des zéros/espaces (padding ATIH en fin de fichier).
+        """
+        if len(line) < _MIN_LINE:
+            return False
+        if not line.strip("0 "):
+            return False
+        return True
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # SCAN — Découverte récursive des fichiers .txt PMSI
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def scan_directory(self, folder: str) -> list:
+        """
+        Scanne un dossier de manière récursive pour trouver tous les .txt.
+        Chaque fichier est identifié (format ATIH) et pesé (taille en KB).
+        """
+        if not os.path.isdir(folder):
+            self._log(f"Dossier introuvable : {folder}", "ERROR")
+            return []
+
+        # Scan des fichiers .txt ET .csv (support multi-format demandé)
+        txt_files = glob.glob(os.path.join(folder, "**", "*.txt"), recursive=True)
+        csv_files = glob.glob(os.path.join(folder, "**", "*.csv"), recursive=True)
+        files = sorted(set(txt_files + csv_files))
+        self._log(f"📂 Scan : {folder} → {len(files)} fichier(s) (.txt + .csv)")
+
+        out = []
+        for fp in files:
+            fmt = self.identify_format(fp)
+            try:
+                sz = os.path.getsize(fp) / 1024
+            except OSError:
+                sz = 0
+            out.append({
+                "path": fp,
+                "name": os.path.basename(fp),
+                "format": fmt or "INCONNU",
+                "size_kb": round(sz, 1),
+                "dir": os.path.dirname(fp),
+            })
+        return out
+
+    def scan_multiple_directories(self, folders: list) -> list:
+        """
+        Scanne plusieurs dossiers et déduplique les fichiers trouvés.
+        On utilise un set de chemins pour garantir l'unicité.
+        """
+        all_files, seen = [], set()
+        for folder in folders:
+            for f in self.scan_directory(folder):
+                if f["path"] not in seen:
+                    seen.add(f["path"])
+                    all_files.append(f)
+        self._log(f"📊 Total unique : {len(all_files)} fichier(s)")
+        self.processed_files = all_files
+        return all_files
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROCESSING — Extraction parallèle des couples (IPP, DDN)
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def _process_single_file(self, finfo: dict) -> dict:
+        """
+        Traite un seul fichier ATIH. Appelé en parallèle par le pool.
+
+        Pour chaque ligne valide du fichier :
+          1. Auto-repair : tronque ou padde la ligne à la longueur standard
+          2. Extraction positionnelle de l'IPP et de la DDN
+          3. Stockage dans le MPI local (fusionné plus tard avec le MPI global)
+        """
+        fp = finfo["path"]
+        fmt = finfo["format"]
+
+        # On ignore les fichiers de format inconnu (pas dans la matrice ATIH)
+        if fmt == "INCONNU" or fmt not in self.matrix:
+            return {"skip": True, "name": finfo["name"]}
+
+        spec = self.matrix[fmt]
+        i0, i1 = spec["ipp"]   # Bornes de l'IPP (start, end)
+        d0, d1 = spec["ddn"]   # Bornes de la DDN (start, end)
+        exp_len = spec["length"]  # Longueur attendue de la ligne
+        max_pos = max(i1, d1)    # Position max nécessaire dans la ligne
+
+        local_mpi: dict = {}
+        stats = {"lines_total": 0, "lines_valid": 0, "lines_filtered": 0}
+
+        try:
+            # Lecture en latin-1 : encodage standard des fichiers ATIH
+            # (les caractères > 127 sont rares mais possibles dans les noms)
+            with open(fp, "r", encoding="latin-1", errors="replace") as f:
+                for raw in f:
+                    stats["lines_total"] += 1
+                    line = raw.rstrip("\r\n")
+
+                    # Filtrage des lignes invalides (padding, trop courtes)
+                    if not self._is_line_valid(line):
+                        stats["lines_filtered"] += 1
+                        continue
+
+                    # Auto-repair : normalisation de la longueur de ligne
+                    # Les fichiers ATIH sont à largeur fixe, mais certains
+                    # exports ajoutent ou suppriment des caractères en fin
+                    ll = len(line)
+                    if ll > exp_len:
+                        line = line[:exp_len]
+                    elif ll < exp_len:
+                        line = line.ljust(exp_len)
+
+                    # Vérification que la ligne est assez longue pour extraire
+                    if len(line) < max_pos:
+                        stats["lines_filtered"] += 1
+                        continue
+
+                    # Extraction positionnelle de l'IPP et DDN
+                    ipp = line[i0:i1].strip()
+                    ddn = line[d0:d1].strip()
+
+                    # Rejet des IPP/DDN vides ou contenant uniquement des zéros
+                    if not ipp or not ipp.strip("0 "):
+                        stats["lines_filtered"] += 1
+                        continue
+                    if not ddn or not ddn.strip("0 "):
+                        stats["lines_filtered"] += 1
+                        continue
+
+                    # Construction du MPI local (par fichier)
+                    if ipp not in local_mpi:
+                        local_mpi[ipp] = {}
+                    if ddn not in local_mpi[ipp]:
+                        local_mpi[ipp][ddn] = []
+                    src = finfo["name"]
+                    if src not in local_mpi[ipp][ddn]:
+                        local_mpi[ipp][ddn].append(src)
+
+                    stats["lines_valid"] += 1
+
+        except (IOError, OSError) as e:
+            return {"skip": True, "name": finfo["name"], "error": str(e)}
+
+        return {
+            "skip": False,
+            "name": finfo["name"],
+            "format": fmt,
+            "local_mpi": local_mpi,
+            "stats": stats,
+        }
+
+    def process_files(self, file_list: list) -> dict:
+        """
+        Traite tous les fichiers en parallèle et fusionne les MPI locaux.
+
+        Workflow :
+          1. Chaque fichier est traité en parallèle (ThreadPoolExecutor)
+          2. Les MPI locaux sont fusionnés dans le MPI global
+          3. On compte les IPP uniques et les collisions
+        """
+        self.mpi = {}
+        totals = {
+            "files_processed": 0, "files_skipped": 0,
+            "lines_total": 0, "lines_valid": 0, "lines_filtered": 0,
+            "ipp_unique": 0, "collisions": 0
+        }
+
+        # Le nombre de workers est adapté à la taille du batch (max 8)
+        workers = min(8, max(1, len(file_list)))
+        results = []
+
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {
+                pool.submit(self._process_single_file, f): f
+                for f in file_list
+            }
+            for future in as_completed(futures):
+                results.append(future.result())
+
+        # Fusion des MPI locaux dans le MPI global
+        for res in results:
+            if res.get("skip"):
+                totals["files_skipped"] += 1
+                if res.get("error"):
+                    self._log(
+                        f"❌ Erreur : {res['name']} — {res['error']}", "ERROR"
+                    )
+                continue
+
+            totals["files_processed"] += 1
+            s = res["stats"]
+            totals["lines_total"] += s["lines_total"]
+            totals["lines_valid"] += s["lines_valid"]
+            totals["lines_filtered"] += s["lines_filtered"]
+
+            self.file_stats[res["name"]] = {
+                "format": res["format"], **s
+            }
+
+            # Merge du MPI local dans le MPI global
+            # Si un IPP est déjà connu, on ajoute les nouvelles DDN trouvées
+            for ipp, ddns in res["local_mpi"].items():
+                if ipp not in self.mpi:
+                    self.mpi[ipp] = {"pivot": None, "history": {}}
+                for ddn, sources in ddns.items():
+                    if ddn not in self.mpi[ipp]["history"]:
+                        self.mpi[ipp]["history"][ddn] = []
+                    for src in sources:
+                        if src not in self.mpi[ipp]["history"][ddn]:
+                            self.mpi[ipp]["history"][ddn].append(src)
+
+        totals["ipp_unique"] = len(self.mpi)
+        totals["collisions"] = sum(
+            1 for d in self.mpi.values() if len(d["history"]) > 1
+        )
+
+        self._log(
+            f"✅ {totals['files_processed']} fichiers traités en parallèle · "
+            f"{totals['lines_valid']:,} lignes · "
+            f"{totals['ipp_unique']:,} IPP · "
+            f"{totals['collisions']} collisions"
+        )
+        return totals
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # MPI — Master Patient Index (gestion des collisions d'identité)
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def get_collisions(self) -> list:
+        """
+        Retourne la liste des IPP ayant plusieurs DDN (collisions).
+
+        Chaque collision contient :
+          - ipp : l'identifiant patient
+          - pivot : la DDN de référence choisie (ou None)
+          - options : les DDN candidates triées par fréquence décroissante
+          - total_sources : nombre total de fichiers impliqués
+        """
+        cols = []
+        for ipp, data in self.mpi.items():
+            if len(data["history"]) > 1:
+                opts = sorted(
+                    [{"ddn": d, "count": len(s), "sources": s[:5]}
+                     for d, s in data["history"].items()],
+                    key=lambda x: x["count"], reverse=True,
+                )
+                cols.append({
+                    "ipp": ipp,
+                    "pivot": data["pivot"],
+                    "options": opts,
+                    "total_sources": sum(o["count"] for o in opts),
+                })
+        # Tri par nombre de sources décroissant (les plus critiques en premier)
+        cols.sort(key=lambda x: x["total_sources"], reverse=True)
+        return cols
+
+    def set_pivot(self, ipp: str, ddn: str) -> bool:
+        """
+        Définit manuellement la DDN pivot (référence) pour un IPP donné.
+
+        La DDN pivot sera injectée dans les exports CSV et .txt purifiés,
+        remplaçant toutes les autres DDN trouvées pour cet IPP.
+        """
+        if ipp in self.mpi:
+            self.mpi[ipp]["pivot"] = ddn
+            self._log(f"🎯 Pivot défini : {ipp} → {ddn}")
+            return True
+        return False
+
+    def auto_resolve_all(self) -> int:
+        """
+        Résolution automatique de toutes les collisions non résolues.
+
+        Stratégie bayésienne simple : pour chaque IPP en conflit, on choisit
+        la DDN qui apparaît dans le plus grand nombre de fichiers sources.
+        En cas d'égalité, on prend la DDN la plus récente (tri lexicographique
+        AAAAMMJJ, donc la plus grande = la plus récente).
+        """
+        n = 0
+        for ipp, data in self.mpi.items():
+            if len(data["history"]) > 1 and data["pivot"] is None:
+                best = max(
+                    data["history"].keys(),
+                    key=lambda d: (len(data["history"][d]), d)
+                )
+                data["pivot"] = best
+                n += 1
+        self._log(f"🔮 Auto-résolution : {n} pivots définis")
+        return n
+
+    def get_mpi_stats(self) -> dict:
+        """Retourne les statistiques globales du MPI."""
+        total = len(self.mpi)
+        collisions = sum(
+            1 for d in self.mpi.values() if len(d["history"]) > 1
+        )
+        resolved = sum(
+            1 for d in self.mpi.values()
+            if len(d["history"]) > 1 and d["pivot"] is not None
+        )
+        return {
+            "total_ipp": total,
+            "collisions": collisions,
+            "resolved": resolved,
+            "pending": collisions - resolved,
+        }
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # INSPECTION — Analyse ligne par ligne pour le terminal UI
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def inspect_file(self, filepath: str) -> dict:
+        """
+        Analyse un fichier ligne par ligne pour l'Inspector Terminal du frontend.
+
+        Chaque ligne est classée :
+          - OK : ligne valide, IPP/DDN extraits avec succès
+          - COLLISION : IPP connu avec plusieurs DDN dans le MPI
+          - FILTERED : ligne rejetée (trop courte, padding, etc.)
+          - ERROR : ligne hors limites (ne peut pas être parsée)
+
+        Limité à 3000 lignes pour ne pas saturer le frontend.
+        """
+        fmt_key = self.identify_format(filepath)
+        if not fmt_key or fmt_key not in self.matrix:
+            return {"error": f"Format inconnu : {os.path.basename(filepath)}"}
+
+        spec = self.matrix[fmt_key]
+        i0, i1 = spec["ipp"]
+        d0, d1 = spec["ddn"]
+        exp_len = spec["length"]
+
+        lines = []
+        errors = 0
+
+        try:
+            with open(filepath, "r", encoding="latin-1", errors="replace") as f:
+                for num, raw in enumerate(f, 1):
+                    line = raw.rstrip("\r\n")
+                    entry = {
+                        "num": num,
+                        "raw": line[:120],  # Troncature pour le frontend
+                        "status": "OK",
+                        "ipp": "",
+                        "ddn": "",
+                        "repair": None,
+                    }
+
+                    if len(line) < _MIN_LINE:
+                        entry["status"] = "FILTERED"
+                        entry["repair"] = f"< {_MIN_LINE} cars"
+                        errors += 1
+                    elif not line.strip("0 "):
+                        entry["status"] = "FILTERED"
+                        entry["repair"] = "Padding (zéros)"
+                        errors += 1
+                    else:
+                        # Auto-repair : ajustement de la longueur
+                        if len(line) > exp_len:
+                            entry["repair"] = f"Tronquée {len(line)}→{exp_len}"
+                            line = line[:exp_len]
+                        elif len(line) < exp_len:
+                            entry["repair"] = f"Paddée {len(line)}→{exp_len}"
+                            line = line.ljust(exp_len)
+
+                        if len(line) >= max(i1, d1):
+                            ipp = line[i0:i1].strip()
+                            ddn = line[d0:d1].strip()
+                            entry["ipp"] = ipp
+                            entry["ddn"] = ddn
+                            # Marquage des collisions connues dans le MPI
+                            if ipp in self.mpi and len(self.mpi[ipp]["history"]) > 1:
+                                entry["status"] = "COLLISION"
+                                errors += 1
+                        else:
+                            entry["status"] = "ERROR"
+                            entry["repair"] = "Hors limites"
+                            errors += 1
+
+                    lines.append(entry)
+                    # Protection mémoire : on limite à 3000 lignes
+                    if num >= 3000:
+                        break
+        except OSError as e:
+            return {"error": str(e)}
+
+        return {
+            "filename": os.path.basename(filepath),
+            "format": fmt_key,
+            "total_lines": len(lines),
+            "errors": errors,
+            "lines": lines,
+        }
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # EXPORT CSV PILOT — Données normalisées avec DDN pivot injectée
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def export_csv(self, file_list: list, output_dir: str) -> dict:
+        """
+        Génère un fichier CSV par fichier ATIH traité.
+
+        Structure du CSV : IPP;DDN;FORMAT;NOM_FICHIER;LIGNE_BRUTE
+        La DDN pivot est injectée : si un IPP a une collision résolue,
+        la DDN originale est remplacée par la DDN pivot dans l'export.
+        """
+        os.makedirs(output_dir, exist_ok=True)
+        generated = []
+        stats = {
+            "csv_count": 0, "lines_exported": 0,
+            "ddn_corrected": 0, "files_skipped": 0
+        }
+
+        for finfo in file_list:
+            fmt = finfo["format"]
+            if fmt == "INCONNU" or fmt not in self.matrix:
+                stats["files_skipped"] += 1
+                continue
+
+            spec = self.matrix[fmt]
+            i0, i1 = spec["ipp"]
+            d0, d1 = spec["ddn"]
+            exp_len = spec["length"]
+            max_pos = max(i1, d1)
+            src = finfo["name"]
+            name, ext = os.path.splitext(src)
+            csv_path = os.path.join(output_dir, f"{name}_PILOT{ext}")
+
+            try:
+                with open(finfo["path"], "r", encoding="latin-1",
+                          errors="replace") as fi, \
+                     open(csv_path, "w", encoding="utf-8", newline="") as fo:
+
+                    fo.write("IPP;DDN;FORMAT;NOM_FICHIER;LIGNE_BRUTE\n")
+
+                    for raw in fi:
+                        line = raw.rstrip("\r\n")
+                        if not self._is_line_valid(line):
+                            continue
+                        if len(line) > exp_len:
+                            line = line[:exp_len]
+                        elif len(line) < exp_len:
+                            line = line.ljust(exp_len)
+                        if len(line) < max_pos:
+                            continue
+
+                        ipp = line[i0:i1].strip()
+                        ddn_out = line[d0:d1].strip()
+
+                        # Injection de la DDN pivot si disponible
+                        if ipp in self.mpi and self.mpi[ipp]["pivot"]:
+                            piv = self.mpi[ipp]["pivot"]
+                            if line[d0:d1].strip() != piv:
+                                ddn_len = d1 - d0
+                                line = (
+                                    line[:d0]
+                                    + piv.ljust(ddn_len)
+                                    + line[d1:]
+                                )
+                                ddn_out = piv
+                                stats["ddn_corrected"] += 1
+
+                        esc = line.replace('"', '""')
+                        fo.write(f'{ipp};{ddn_out};{fmt};{src};"{esc}"\n')
+                        stats["lines_exported"] += 1
+
+                generated.append({
+                    "name": os.path.basename(csv_path),
+                    "path": csv_path,
+                    "format": fmt,
+                })
+                stats["csv_count"] += 1
+            except OSError as e:
+                self._log(f"❌ Erreur export : {src} — {e}", "ERROR")
+                stats["files_skipped"] += 1
+
+        self._log(
+            f"📦 Export : {stats['csv_count']} CSV · "
+            f"{stats['lines_exported']:,} lignes · "
+            f"{stats['ddn_corrected']} DDN corrigées"
+        )
+        return {"stats": stats, "files": generated, "output_dir": output_dir}
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # EXPORT .TXT PURIFIÉ (sanitized) — Fichier nettoyé avec pivot injecté
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def export_sanitized_txt(self, filepath: str, output_dir: str) -> dict:
+        """
+        Réécrit un fichier .txt purifié :
+          - Lignes invalides supprimées
+          - Auto-repair appliqué (troncature/padding)
+          - DDN pivot injectée (remplacement in-place)
+
+        Le fichier résultant est un fichier ATIH conforme, prêt à être
+        réinjecté dans la chaîne e-PMSI ou ePMSI-Pilot.
+        """
+        fmt = self.identify_format(filepath)
+        if not fmt or fmt not in self.matrix:
+            return {"error": "Format inconnu"}
+
+        spec = self.matrix[fmt]
+        i0, i1 = spec["ipp"]
+        d0, d1 = spec["ddn"]
+        exp_len = spec["length"]
+        max_pos = max(i1, d1)
+
+        os.makedirs(output_dir, exist_ok=True)
+        base = os.path.basename(filepath)
+        name, ext = os.path.splitext(base)
+        out_name = f"{name}_SANITIZED{ext}"
+        out_path = os.path.join(output_dir, out_name)
+
+        stats = {"in": 0, "out": 0, "repaired": 0, "pivoted": 0}
+
+        try:
+            with open(filepath, "r", encoding="latin-1", errors="replace") as fi, \
+                 open(out_path, "w", encoding="latin-1", newline="") as fo:
+                for raw in fi:
+                    stats["in"] += 1
+                    line = raw.rstrip("\r\n")
+
+                    if not self._is_line_valid(line):
+                        continue
+
+                    if len(line) > exp_len:
+                        line = line[:exp_len]
+                        stats["repaired"] += 1
+                    elif len(line) < exp_len:
+                        line = line.ljust(exp_len)
+                        stats["repaired"] += 1
+
+                    if len(line) < max_pos:
+                        continue
+
+                    # Injection de la DDN pivot si disponible
+                    ipp = line[i0:i1].strip()
+                    if ipp in self.mpi and self.mpi[ipp]["pivot"]:
+                        piv = self.mpi[ipp]["pivot"]
+                        if line[d0:d1].strip() != piv:
+                            line = (
+                                line[:d0]
+                                + piv.ljust(d1 - d0)
+                                + line[d1:]
+                            )
+                            stats["pivoted"] += 1
+
+                    fo.write(line + "\n")
+                    stats["out"] += 1
+        except OSError as e:
+            return {"error": str(e)}
+
+        self._log(
+            f"🧹 Sanitized : {base} → {stats['out']}/{stats['in']} lignes · "
+            f"{stats['pivoted']} pivots injectés"
+        )
+        return {"path": out_path, "name": out_name, "stats": stats}
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # STATISTIQUES PAR FORMAT — Pour le dashboard Chart.js
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def get_format_breakdown(self) -> list:
+        """
+        Comptage des fichiers par format ATIH.
+        Retourne une liste triée par count décroissant pour Chart.js.
+        """
+        counts = defaultdict(int)
+        for f in self.processed_files:
+            counts[f["format"]] += 1
+        return [
+            {"format": k, "count": v}
+            for k, v in sorted(counts.items(), key=lambda x: -x[1])
+        ]

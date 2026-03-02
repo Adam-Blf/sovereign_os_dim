@@ -1,0 +1,15 @@
+# ══════════════════════════════════════════════════════════════════════════════
+#  SOVEREIGN OS DIM — Dependencies
+# ══════════════════════════════════════════════════════════════════════════════
+#  Generated: 2026-03-02
+#  Project  : Sovereign OS v17.0 — Station DIM GHT Sud Paris
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Core — Fenêtre native desktop avec frontend web
+pywebview>=5.3.2
+
+# Build — Compilation en exécutable Windows (dev dependency)
+pyinstaller>=6.11.1
+
+# HTTP — Pour d'éventuelles requêtes API externes
+requests>=2.32.3
