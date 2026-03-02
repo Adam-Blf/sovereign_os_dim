@@ -37,62 +37,172 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# MATRICE ATIH — 8 formats normalisés, positions 0-indexées
+# MATRICE ATIH — 15 formats normalisés, positions 0-indexées
 # ══════════════════════════════════════════════════════════════════════════════
 # Chaque format ATIH a une longueur fixe et des positions dédiées pour l'IPP
 # (Identifiant Permanent du Patient) et la DDN (Date De Naissance).
 # Cette matrice est la source de vérité absolue pour le parsing positionnel.
-# Ref: Documentation technique ATIH — Formats de recueil 2018–2025
+# Ref: Documentation technique ATIH — Formats de recueil 2018–2026
+#
+# IMPORTANT : On couvre TOUS les formats nécessaires à un DIM en psychiatrie :
+#   - PSY natif : RPS (P05), RAA (P06), RPSA, R3A, FICHSUP-PSY, EDGAR
+#   - Transversal : VID-HOSP (V015/V016), ANO-HOSP, FICHCOMP, FicUM-PSY
+#   - MCO (interop) : RSS/RUM, RSFA/B/C
+#   - RSF-ACE PSY : activité externe psychiatrique
 # ══════════════════════════════════════════════════════════════════════════════
 
 ATIH_MATRIX = {
+    # ─── FORMATS PSY NATIFS ─────────────────────────────────────────────────
+    # Les formats RPS et RAA sont les piliers du recueil PSY depuis 2007.
+    # Le format P05 (RPS) est le format de base pour l'hospitalisation PSY.
+    # Le format P06 (RAA) couvre l'ambulatoire (DAF uniquement).
+
     "RPS": {
         "length": 154,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "Résumé Par Séquence (PSY)",
+        "desc": "Résumé Par Séquence — Hospitalisation PSY (Format P05)",
+        "field": "PSY",
     },
     "RAA": {
         "length": 96,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "Recueil Activité Ambulatoire (PSY)",
+        "desc": "Recueil Activité Ambulatoire — PSY (Format P06)",
+        "field": "PSY",
     },
+
+    # ─── FORMATS PSY ANONYMISÉS ─────────────────────────────────────────────
+    # Les RPSA et R3A sont les versions anonymisées transmises aux ARS.
+    # Positions IPP remplacées par le N° anonyme, DDN conservée.
+    # Le RPSA reprend le RPS avec anonymisation du N° de séjour et de l'IPP.
+    # Le R3A reprend le RAA avec anonymisation similaire.
+
+    "RPSA": {
+        "length": 154,
+        "ipp": (21, 41),
+        "ddn": (41, 49),
+        "desc": "Résumé Par Séquence Anonyme — PSY (transmission ARS)",
+        "field": "PSY",
+    },
+    "R3A": {
+        "length": 96,
+        "ipp": (21, 41),
+        "ddn": (41, 49),
+        "desc": "Résumé Activité Ambulatoire Anonyme — PSY (transmission ARS)",
+        "field": "PSY",
+    },
+
+    # ─── FICHIERS SUPPLÉMENTAIRES PSY ───────────────────────────────────────
+    # FICHSUP-PSY : données complémentaires aux RPS (mesures d'isolement,
+    # contention, fugues, permissions...). Format variable selon l'année.
+    # Les positions IPP/DDN reprennent le socle RPS par convention.
+
+    "FICHSUP-PSY": {
+        "length": 120,
+        "ipp": (21, 41),
+        "ddn": (41, 49),
+        "desc": "Fichier supplémentaire PSY (isolement, contention, fugue)",
+        "field": "PSY",
+    },
+
+    # ─── EDGAR — Cotation des actes PSY ambulatoires ────────────────────────
+    # EDGAR : Entretien, Démarche, Groupe, Accompagnement, Réunion
+    # Grille de cotation des actes ambulatoires en psychiatrie.
+    # Utilisé en complément du RAA pour les établissements DAF.
+
+    "EDGAR": {
+        "length": 96,
+        "ipp": (21, 41),
+        "ddn": (41, 49),
+        "desc": "EDGAR — Cotation actes ambulatoires PSY (Entretien, Groupe...)",
+        "field": "PSY",
+    },
+
+    # ─── FicUM-PSY — Fichier des Unités Médicales ───────────────────────────
+    # Décrit les unités médicales PSY (secteurs, intersecteurs, dispositifs).
+    # Pas d'IPP/DDN direct mais des méta-données de structure.
+    # On l'inclut quand même pour la complétude du scan.
+
+    "FICUM-PSY": {
+        "length": 80,
+        "ipp": (18, 38),
+        "ddn": (38, 46),
+        "desc": "FicUM-PSY — Description des unités médicales psychiatriques",
+        "field": "PSY",
+    },
+
+    # ─── RSF-ACE PSY — Activité externe PSY (OQN) ──────────────────────────
+    # Pour les établissements sous OQN (Objectif Quantifié National),
+    # un RSF complète le RPS pour la facturation de l'activité externe.
+
+    "RSF-ACE-PSY": {
+        "length": 310,
+        "ipp": (221, 241),
+        "ddn": (41, 49),
+        "desc": "RSF-ACE PSY — Activité externe psychiatrique (OQN)",
+        "field": "PSY",
+    },
+
+    # ─── FORMATS TRANSVERSAUX (MCO + PSY) ───────────────────────────────────
+    # Ces formats sont communs à tous les champs d'activité.
+    # VID-HOSP : chaînage anonyme (obligatoire depuis 2009)
+    # ANO-HOSP : anonymisation des données patient
+    # FICHCOMP : données complémentaires (DMI, isolement médical...)
+
     "VID-HOSP": {
         "length": 518,
         "ipp": (265, 285),
         "ddn": (19, 27),
-        "desc": "Vidhosp — Chaînage anonyme",
+        "desc": "Vidhosp V015/V016 — Chaînage anonyme (transversal)",
+        "field": "TRANSVERSAL",
     },
+    "ANO-HOSP": {
+        "length": 206,
+        "ipp": (18, 38),
+        "ddn": (38, 46),
+        "desc": "ANO-HOSP — Anonymisation patient (couverture AMO)",
+        "field": "TRANSVERSAL",
+    },
+    "FICHCOMP": {
+        "length": 105,
+        "ipp": (11, 31),
+        "ddn": (31, 39),
+        "desc": "FichComp (DMI, isolement médical, prothèses…)",
+        "field": "TRANSVERSAL",
+    },
+
+    # ─── FORMATS MCO (interopérabilité PSY–MCO) ─────────────────────────────
+    # Les DIM PSY traitent parfois des fichiers MCO pour les établissements
+    # multi-activités ou les échanges inter-établissements.
+
     "RSS": {
         "length": 177,
         "ipp": (12, 32),
         "ddn": (62, 70),
         "desc": "RSS/RUM — MCO",
+        "field": "MCO",
     },
     "RSFA": {
         "length": 310,
         "ipp": (221, 241),
         "ddn": (41, 49),
         "desc": "RSF-A — Activité externe MCO",
+        "field": "MCO",
     },
     "RSFB": {
         "length": 350,
         "ipp": (39, 59),
         "ddn": (89, 97),
         "desc": "RSF-B — Séjour MCO",
+        "field": "MCO",
     },
     "RSFC": {
         "length": 280,
         "ipp": (30, 50),
         "ddn": (50, 58),
         "desc": "RSF-C — Honoraires MCO",
-    },
-    "FICHCOMP": {
-        "length": 105,
-        "ipp": (11, 31),
-        "ddn": (31, 39),
-        "desc": "FichComp (DMI, isolement…)",
+        "field": "MCO",
     },
 }
 
@@ -108,12 +218,31 @@ ATIH_MATRIX = {
 # ══════════════════════════════════════════════════════════════════════════════
 
 _FORMAT_RULES = [
+    # Ordre critique : les formats les plus spécifiques d'abord
+    # pour éviter les faux positifs (ex: "R3A" avant "RAA")
+
+    # PSY spécifiques — priorité haute
+    (re.compile(r"rpsa", re.I), "RPSA"),
+    (re.compile(r"r3a", re.I), "R3A"),
+    (re.compile(r"fichsup[\-_.]?psy|fichsup|fic[\-_]?sup", re.I), "FICHSUP-PSY"),
+    (re.compile(r"edgar", re.I), "EDGAR"),
+    (re.compile(r"ficum[\-_.]?psy|ficum", re.I), "FICUM-PSY"),
+    (re.compile(r"rsf[\-_.]?ace[\-_.]?psy", re.I), "RSF-ACE-PSY"),
+
+    # Transversaux
     (re.compile(r"vid[\-_.]?hosp|vidhosp|\.vid", re.I), "VID-HOSP"),
+    (re.compile(r"ano[\-_.]?hosp|anohosp", re.I), "ANO-HOSP"),
+
+    # MCO RSF (ordre C > B > A pour éviter les collisions)
     (re.compile(r"rsf[\-_.]?c|rsfc", re.I), "RSFC"),
     (re.compile(r"rsf[\-_.]?b|rsfb", re.I), "RSFB"),
     (re.compile(r"rsf[\-_.]?a|rsfa|rsf[\-_.]?ace", re.I), "RSFA"),
+
+    # MCO + Transversal
     (re.compile(r"fichcomp|fic[\-_]?comp|\.com", re.I), "FICHCOMP"),
     (re.compile(r"rss|rum", re.I), "RSS"),
+
+    # PSY de base (en dernier, car RPS et RAA sont des sous-chaînes courantes)
     (re.compile(r"rps", re.I), "RPS"),
     (re.compile(r"raa", re.I), "RAA"),
 ]
