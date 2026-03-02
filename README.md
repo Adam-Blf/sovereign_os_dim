@@ -11,7 +11,7 @@
 ### Fonctionnalités principales
 
 - ✅ **Scan multi-dossiers** — Détection automatique des fichiers `.txt` et `.csv` PMSI
-- ✅ **Identification intelligente** — 8 formats ATIH reconnus (RPS, RAA, VID-HOSP, RSS, RSFA/B/C, FICHCOMP)
+- ✅ **23 formats ATIH** — Couverture complète des 4 champs PMSI (PSY, MCO, SSR/SMR, HAD)
 - ✅ **Traitement parallèle** — ThreadPoolExecutor multi-cœur pour le parsing
 - ✅ **Master Patient Index (MPI)** — Croisement automatique des couples (IPP, DDN)
 - ✅ **Identitovigilance** — Détection et résolution des collisions d'identité
@@ -21,7 +21,18 @@
 - ✅ **Import CSV** — Lecture et affichage de fichiers CSV externes
 - ✅ **Inspector Terminal** — Analyse ligne par ligne avec auto-repair
 - ✅ **Dark Mode** — Thème sombre complet
-- ✅ **Raccourcis clavier** — Navigation rapide (Ctrl+1/2/3/4/5)
+- ✅ **Raccourcis clavier** — Navigation rapide (Ctrl+1→6)
+- ✅ **EXE Portable** — Standalone 11 MB, aucune installation requise
+
+### Formats ATIH couverts (2010–2026)
+
+| Champ | Formats | Depuis |
+|-------|---------|--------|
+| **PSY** | RPS, RAA, RPSA, R3A, FICHSUP-PSY, EDGAR, FICUM-PSY, RSF-ACE-PSY | 2007 |
+| **MCO** | RSS/RUM, RSFA, RSFB, RSFC | 1991 |
+| **SSR/SMR** | RHS, SSRHA, RAPSS, FICHCOMP-SMR | 2003 |
+| **HAD** | RPSS, RAPSS-HAD, FICHCOMP-HAD, SSRHA-HAD | 2005 |
+| **Transversal** | VID-HOSP, ANO-HOSP, FICHCOMP | 2009 |
 
 ## Installation
 
