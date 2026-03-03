@@ -3,6 +3,7 @@
 ![Status](https://img.shields.io/badge/status-production-green)
 ![Python](https://img.shields.io/badge/python-3.12+-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
+![Tests](https://img.shields.io/badge/tests-147%20passed-brightgreen)
 
 ## Description
 
@@ -12,6 +13,8 @@
 
 - ✅ **Scan multi-dossiers** — Détection automatique des fichiers `.txt` et `.csv` PMSI
 - ✅ **23 formats ATIH** — Couverture complète des 4 champs PMSI (PSY, MCO, SSR/SMR, HAD)
+- ✅ **Variantes de format 2021** — Auto-détection des anciens formats (Fondation Vallée)
+- ✅ **Normalisation IPP** — Cohérence des numéros de dossier entre années (BigQuery compat)
 - ✅ **Traitement parallèle** — ThreadPoolExecutor multi-cœur pour le parsing
 - ✅ **Master Patient Index (MPI)** — Croisement automatique des couples (IPP, DDN)
 - ✅ **Identitovigilance** — Détection et résolution des collisions d'identité
@@ -63,6 +66,26 @@ python main.py
 3. **Identitovigilance** — Résolvez les collisions IPP/DDN (manuel ou auto)
 4. **Export PMSI-Pilot** — Générez les CSV normalisés avec DDN pivot injectée
 
+## Tests
+
+```bash
+# Lancer tous les tests
+python -m pytest tests/ -v
+
+# Avec couverture de code
+python -m pytest tests/ -v --cov=backend --cov-report=term-missing
+```
+
+**147 tests** couvrant :
+
+- Identification des 23 formats ATIH (PSY, MCO, SSR, HAD, transversal)
+- Validation de ligne (padding, artefacts d'export)
+- Normalisation IPP (cohérence BigQuery 2022-2025)
+- Auto-détection variantes de format 2021
+- Collisions MPI et résolution bayésienne
+- Export CSV et .txt purifié
+- Intégrité de la matrice ATIH
+
 ## Architecture
 
 ```
@@ -75,7 +98,10 @@ sovereign_os_dim/
 ├── frontend/
 │   ├── index.html          # Interface principale
 │   ├── css/style.css       # Design system premium
-│   └── js/app.js           # Logique frontend (992 lignes)
+│   └── js/app.js           # Logique frontend
+├── tests/
+│   ├── conftest.py         # Fixtures partagées (10 fixtures)
+│   └── test_data_processor.py  # 147 tests unitaires
 ├── build.bat               # Script de compilation PyInstaller
 ├── requirements.txt        # Dépendances Python
 └── README.md               # Ce fichier
@@ -83,8 +109,9 @@ sovereign_os_dim/
 
 ## Tech Stack
 
-- **Backend** : Python 3.12+, pywebview 5.3+
+- **Backend** : Python 3.12+, pywebview 5.3+, pythonnet 3.0+
 - **Frontend** : HTML5, Tailwind CSS (CDN), Lucide Icons, Chart.js, Anime.js
+- **Tests** : pytest 9.0+, pytest-cov
 - **Build** : PyInstaller 6.11+
 - **Fonts** : Plus Jakarta Sans, JetBrains Mono
 
@@ -111,6 +138,16 @@ build.bat
 **Adam Beloucif** — Station DIM, GHT Sud Paris
 
 ## Changelog
+
+### v17.1 — 2026-03-03
+
+- ✅ Fix erreur `WebViewException` (ajout `pythonnet` dans les dépendances)
+- ✅ Vérification gracieuse des dépendances au démarrage
+- ✅ Normalisation IPP pour cohérence BigQuery (2021 Fondation Vallée)
+- ✅ Variantes de format 2021 RPS/RAA (auto-détection par longueur de ligne)
+- ✅ Suite de tests unitaires complète (147 tests, 11 classes)
+- ✅ Fixtures de test pour PSY, MCO, variantes 2021, collisions
+- ✅ `_variant_cache` dans `__slots__` pour optimisation mémoire
 
 ### v17.0 — 2026-03-02
 

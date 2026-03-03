@@ -2,8 +2,8 @@
 #  SOVEREIGN OS DIM — Point d'entrée principal
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS v17.0 — Station DIM GHT Sud Paris
-#  Date    : 2026-03-02
+#  Project : Sovereign OS v17.1 — Station DIM GHT Sud Paris
+#  Date    : 2026-03-03
 #
 #  Description:
 #    Lance l'application de bureau Sovereign OS via pywebview.
@@ -21,8 +21,50 @@
 
 import os
 import sys
-import webview
-from backend.api import Api
+
+
+def _check_dependencies():
+    """
+    Vérifie que toutes les dépendances critiques sont installées.
+
+    Pourquoi ? Sur Windows, pywebview nécessite pythonnet pour créer une
+    fenêtre native via EdgeChromium (.NET). Sans pythonnet, pywebview lance
+    une WebViewException cryptique. On la rend humaine ici.
+    """
+    errors = []
+
+    # pythonnet est obligatoire sur Windows pour le renderer EdgeChromium
+    if sys.platform == "win32":
+        try:
+            import clr  # noqa: F401 — pythonnet expose le module 'clr'
+        except ImportError:
+            errors.append(
+                "pythonnet n'est pas installé.\n"
+                "   → pip install pythonnet>=3.0.3\n"
+                "   → Requis pour pywebview sur Windows (renderer EdgeChromium)"
+            )
+
+    # pywebview est le cœur de l'application
+    try:
+        import webview  # noqa: F401
+    except ImportError:
+        errors.append(
+            "pywebview n'est pas installé.\n"
+            "   → pip install pywebview>=5.3.2"
+        )
+
+    if errors:
+        print("╔══════════════════════════════════════════════════════════╗")
+        print("║   ❌ DÉPENDANCES MANQUANTES — Sovereign OS DIM          ║")
+        print("╚══════════════════════════════════════════════════════════╝")
+        print()
+        for e in errors:
+            print(f"  • {e}")
+        print()
+        print("  💡 Installez toutes les dépendances avec :")
+        print("     pip install -r requirements.txt")
+        print()
+        sys.exit(1)
 
 
 def get_frontend_path():
@@ -51,6 +93,13 @@ def main():
       - L'API Python exposée au JavaScript via js_api
       - Une taille de fenêtre optimisée pour les écrans DIM (1440x900)
     """
+    # Vérification des dépendances avant tout import lourd
+    _check_dependencies()
+
+    # Imports après vérification (pour éviter des crashes non-lisibles)
+    import webview
+    from backend.api import Api
+
     # Instanciation de l'API backend
     api = Api()
 
@@ -66,7 +115,7 @@ def main():
 
     # Création de la fenêtre native pywebview
     window = webview.create_window(
-        title="Sovereign OS v17.0 | Station DIM - GHT Sud Paris",
+        title="Sovereign OS v17.1 | Station DIM - GHT Sud Paris",
         url=index_html,
         js_api=api,        # Expose toutes les méthodes publiques de Api()
         width=1440,        # Largeur optimale pour les écrans de bureau DIM

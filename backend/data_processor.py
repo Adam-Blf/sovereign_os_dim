@@ -1,9 +1,9 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM — DATA PROCESSOR v3.0
+#  SOVEREIGN OS DIM — DATA PROCESSOR v3.1
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS v17.0 — Station DIM GHT Sud Paris
-#  Date    : 2026-03-02
+#  Project : Sovereign OS v17.1 — Station DIM GHT Sud Paris
+#  Date    : 2026-03-03
 #
 #  Description:
 #    Moteur de traitement des fichiers ATIH (e-PMSI). Ce module est le cœur
@@ -69,6 +69,41 @@ sys.stdout.reconfigure(encoding='utf-8')
 #   2025 : VID-HOSP V015, DRUIDES remplace PIVOINE/VisualQualité (PSY)
 #   2026 : VID-HOSP V016, VID-IPP I00A/I00B (PSY)
 # ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
+# VARIANTES DE FORMAT PAR ANNÉE — Gestion des transitions ATIH
+# ══════════════════════════════════════════════════════════════════════════════
+# En 2021, certains établissements (ex: Fondation Vallée) ont produit des
+# fichiers RPS et RAA avec des longueurs de ligne différentes de la norme
+# actuelle. Cela crée deux formats distincts pour les numéros de dossier.
+# Pour garantir la cohérence avec les données 2022-2025 déjà dans BigQuery,
+# on définit ici les variantes historiques et on auto-détecte le bon format.
+#
+# RÈGLE : les données 2022-2025 utilisent le format standard (ATIH_MATRIX).
+#         les données 2021 peuvent utiliser l'ancien OU le nouveau format.
+#         La détection se fait par analyse de la longueur réelle des lignes.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Variantes de format pour les années de transition (2021)
+# Clé = format standard, Valeur = liste de variantes { length, ipp, ddn }
+# L'auto-détection choisit la variante dont la longueur correspond le mieux
+ATIH_FORMAT_VARIANTS = {
+    "RPS": [
+        # Format P04 (ancien, utilisé par certains établissements en 2021)
+        # Certains fichiers RPS de 2021 ont des lignes de 142 ou 148 chars
+        {"length": 142, "ipp": (21, 41), "ddn": (41, 49),
+         "label": "RPS-P04-142 (ancien 2021)"},
+        {"length": 148, "ipp": (21, 41), "ddn": (41, 49),
+         "label": "RPS-P04-148 (transition 2021)"},
+    ],
+    "RAA": [
+        # Format ancien RAA : ligne de 86 ou 90 chars au lieu de 96
+        {"length": 86, "ipp": (21, 41), "ddn": (41, 49),
+         "label": "RAA-ancien-86 (2021)"},
+        {"length": 90, "ipp": (21, 41), "ddn": (41, 49),
+         "label": "RAA-ancien-90 (transition 2021)"},
+    ],
+}
 
 ATIH_MATRIX = {
     # ─── FORMATS PSY NATIFS (depuis 2007) ──────────────────────────────────
@@ -358,6 +393,9 @@ _FORMAT_RULES = [
 # (les lignes trop courtes sont du padding ou des artefacts d'export)
 _MIN_LINE = 50
 
+# Nombre de lignes à échantillonner pour auto-détecter la longueur dominante
+_SAMPLE_SIZE_FOR_VARIANT = 100
+
 
 class DataProcessor:
     """
@@ -377,7 +415,7 @@ class DataProcessor:
     # __slots__ pour optimiser la mémoire (pas de __dict__)
     __slots__ = (
         "matrix", "mpi", "file_stats", "processed_files",
-        "logs", "_progress_cb"
+        "logs", "_progress_cb", "_variant_cache"
     )
 
     def __init__(self):
@@ -393,6 +431,8 @@ class DataProcessor:
         self.logs: list = []
         # Callback optionnel pour notifier la progression
         self._progress_cb: Optional[Callable] = None
+        # Cache des variantes de format détectées par fichier
+        self._variant_cache: dict = {}
 
     # ──────────────────────────────────────────────────────────────────────────
     # LOGGING — Messages horodatés envoyés au frontend via l'API
@@ -449,6 +489,137 @@ class DataProcessor:
         if not line.strip("0 "):
             return False
         return True
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # NORMALISATION IPP — Cohérence des numéros de dossier (BigQuery compat)
+    # ══════════════════════════════════════════════════════════════════════════
+
+    @staticmethod
+    def normalize_ipp(ipp: str) -> str:
+        """
+        Normalise un IPP (numéro de dossier) pour garantir la cohérence
+        entre les différentes années et formats.
+
+        Pourquoi ? En 2021 à la Fondation Vallée, les RPS et RAA ont produit
+        des numéros de dossier dans deux formats différents :
+          - Format A : IPP paddé avec des espaces (ex: "12345               ")
+          - Format B : IPP paddé avec des zéros  (ex: "00000000000000012345")
+
+        Pour que les données 2021 soient cohérentes avec 2022-2025 (BigQuery),
+        on normalise en supprimant le padding gauche (zéros ET espaces),
+        tout en conservant la valeur significative.
+
+        Exemples:
+          "00000000000000012345" → "12345"
+          "12345               " → "12345"
+          "ABC-2021-00042      " → "ABC-2021-00042"  (conserve les zéros internes)
+          "00042"               → "42"  (numérique pur → strip zéros)
+        """
+        stripped = ipp.strip()
+        if not stripped:
+            return stripped
+
+        # Si l'IPP est purement numérique, on supprime les zéros de tête
+        # pour obtenir le format cohérent avec BigQuery (2022-2025)
+        if stripped.isdigit():
+            return stripped.lstrip("0") or "0"
+
+        # Si l'IPP est alphanumérique, on nettoie uniquement les espaces
+        # Les zéros internes sont conservés (ils font partie de l'identifiant)
+        return stripped
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # AUTO-DÉTECTION DE VARIANTE — Format 2021 vs standard
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def _detect_format_variant(self, filepath: str, fmt: str) -> dict:
+        """
+        Auto-détecte la variante de format d'un fichier ATIH.
+
+        Pourquoi ? Les fichiers ATIH sont à largeur fixe, mais en 2021
+        (année de transition), certains établissements ont produit des
+        fichiers avec des longueurs de ligne différentes du standard.
+
+        Algorithme :
+          1. Échantillonne les N premières lignes valides du fichier
+          2. Calcule la longueur dominante (mode statistique)
+          3. Si elle correspond au format standard → utilise le standard
+          4. Sinon → cherche une variante connue dans ATIH_FORMAT_VARIANTS
+          5. Si pas de variante connue → fallback sur le standard avec auto-repair
+
+        Le résultat est mis en cache pour éviter de re-scanner.
+        """
+        # Cache pour éviter de re-analyser le même fichier
+        if filepath in self._variant_cache:
+            return self._variant_cache[filepath]
+
+        spec = self.matrix[fmt]
+        standard_len = spec["length"]
+
+        # Échantillonnage des longueurs de ligne réelles
+        lengths = []
+        try:
+            with open(filepath, "r", encoding="latin-1", errors="replace") as f:
+                for raw in f:
+                    line = raw.rstrip("\r\n")
+                    if self._is_line_valid(line):
+                        lengths.append(len(line))
+                        if len(lengths) >= _SAMPLE_SIZE_FOR_VARIANT:
+                            break
+        except OSError:
+            self._variant_cache[filepath] = spec
+            return spec
+
+        if not lengths:
+            self._variant_cache[filepath] = spec
+            return spec
+
+        # Calcul de la longueur dominante (mode)
+        from collections import Counter
+        dominant_len = Counter(lengths).most_common(1)[0][0]
+
+        # Si la longueur dominante correspond au standard → on garde
+        if abs(dominant_len - standard_len) <= 2:
+            self._variant_cache[filepath] = spec
+            return spec
+
+        # Sinon, cherche une variante connue
+        variants = ATIH_FORMAT_VARIANTS.get(fmt, [])
+        best_variant = None
+        best_delta = float("inf")
+
+        for var in variants:
+            delta = abs(dominant_len - var["length"])
+            if delta < best_delta:
+                best_delta = delta
+                best_variant = var
+
+        if best_variant and best_delta <= 2:
+            # Variante trouvée ! On construit un spec complet
+            result = {
+                **spec,
+                "length": best_variant["length"],
+                "ipp": best_variant["ipp"],
+                "ddn": best_variant["ddn"],
+                "_variant": best_variant.get("label", "variant"),
+            }
+            self._log(
+                f"🔀 Variante détectée : {os.path.basename(filepath)} → "
+                f"{best_variant.get('label', 'inconnu')} "
+                f"(longueur dominante: {dominant_len})"
+            )
+            self._variant_cache[filepath] = result
+            return result
+
+        # Pas de variante connue → fallback standard avec warning
+        self._log(
+            f"⚠️ Longueur inattendue : {os.path.basename(filepath)} → "
+            f"{dominant_len} chars (attendu {standard_len}). "
+            f"Utilisation du format standard avec auto-repair.",
+            "WARN"
+        )
+        self._variant_cache[filepath] = spec
+        return spec
 
     # ══════════════════════════════════════════════════════════════════════════
     # SCAN — Découverte récursive des fichiers .txt PMSI
@@ -509,9 +680,11 @@ class DataProcessor:
         Traite un seul fichier ATIH. Appelé en parallèle par le pool.
 
         Pour chaque ligne valide du fichier :
-          1. Auto-repair : tronque ou padde la ligne à la longueur standard
-          2. Extraction positionnelle de l'IPP et de la DDN
-          3. Stockage dans le MPI local (fusionné plus tard avec le MPI global)
+          1. Auto-détection de la variante de format (2021 vs standard)
+          2. Auto-repair : tronque ou padde la ligne à la longueur détectée
+          3. Extraction positionnelle de l'IPP et de la DDN
+          4. Normalisation de l'IPP (cohérence BigQuery 2022-2025)
+          5. Stockage dans le MPI local (fusionné plus tard avec le MPI global)
         """
         fp = finfo["path"]
         fmt = finfo["format"]
@@ -520,14 +693,21 @@ class DataProcessor:
         if fmt == "INCONNU" or fmt not in self.matrix:
             return {"skip": True, "name": finfo["name"]}
 
-        spec = self.matrix[fmt]
+        # Auto-détection de la variante de format (gère les fichiers 2021
+        # de Fondation Vallée qui ont des longueurs différentes)
+        spec = self._detect_format_variant(fp, fmt)
+
         i0, i1 = spec["ipp"]   # Bornes de l'IPP (start, end)
         d0, d1 = spec["ddn"]   # Bornes de la DDN (start, end)
         exp_len = spec["length"]  # Longueur attendue de la ligne
         max_pos = max(i1, d1)    # Position max nécessaire dans la ligne
+        is_variant = "_variant" in spec  # True si format non-standard détecté
 
         local_mpi: dict = {}
-        stats = {"lines_total": 0, "lines_valid": 0, "lines_filtered": 0}
+        stats = {
+            "lines_total": 0, "lines_valid": 0, "lines_filtered": 0,
+            "ipp_normalized": 0,  # Compteur d'IPP normalisés (format 2021)
+        }
 
         try:
             # Lecture en latin-1 : encodage standard des fichiers ATIH
@@ -557,8 +737,15 @@ class DataProcessor:
                         continue
 
                     # Extraction positionnelle de l'IPP et DDN
-                    ipp = line[i0:i1].strip()
+                    raw_ipp = line[i0:i1].strip()
                     ddn = line[d0:d1].strip()
+
+                    # Normalisation de l'IPP pour cohérence BigQuery
+                    # Important : garantit que les données 2021 (Fondation Vallée)
+                    # utilisent le même format que les données 2022-2025
+                    ipp = self.normalize_ipp(raw_ipp)
+                    if ipp != raw_ipp:
+                        stats["ipp_normalized"] += 1
 
                     # Rejet des IPP/DDN vides ou contenant uniquement des zéros
                     if not ipp or not ipp.strip("0 "):
@@ -582,10 +769,18 @@ class DataProcessor:
         except (IOError, OSError) as e:
             return {"skip": True, "name": finfo["name"], "error": str(e)}
 
+        # Log si des IPP ont été normalisés (transparence)
+        if stats["ipp_normalized"] > 0:
+            self._log(
+                f"🔧 {finfo['name']} : {stats['ipp_normalized']} IPP normalisés "
+                f"(cohérence BigQuery)"
+            )
+
         return {
             "skip": False,
             "name": finfo["name"],
             "format": fmt,
+            "variant": spec.get("_variant"),  # None si format standard
             "local_mpi": local_mpi,
             "stats": stats,
         }
