@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * SOVEREIGN OS v17.0 — Frontend Application Logic (Optimized)
+ * SOVEREIGN OS V32.0 — Frontend Application Logic (Optimized)
  * =============================================================================
  * Features:
  *   - Boot sequence with anime.js
@@ -151,7 +151,7 @@
         idv: { title: "Identitovigilance", sub: "Master Patient Index — Résolution des collisions" },
         pilot: { title: "PMSI Pilot CSV", sub: "Export des données réconciliées" },
         csv: { title: "Import CSV", sub: "Visualiseur de fichiers CSV externes" },
-        tuto: { title: "Tutoriel d'utilisation", sub: "Guide pas-à-pas Sentinel v17.0" }
+        tuto: { title: "Tutoriel d'utilisation", sub: "Guide pas-à-pas Sentinel V32.0" }
     };
 
     function navigateTo(view) {
@@ -806,7 +806,7 @@
                         </div>
                         <div>
                             <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic">Guide Opérationnel</h3>
-                            <p class="text-slate-400 dark:text-slate-500 font-bold tracking-widest uppercase text-[10px] mt-1">Sovereign OS v17.0</p>
+                            <p class="text-slate-400 dark:text-slate-500 font-bold tracking-widest uppercase text-[10px] mt-1">Sovereign OS V32.0</p>
                         </div>
                     </div>
 
