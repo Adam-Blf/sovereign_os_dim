@@ -10,7 +10,7 @@ pywebview>=5.3.2
 
 # Windows — Backend .NET requis par pywebview pour le renderer EdgeChromium
 # Sans pythonnet, pywebview ne peut pas créer de fenêtre native sur Windows
-pythonnet>=3.0.3
+pythonnet==3.1.0rc0
 
 # Build — Compilation en exécutable Windows (dev dependency)
 pyinstaller>=6.11.1

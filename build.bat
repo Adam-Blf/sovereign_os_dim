@@ -24,6 +24,18 @@ echo.
 echo [2/3] Compilation format Dossier (--onedir, demarrage rapide)...
 pyinstaller --noconfirm --onedir --windowed ^
     --add-data "frontend;frontend" ^
+    --hidden-import clr ^
+    --hidden-import clr_loader ^
+    --hidden-import clr_loader.ffi ^
+    --hidden-import clr_loader.ffi.coreclr ^
+    --hidden-import clr_loader.ffi.mono ^
+    --hidden-import clr_loader.ffi.netfx ^
+    --hidden-import pythonnet ^
+    --hidden-import cffi ^
+    --hidden-import pycparser ^
+    --collect-all webview ^
+    --collect-all clr_loader ^
+    --collect-all pythonnet ^
     --name "Sovereign_OS_DIM" ^
     --icon "frontend/favicon.ico" ^
     main.py
@@ -37,6 +49,18 @@ echo.
 echo [3/3] Compilation format Standalone (--onefile, portable)...
 pyinstaller --noconfirm --onefile --windowed ^
     --add-data "frontend;frontend" ^
+    --hidden-import clr ^
+    --hidden-import clr_loader ^
+    --hidden-import clr_loader.ffi ^
+    --hidden-import clr_loader.ffi.coreclr ^
+    --hidden-import clr_loader.ffi.mono ^
+    --hidden-import clr_loader.ffi.netfx ^
+    --hidden-import pythonnet ^
+    --hidden-import cffi ^
+    --hidden-import pycparser ^
+    --collect-all webview ^
+    --collect-all clr_loader ^
+    --collect-all pythonnet ^
     --name "Sovereign_OS_DIM_Portable" ^
     --icon "frontend/favicon.ico" ^
     main.py
