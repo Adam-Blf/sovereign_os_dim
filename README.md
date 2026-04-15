@@ -157,3 +157,10 @@ build.bat
 - ✅ Nettoyage du projet (suppression des builds obsolètes)
 - ✅ Header ASCII professionnel sur tous les fichiers Python
 - ✅ Commentaires métier expliquant le POURQUOI
+
+
+---
+
+<p align="center">
+  <sub>Par <a href="https://adam.beloucif.com">Adam Beloucif</a> · Data Engineer & Fullstack Developer · <a href="https://github.com/Adam-Blf">GitHub</a></sub>
+</p>
