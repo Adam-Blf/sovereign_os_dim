@@ -41,3 +41,6 @@ PILOT_OUTPUT/
 
 # Manuel PDF généré par tools/generate_manual.py (non commité)
 docs/Sovereign_OS_DIM_Manuel.pdf
+
+# Réglages locaux Claude Code (allowlist de commandes par utilisateur)
+.claude/
