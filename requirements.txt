@@ -18,6 +18,20 @@ pyinstaller>=6.11.1
 # HTTP — Pour d'éventuelles requêtes API externes
 requests>=2.32.3
 
+# ─── Bridge HTTP (intégration PHP) ────────────────────────────────────────
+# Flask expose le moteur ATIH à une application PHP via HTTP JSON.
+# Lancé par : python bridge.py
+flask>=3.0.0
+
+# ─── Import / visualisation Excel ─────────────────────────────────────────
+# openpyxl lit les classeurs .xlsx côté bridge (endpoints /api/import-excel
+# et /api/chart-from-excel consommés par la page PHP de visualisation).
+openpyxl>=3.1.0
+
+# ─── Génération du mode d'emploi PDF ──────────────────────────────────────
+# fpdf2 (fork moderne de PyFPDF) — utilisé par tools/generate_manual.py
+fpdf2>=2.8.0
+
 # ─── Dev Dependencies (tests) ─────────────────────────────────────────────
 pytest>=8.3.4
 pytest-cov>=6.0.0
