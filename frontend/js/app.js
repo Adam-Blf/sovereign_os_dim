@@ -183,6 +183,7 @@
             case "idv": renderIdv(vp); break;
             case "pilot": renderPilot(vp); break;
             case "csv": renderCsv(vp); break;
+            case "structure": renderStructure(vp); break;
             case "tuto": renderTuto(vp); break;
         }
         if (window.lucide) lucide.createIcons();
@@ -492,17 +493,33 @@
         sec.classList.remove("hidden");
         if (cnt) cnt.textContent = `${S.files.length} fichiers`;
 
-        grid.innerHTML = S.files.map(f => `
+        // f.name, f.path, f.dir viennent de os.listdir — un nom de fichier
+        // malveillant (ex : "a<script>.txt") pourrait injecter du HTML.
+        // On échappe systématiquement et on remplace le onclick inline par
+        // un data-attribute + binding addEventListener (évite toute
+        // évasion via guillemets dans le chemin).
+        grid.innerHTML = S.files.map((f, i) => `
             <div class="file-card bg-white rounded-[1.5rem] p-6 border border-slate-100 shadow-md cursor-pointer"
-                 onclick="window.__inspect('${f.path.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')">
+                 data-file-index="${i}">
                 <div class="flex items-center justify-between mb-3">
                     ${badge(f.format)}
                     <span class="text-[9px] font-mono text-slate-400">${f.size_kb} KB</span>
                 </div>
-                <p class="font-black text-gh-navy text-[12px] truncate uppercase tracking-tight">${f.name}</p>
-                <p class="text-[9px] text-slate-400 truncate mt-1 font-mono">${f.dir}</p>
+                <p class="font-black text-gh-navy text-[12px] truncate uppercase tracking-tight">${escHtml(f.name)}</p>
+                <p class="text-[9px] text-slate-400 truncate mt-1 font-mono">${escHtml(f.dir)}</p>
             </div>
         `).join("");
+
+        // Bind inspector par index plutôt que par string-interpolated path.
+        grid.querySelectorAll("[data-file-index]").forEach(card => {
+            card.addEventListener("click", () => {
+                const idx = parseInt(card.dataset.fileIndex, 10);
+                const file = S.files[idx];
+                if (file && typeof window.__inspect === "function") {
+                    window.__inspect(file.path);
+                }
+            });
+        });
 
         if (window.lucide) lucide.createIcons();
     }
@@ -599,18 +616,21 @@
     }
 
     function renderCollisionRows(cols) {
+        // Les IPP/DDN/sources proviennent de fichiers .txt parsés côté backend.
+        // Un fichier malveillant pourrait injecter du HTML ; on échappe tout
+        // ce qui arrive dans le DOM (attributs data-* inclus).
         return cols.map(c => `
-            <div class="collision-row grid grid-cols-12 gap-3 px-8 py-5 items-center hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors duration-500" data-ipp="${c.ipp}">
-                <div class="col-span-3 font-mono font-bold text-gh-navy dark:text-blue-400 text-xs">${c.ipp}</div>
+            <div class="collision-row grid grid-cols-12 gap-3 px-8 py-5 items-center hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors duration-500" data-ipp="${escHtml(c.ipp)}">
+                <div class="col-span-3 font-mono font-bold text-gh-navy dark:text-blue-400 text-xs">${escHtml(c.ipp)}</div>
                 <div class="col-span-3">
                     ${c.pivot
-                ? `<span class="text-gh-success font-bold font-mono text-xs">${c.pivot}</span>`
+                ? `<span class="text-gh-success font-bold font-mono text-xs">${escHtml(c.pivot)}</span>`
                 : `<span class="text-gh-error font-bold italic text-xs">—</span>`}
                 </div>
                 <div class="col-span-2"><span class="bg-red-50 dark:bg-red-900/40 text-gh-error px-2 py-0.5 rounded-full text-[9px] font-black">${c.options.length} DDN</span></div>
                 <div class="col-span-2 text-[10px] text-slate-400 dark:text-slate-500 font-mono">${c.total_sources}</div>
                 <div class="col-span-2 text-right">
-                    <button class="px-5 py-2 bg-gh-navy dark:bg-blue-600 text-white rounded-full text-[9px] font-black uppercase tracking-wider shadow-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-all btn-resolve" data-ipp="${c.ipp}">Résoudre</button>
+                    <button class="px-5 py-2 bg-gh-navy dark:bg-blue-600 text-white rounded-full text-[9px] font-black uppercase tracking-wider shadow-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-all btn-resolve" data-ipp="${escHtml(c.ipp)}">Résoudre</button>
                 </div>
             </div>
         `).join("");
@@ -637,17 +657,17 @@
 
         opts.innerHTML = c.options.map(o => `
             <button class="btn-pivot w-full text-left p-6 rounded-[2rem] border-2 transition-colors duration-500 ${o.ddn === c.pivot ? "border-gh-success bg-green-50 dark:bg-green-900/20" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gh-navy dark:hover:border-blue-400"
-            }" data-ddn="${o.ddn}">
+            }" data-ddn="${escHtml(o.ddn)}">
                 <div class="flex items-center justify-between">
                     <div>
-                        <span class="text-2xl font-black text-gh-navy dark:text-blue-400 font-mono">${o.ddn}</span>
+                        <span class="text-2xl font-black text-gh-navy dark:text-blue-400 font-mono">${escHtml(o.ddn)}</span>
                         <span class="ml-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">${o.count} fichier(s)</span>
                     </div>
                     ${o.ddn === c.pivot
                 ? '<i data-lucide="check-circle" class="w-7 h-7 text-gh-success"></i>'
                 : '<i data-lucide="circle" class="w-7 h-7 text-slate-300 dark:text-slate-600"></i>'}
                 </div>
-                <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 font-mono truncate">${o.sources.join(", ")}</p>
+                <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 font-mono truncate">${o.sources.map(s => escHtml(s)).join(", ")}</p>
             </button>
         `).join("");
 
@@ -760,22 +780,25 @@
         if (window.lucide) lucide.createIcons();
 
         const data = await API().inspect_file(fp);
-        if (data.error) { body.innerHTML = `<p class="text-red-400">${data.error}</p>`; return; }
+        if (data.error) { body.innerHTML = `<p class="text-red-400">${escHtml(data.error)}</p>`; return; }
 
         if (mT) mT.textContent = N(data.total_lines);
         if (mE) mE.textContent = N(data.errors);
 
+        // Chaque ligne provient du fichier ATIH : contenu non contrôlé,
+        // potentiellement avec caractères HTML. On échappe tous les champs
+        // avant injection via innerHTML.
         body.innerHTML = data.lines.map(l => {
             const isErr = l.status !== "OK";
             const cls = isErr ? "line-error" : "";
             const col = { OK: "text-gh-success", COLLISION: "text-gh-error", FILTERED: "text-gh-warning", ERROR: "text-gh-error" }[l.status] || "text-slate-400";
             return `<div class="flex gap-4 text-[10px] py-1.5 px-4 rounded ${cls}">
                 <span class="text-slate-600 w-10 text-right shrink-0">${l.num}</span>
-                <span class="font-bold w-16 ${col} shrink-0 uppercase">${l.status}</span>
-                <span class="text-blue-300 w-28 shrink-0 truncate">${l.ipp || "—"}</span>
-                <span class="text-teal-300 w-20 shrink-0">${l.ddn || "—"}</span>
-                <span class="text-slate-500 truncate flex-1">${(l.raw || "").substring(0, 80)}</span>
-                ${l.repair ? `<span class="text-amber-400 shrink-0 text-[8px]">${l.repair}</span>` : ""}
+                <span class="font-bold w-16 ${col} shrink-0 uppercase">${escHtml(l.status)}</span>
+                <span class="text-blue-300 w-28 shrink-0 truncate">${escHtml(l.ipp || "—")}</span>
+                <span class="text-teal-300 w-20 shrink-0">${escHtml(l.ddn || "—")}</span>
+                <span class="text-slate-500 truncate flex-1">${escHtml((l.raw || "").substring(0, 80))}</span>
+                ${l.repair ? `<span class="text-amber-400 shrink-0 text-[8px]">${escHtml(l.repair)}</span>` : ""}
             </div>`;
         }).join("");
 
@@ -932,32 +955,178 @@
             if (!result) return;
 
             if (data.error) {
-                result.innerHTML = `<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-xl p-6 text-gh-error font-bold">${data.error}</div>`;
+                result.innerHTML = `<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-xl p-6 text-gh-error font-bold">${escHtml(data.error)}</div>`;
                 result.classList.remove("hidden");
                 toast("Erreur", data.error, "error");
                 return;
             }
 
             const maxPreview = Math.min(data.rows.length, 200);
+            // Le contenu CSV est saisi par l'utilisateur (tableur) : on
+            // échappe chaque cellule avant injection dans le DOM.
             result.innerHTML = `
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h4 class="font-black text-gh-navy dark:text-blue-400 uppercase text-sm tracking-tighter italic flex items-center gap-2">
-                            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-gh-success"></i> ${data.filename}
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-gh-success"></i> ${escHtml(data.filename)}
                         </h4>
-                        <p class="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1">${N(data.total_rows)} lignes · ${data.headers.length} colonnes · sep: "${data.separator}"</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1">${N(data.total_rows)} lignes · ${data.headers.length} colonnes · sep: "${escHtml(data.separator)}"</p>
                     </div>
                 </div>
                 <div class="max-h-[50vh] overflow-auto custom-scroll rounded-2xl border border-slate-100 dark:border-slate-700">
                     <table class="csv-table">
-                        <thead><tr>${data.headers.map(h => `<th>${h}</th>`).join("")}</tr></thead>
-                        <tbody>${data.rows.slice(0, maxPreview).map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>
+                        <thead><tr>${data.headers.map(h => `<th>${escHtml(h)}</th>`).join("")}</tr></thead>
+                        <tbody>${data.rows.slice(0, maxPreview).map(r => `<tr>${r.map(c => `<td>${escHtml(c)}</td>`).join("")}</tr>`).join("")}</tbody>
                     </table>
                 </div>
                 ${data.rows.length > maxPreview ? `<p class="text-[10px] text-slate-400 dark:text-slate-500 mt-3 text-center italic">Affichage limité à ${maxPreview} lignes sur ${N(data.total_rows)}</p>` : ""}
             `;
             result.classList.remove("hidden");
             toast("Import", `${data.filename} — ${N(data.total_rows)} lignes`, "success");
+            if (window.lucide) lucide.createIcons();
+        });
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================================
+    // STRUCTURE — Arborescence pôles / services / UM
+    // =========================================================================
+    // Affiche l'arbre du fichier de structure d'un établissement.
+    // L'utilisateur choisit un .csv/.tsv/.txt, le backend le parse (voir
+    // backend/structure.py) et renvoie un arbre {code, label, children[]}
+    // qu'on rend en <ul> imbriqués expand/collapse.
+
+    function escHtml(s) {
+        return String(s == null ? "" : s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    function treeHtml(nodes, depth) {
+        if (!nodes || !nodes.length) return "";
+        const items = nodes.map(n => {
+            const hasKids = n.children && n.children.length > 0;
+            const chevron = hasKids
+                ? `<i data-lucide="chevron-down" class="w-4 h-4 inline text-slate-400 tree-chev"></i>`
+                : `<span class="inline-block w-4"></span>`;
+            const levelBadge = n.level
+                ? `<span class="ml-2 px-2 py-0.5 text-[9px] font-black rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 uppercase tracking-wider">${escHtml(n.level)}</span>`
+                : "";
+            return `
+                <li class="tree-node" data-depth="${depth}">
+                    <div class="tree-row flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+                        ${chevron}
+                        <span class="font-mono text-xs text-gh-navy dark:text-blue-400 font-bold">${escHtml(n.code)}</span>
+                        <span class="text-sm text-slate-600 dark:text-slate-300">${escHtml(n.label)}</span>
+                        ${levelBadge}
+                    </div>
+                    ${hasKids ? `<ul class="tree-children pl-6 border-l border-slate-100 dark:border-slate-700 ml-2">${treeHtml(n.children, depth + 1)}</ul>` : ""}
+                </li>`;
+        });
+        return items.join("");
+    }
+
+    function renderStructure(vp) {
+        vp.innerHTML = `
+            <div class="bg-white dark:bg-slate-800 rounded-[3rem] p-14 border border-slate-100 dark:border-slate-700 shadow-xl dark:shadow-none max-w-6xl mx-auto transition-colors duration-500">
+                <div class="text-center mb-10">
+                    <div class="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 transition-colors duration-500">
+                        <i data-lucide="git-branch" class="w-10 h-10 text-gh-navy dark:text-blue-400"></i>
+                    </div>
+                    <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic mb-3">Fichier de structure</h3>
+                    <p class="text-slate-400 dark:text-slate-500 mb-8">Visualisez l'arborescence des pôles, services et UM d'un établissement</p>
+                    <button class="px-10 py-5 bg-gh-navy text-white rounded-full font-black uppercase text-xs tracking-[0.2em] shadow-lg hover:bg-blue-600 transition-all active:scale-95" id="btn-structure-select">
+                        <i data-lucide="file-up" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Sélectionner le fichier structure
+                    </button>
+                </div>
+                <div id="structure-result" class="hidden"></div>
+            </div>
+        `;
+
+        const btn = $("btn-structure-select");
+        if (btn) btn.addEventListener("click", async () => {
+            if (!API()) return;
+            const filepath = await API().select_structure_file();
+            if (!filepath) return;
+
+            toast("Structure", "Analyse du fichier…", "info");
+            const data = await API().load_structure(filepath);
+            const out = $("structure-result");
+            if (!out) return;
+
+            if (data.error) {
+                out.innerHTML = `<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-xl p-6 text-gh-error font-bold">${escHtml(data.error)}</div>`;
+                out.classList.remove("hidden");
+                toast("Erreur", data.error, "error");
+                return;
+            }
+
+            const s = data.summary || {};
+            const byLevel = s.by_level || {};
+            const levelChips = Object.keys(byLevel).map(k =>
+                `<span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">${escHtml(k)} · ${byLevel[k]}</span>`
+            ).join(" ");
+
+            out.innerHTML = `
+                <div class="grid grid-cols-4 gap-4 mb-8">
+                    ${statCard("list-tree", "Nœuds", s.total_nodes || 0, "blue")}
+                    ${statCard("git-fork", "Racines", s.roots || 0, "teal")}
+                    ${statCard("trending-down", "Profondeur", s.max_depth || 0, "amber")}
+                    ${statCard("file-text", "Fichier", 1, "green")}
+                </div>
+
+                <div class="bg-slate-50 dark:bg-slate-900/40 rounded-2xl p-6 mb-6 flex items-center justify-between flex-wrap gap-3">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="file-spreadsheet" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                        <span class="font-mono text-xs font-bold text-gh-navy dark:text-blue-400">${escHtml(data.filename)}</span>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">${levelChips}</div>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-tree-expand" class="px-4 py-2 bg-white dark:bg-slate-700 rounded-lg text-xs font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600">Tout déplier</button>
+                        <button id="btn-tree-collapse" class="px-4 py-2 bg-white dark:bg-slate-700 rounded-lg text-xs font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600">Tout replier</button>
+                    </div>
+                </div>
+
+                <div class="max-h-[60vh] overflow-auto custom-scroll rounded-2xl border border-slate-100 dark:border-slate-700 p-6 bg-white dark:bg-slate-800">
+                    <ul class="tree-root">${treeHtml(data.tree, 0)}</ul>
+                </div>
+            `;
+            out.classList.remove("hidden");
+
+            // Expand/collapse individuel : clic sur une ligne avec enfants
+            out.querySelectorAll(".tree-row").forEach(row => {
+                row.addEventListener("click", (e) => {
+                    const li = row.closest(".tree-node");
+                    const kids = li && li.querySelector(":scope > .tree-children");
+                    if (!kids) return;
+                    kids.classList.toggle("hidden");
+                    const chev = row.querySelector(".tree-chev");
+                    if (chev) chev.setAttribute(
+                        "data-lucide",
+                        kids.classList.contains("hidden") ? "chevron-right" : "chevron-down"
+                    );
+                    if (window.lucide) lucide.createIcons();
+                    e.stopPropagation();
+                });
+            });
+
+            // Tout déplier / replier — simple toggle sur tous les .tree-children
+            const exp = $("btn-tree-expand"), col = $("btn-tree-collapse");
+            if (exp) exp.addEventListener("click", () => {
+                out.querySelectorAll(".tree-children").forEach(c => c.classList.remove("hidden"));
+                out.querySelectorAll(".tree-chev").forEach(c => c.setAttribute("data-lucide", "chevron-down"));
+                if (window.lucide) lucide.createIcons();
+            });
+            if (col) col.addEventListener("click", () => {
+                out.querySelectorAll(".tree-children").forEach(c => c.classList.add("hidden"));
+                out.querySelectorAll(".tree-chev").forEach(c => c.setAttribute("data-lucide", "chevron-right"));
+                if (window.lucide) lucide.createIcons();
+            });
+
+            toast("Structure", `${data.filename} · ${s.total_nodes} nœuds`, "success");
             if (window.lucide) lucide.createIcons();
         });
 
@@ -992,7 +1161,8 @@
                 case "3": e.preventDefault(); navigateTo("idv"); break;
                 case "4": e.preventDefault(); navigateTo("pilot"); break;
                 case "5": e.preventDefault(); navigateTo("csv"); break;
-                case "6": e.preventDefault(); navigateTo("tuto"); break;
+                case "6": e.preventDefault(); navigateTo("structure"); break;
+                case "7": e.preventDefault(); navigateTo("tuto"); break;
             }
         }
         // Escape closes modals
@@ -1011,7 +1181,7 @@
         if (_initialized) return;
         _initialized = true;
 
-        const navMap = { "nav-dashboard": "dashboard", "nav-modo": "modo", "nav-idv": "idv", "nav-pilot": "pilot", "nav-csv": "csv", "nav-tuto": "tuto" };
+        const navMap = { "nav-dashboard": "dashboard", "nav-modo": "modo", "nav-idv": "idv", "nav-pilot": "pilot", "nav-csv": "csv", "nav-structure": "structure", "nav-tuto": "tuto" };
         Object.entries(navMap).forEach(([id, v]) => {
             const el = $(id);
             if (el) el.addEventListener("click", () => navigateTo(v));

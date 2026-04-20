@@ -42,58 +42,282 @@ from datetime import date
 
 SECTIONS = [
     (
-        "Presentation",
+        "A qui s'adresse ce guide",
         [
             (
                 "p",
-                "Sovereign OS DIM est une application desktop dediee a la station "
-                "DIM du GHT Sud Paris. Elle lit les fichiers ATIH (PMSI), construit "
-                "un Master Patient Index (MPI) et exporte les donnees normalisees "
-                "pour e-PMSI.",
+                "Ce document est destine aux utilisateurs de la station DIM "
+                "(Departement d'Information Medicale) du GHT Sud Paris. Il decrit "
+                "comment utiliser Sovereign OS DIM au quotidien pour traiter les "
+                "fichiers ATIH (PMSI), resoudre les incoherences d'identite "
+                "patient, et produire les exports attendus par e-PMSI.",
             ),
             (
                 "p",
-                "La version V32.0 introduit un bridge HTTP REST qui expose le moteur "
-                "ATIH a toute application tierce, en particulier une application "
-                "PHP. Un mode de visualisation graphique a partir d'un ou plusieurs "
-                "classeurs Excel est egalement fourni.",
+                "Aucune connaissance technique n'est requise. L'application se "
+                "lance d'un double-clic et toutes les operations se font a la "
+                "souris depuis la barre laterale.",
             ),
         ],
     ),
     (
-        "Architecture",
+        "A quoi sert l'application",
         [
             (
                 "p",
-                "Trois composants cooperent. Le desktop pywebview reste l'interface "
-                "principale. Le bridge Flask (backend/bridge.py) expose les memes "
-                "capacites en HTTP JSON. Le client PHP (php/SovereignClient.php) "
-                "consomme le bridge via cURL et rend les pages HTML.",
+                "Sovereign OS DIM automatise quatre taches repetitives du "
+                "quotidien d'un TIM :",
             ),
             (
-                "code",
-                "Desktop  : python main.py\n"
-                "Bridge   : python bridge.py\n"
-                "PHP      : php -S 127.0.0.1:8080 -t php",
+                "li",
+                [
+                    "Lire les fichiers ATIH d'un ou plusieurs dossiers et les "
+                    "identifier automatiquement (RPS, RSS, RHS, VID-HOSP, etc. "
+                    "23 formats supportes depuis 1991).",
+                    "Extraire pour chaque ligne le couple IPP / Date de "
+                    "naissance et construire un index patient unifie (MPI).",
+                    "Detecter les cas ou un meme IPP porte plusieurs dates de "
+                    "naissance (collisions d'identitovigilance) et proposer une "
+                    "resolution automatique ou manuelle.",
+                    "Produire les exports CSV normalises et les fichiers .txt "
+                    "purifies prets a etre deposes sur e-PMSI.",
+                ],
             ),
         ],
     ),
     (
-        "Demarrage rapide",
+        "Premier lancement",
         [
-            ("h", "1. Installer les dependances Python"),
-            ("code", "pip install -r requirements.txt"),
-            ("h", "2. Lancer le bridge HTTP"),
+            (
+                "p",
+                "Deux modes de lancement existent. Choisissez selon votre poste :",
+            ),
+            ("h", "Poste standard : executable portable"),
+            (
+                "p",
+                "Double-cliquez sur Sovereign_OS_DIM.exe. L'application demarre "
+                "en moins de trois secondes. Aucune installation, aucun droit "
+                "administrateur requis : l'executable contient Python et toutes "
+                "les dependances.",
+            ),
+            ("h", "Poste developpeur ou code source"),
+            ("code", "python main.py"),
+            (
+                "p",
+                "La premiere execution derriere un proxy d'etablissement peut "
+                "declencher une alerte pare-feu : autoriser l'application en "
+                "reseau prive suffit (elle n'ecoute que sur 127.0.0.1).",
+            ),
+        ],
+    ),
+    (
+        "Tour d'ecran : la barre laterale",
+        [
+            (
+                "p",
+                "La barre de gauche contient six onglets, regroupes en trois "
+                "sections (Controle, Gestion Batch, Exports Expert, Aide). "
+                "Survoler une icone affiche son raccourci clavier.",
+            ),
+            (
+                "li",
+                [
+                    "Dashboard : vue d'ensemble (fichiers traites, IPP uniques, "
+                    "collisions, graphique par format).",
+                    "Modo Files : selection des dossiers a traiter en lot.",
+                    "Identitovigilance : liste des collisions IPP / DDN et "
+                    "outil de resolution.",
+                    "PMSI Pilot CSV : export CSV normalise pour e-PMSI.",
+                    "Import CSV : lecture d'un CSV externe (cas d'usage annexe).",
+                    "Tutoriel : rappel des gestes principaux, accessible hors "
+                    "ligne.",
+                ],
+            ),
+            (
+                "p",
+                "La bulle DIM en bas de la barre indique l'etat du moteur : "
+                "verte si tout est charge, orange pendant un traitement, rouge "
+                "si une erreur est remontee (consulter alors l'onglet ou le "
+                "probleme s'est produit).",
+            ),
+        ],
+    ),
+    (
+        "Workflow standard (traiter un lot de fichiers)",
+        [
+            ("h", "1. Ouvrir Modo Files"),
+            (
+                "p",
+                "Cliquez sur Ajouter un dossier et pointez le repertoire "
+                "contenant les fichiers ATIH (le scan est recursif : les sous-"
+                "dossiers annuels sont inclus automatiquement).",
+            ),
+            ("h", "2. Verifier l'identification"),
+            (
+                "p",
+                "Chaque fichier apparait avec son format detecte (RPS, RSS, "
+                "RHS...) et sa taille. Les fichiers INCONNU sont ignores au "
+                "traitement : c'est normal pour les .txt non ATIH.",
+            ),
+            ("h", "3. Lancer le traitement"),
+            (
+                "p",
+                "Le bouton Traiter le lot extrait les couples IPP/DDN en "
+                "parallele (jusqu'a 8 fichiers simultanes). La progression "
+                "s'affiche ligne par ligne dans le terminal integre.",
+            ),
+            ("h", "4. Consulter le Dashboard"),
+            (
+                "p",
+                "Une fois le lot traite, le Dashboard affiche les totaux : "
+                "lignes valides, IPP uniques, collisions detectees. Le "
+                "graphique de repartition par format permet de verifier qu'il "
+                "ne manque pas un recueil (ex : un RHS absent alors qu'il "
+                "devrait etre la).",
+            ),
+        ],
+    ),
+    (
+        "Resoudre les collisions (Identitovigilance)",
+        [
+            (
+                "p",
+                "Une collision signifie qu'un meme IPP a ete rencontre avec "
+                "plusieurs dates de naissance differentes dans les fichiers. "
+                "C'est le signal d'un probleme d'identite patient a arbitrer.",
+            ),
+            ("h", "Lire la liste"),
+            (
+                "p",
+                "Chaque ligne affiche : IPP, nombre de DDN en conflit, DDN "
+                "candidates triees par frequence, et fichiers sources. La "
+                "DDN la plus frequente est mise en avant.",
+            ),
+            ("h", "Resoudre manuellement"),
+            (
+                "p",
+                "Cliquer sur une DDN candidate la fixe comme DDN pivot. A "
+                "partir de ce moment, tous les exports CSV et .txt purifies "
+                "remplaceront les autres DDN par ce pivot pour cet IPP.",
+            ),
+            ("h", "Resoudre automatiquement"),
+            (
+                "p",
+                "Le bouton Auto-resolution applique la strategie bayesienne "
+                "simple : pour chaque collision, la DDN la plus frequente est "
+                "choisie, avec la plus recente comme critere de depart en cas "
+                "d'egalite. Utile pour defricher un gros lot avant un examen "
+                "manuel des cas douteux.",
+            ),
+            (
+                "p",
+                "Toutes les resolutions sont traceables : l'historique des "
+                "DDN et de leurs fichiers sources reste consultable meme "
+                "apres fixation d'un pivot.",
+            ),
+        ],
+    ),
+    (
+        "Exporter pour e-PMSI (PMSI Pilot CSV)",
+        [
+            ("h", "CSV Pilot"),
+            (
+                "p",
+                "Genere un fichier .csv par fichier ATIH traite. Colonnes : "
+                "IPP ; DDN ; FORMAT ; NOM_FICHIER ; LIGNE_BRUTE. Si une DDN "
+                "pivot est definie, elle remplace les autres DDN dans l'export "
+                "(les lignes modifiees sont comptees dans le rapport final).",
+            ),
+            ("h", ".txt purifie"),
+            (
+                "p",
+                "Reecrit un fichier ATIH conforme avec : lignes invalides "
+                "supprimees, auto-repair applique (longueur ajustee), DDN "
+                "pivot injectee. Le fichier resultant est directement "
+                "depose-able sur e-PMSI.",
+            ),
+            (
+                "p",
+                "Les deux exports ecrivent dans un dossier Exports_AAAAMMJJ "
+                "cree a cote des fichiers sources, horodate pour eviter "
+                "d'ecraser une generation precedente.",
+            ),
+        ],
+    ),
+    (
+        "Astuces du quotidien",
+        [
+            (
+                "li",
+                [
+                    "Relancer un traitement sans quitter : bouton Reset dans "
+                    "le Dashboard pour repartir d'un MPI vide.",
+                    "Inspector ligne par ligne : dans Modo Files, clic droit "
+                    "sur un fichier -> Inspecter permet de voir les 3000 "
+                    "premieres lignes avec leur statut (OK, COLLISION, "
+                    "FILTERED, ERROR) et la raison d'un rejet eventuel.",
+                    "Theme sombre : bouton en haut a droite, bascule "
+                    "immediate et persistante.",
+                    "Raccourcis : 1 a 6 sur les touches numeriques pour "
+                    "naviguer entre les onglets, Ctrl+R pour relancer le lot.",
+                ],
+            ),
+        ],
+    ),
+    (
+        "Depannage (utilisateur)",
+        [
+            ("h", "Un fichier ATIH apparait en INCONNU"),
+            (
+                "p",
+                "Le nom du fichier ne correspond pas a une convention ATIH "
+                "reconnue. Verifier qu'il contient bien le motif attendu "
+                "(ex : RPS, RSS, RHS, VIDHOSP). Les fichiers archives .zip "
+                "doivent etre decompresses au prealable.",
+            ),
+            ("h", "Le Dashboard reste a zero apres traitement"),
+            (
+                "p",
+                "Aucune ligne valide n'a ete trouvee. Cause frequente : "
+                "dossier vide, fichiers en INCONNU uniquement, ou lignes "
+                "trop courtes (< 50 caracteres, considerees comme du "
+                "padding).",
+            ),
+            ("h", "Un IPP attendu est absent des exports"),
+            (
+                "p",
+                "Consulter l'Inspector du fichier source. Les lignes avec "
+                "IPP vide, purement numerique a zero, ou positionne hors "
+                "limites sont filtrees silencieusement. La colonne Repair "
+                "indique le motif exact (ex : 'Hors limites' si la ligne "
+                "est plus courte que la position IPP attendue).",
+            ),
+            ("h", "L'application ne demarre pas"),
+            (
+                "p",
+                "Sous Windows, lancer depuis le dossier d'origine (ne pas "
+                "copier l'executable sur un bureau reseau : certains "
+                "antivirus bloquent l'execution en zone restreinte). En "
+                "dernier recours, lancer depuis PowerShell pour voir le "
+                "message d'erreur complet.",
+            ),
+        ],
+    ),
+    (
+        "Pour les administrateurs : bridge HTTP et PHP",
+        [
+            (
+                "p",
+                "Sovereign OS DIM peut aussi etre pilote depuis une "
+                "application PHP via un bridge HTTP. Cette section interesse "
+                "uniquement les equipes techniques de la DSI.",
+            ),
+            ("h", "Lancer le bridge"),
             (
                 "code",
                 "SOVEREIGN_BRIDGE_TOKEN=secret python bridge.py --port 8765",
             ),
-            (
-                "p",
-                "Le jeton est partage entre le bridge et l'application PHP. "
-                "Sans jeton, l'authentification est desactivee (dev local).",
-            ),
-            ("h", "3. Configurer l'application PHP"),
+            ("h", "Cote PHP"),
             (
                 "code",
                 "export SOVEREIGN_BRIDGE_URL=http://127.0.0.1:8765\n"
@@ -102,125 +326,9 @@ SECTIONS = [
             ),
             (
                 "p",
-                "Ouvrez http://127.0.0.1:8080 pour acceder au tableau de bord.",
-            ),
-        ],
-    ),
-    (
-        "Endpoints du bridge",
-        [
-            (
-                "li",
-                [
-                    "GET  /health  : heartbeat (public, pas d'auth)",
-                    "GET  /api/matrix  : liste des 23 formats ATIH",
-                    "POST /api/identify  : identifie un fichier par son nom",
-                    "POST /api/scan  : scanne un ou plusieurs dossiers",
-                    "POST /api/process  : scan + extraction du MPI",
-                    "GET  /api/collisions  : liste les collisions IPP/DDN",
-                    "POST /api/resolve  : set_pivot manuel ou auto-resolution",
-                    "GET  /api/stats  : dashboard agregate",
-                    "POST /api/export  : export CSV Pilot",
-                    "POST /api/export-sanitized  : export .txt purifie",
-                    "POST /api/inspect  : analyse ligne par ligne",
-                    "POST /api/import-csv  : lecture d'un CSV externe",
-                    "POST /api/import-excel  : lecture d'un classeur Excel",
-                    "POST /api/chart-from-excel  : agregation pour Chart.js",
-                    "POST /api/reset  : remise a zero de l'etat",
-                ],
-            ),
-        ],
-    ),
-    (
-        "Utiliser le client PHP",
-        [
-            (
-                "p",
-                "Le client PHP encapsule cURL et la serialisation JSON. Exemple :",
-            ),
-            (
-                "code",
-                "require_once 'php/SovereignClient.php';\n"
-                "$client = new SovereignClient(\n"
-                "    'http://127.0.0.1:8765',\n"
-                "    getenv('SOVEREIGN_BRIDGE_TOKEN')\n"
-                ");\n"
-                "$client->process(['/srv/pmsi/2025']);\n"
-                "$cols = $client->collisions();\n"
-                "$client->autoResolve();\n"
-                "$client->exportCsv('/srv/pmsi/export');",
-            ),
-        ],
-    ),
-    (
-        "Visualisation Excel (un ou plusieurs fichiers)",
-        [
-            (
-                "p",
-                "La page php/chart.php accepte un chemin unique ou plusieurs "
-                "chemins (un par ligne). Le bridge agrege les donnees cote "
-                "serveur et Chart.js dessine le graphique.",
-            ),
-            (
-                "p",
-                "Deux modes sont disponibles pour le multi-fichiers :",
-            ),
-            (
-                "li",
-                [
-                    "merge : fusionne toutes les lignes en une seule serie "
-                    "(utile pour un rapport consolide).",
-                    "compare : genere une serie par fichier alignee sur l'union "
-                    "des labels (utile pour comparer 2024 vs 2025 ou plusieurs "
-                    "etablissements).",
-                ],
-            ),
-            (
-                "p",
-                "Agregations : sum, avg, count. Types de graphiques supportes : "
-                "bar, line, pie, doughnut.",
-            ),
-        ],
-    ),
-    (
-        "Securite",
-        [
-            (
-                "li",
-                [
-                    "Le bridge ecoute par defaut sur 127.0.0.1 : il ne sort pas "
-                    "du poste. Pour ouvrir au LAN, utiliser --host 0.0.0.0 et "
-                    "configurer un jeton fort.",
-                    "Authentification Bearer : definir SOVEREIGN_BRIDGE_TOKEN "
-                    "cote bridge et cote PHP.",
-                    "CORS restrictif : la liste blanche est controlee par "
-                    "SOVEREIGN_BRIDGE_ORIGINS (localhost par defaut).",
-                    "Toutes les sorties PHP sont echappees via htmlspecialchars "
-                    "pour eviter les XSS.",
-                ],
-            ),
-        ],
-    ),
-    (
-        "Depannage",
-        [
-            ("h", "Le PHP affiche 'Bridge inaccessible'"),
-            (
-                "p",
-                "Verifier que python bridge.py tourne et que le port est libre. "
-                "Sur Windows, autoriser Flask dans le pare-feu Microsoft Defender.",
-            ),
-            ("h", "openpyxl n'est pas installe"),
-            (
-                "code",
-                "pip install openpyxl>=3.1",
-            ),
-            ("h", "Colonnes introuvables"),
-            (
-                "p",
-                "Le bridge est sensible a la casse et aux espaces : verifier "
-                "que l'entete du classeur correspond exactement a la valeur "
-                "choisie dans le menu deroulant.",
+                "Le detail des endpoints, l'authentification Bearer, les "
+                "regles CORS et les exemples de code PHP sont documentes dans "
+                "le README.md du depot (section Bridge PHP).",
             ),
         ],
     ),

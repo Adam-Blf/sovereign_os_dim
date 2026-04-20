@@ -48,6 +48,7 @@ from typing import Callable
 from flask import Flask, jsonify, request
 
 from backend.data_processor import DataProcessor
+from backend.structure import parse_structure
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -357,6 +358,23 @@ def create_app() -> Flask:
         if not filepath:
             return jsonify(error="path requis"), 400
         return jsonify(_processor.inspect_file(filepath))
+
+    @app.post("/api/structure")
+    @_require_token
+    def api_structure():
+        """
+        Parse un fichier de structure (pôles / services / UM) et renvoie
+        l'arbre JSON prêt à être dessiné côté client. Auto-détection du
+        séparateur et des colonnes — voir backend/structure.py.
+        """
+        payload = request.get_json(silent=True) or {}
+        filepath = payload.get("path")
+        if not filepath:
+            return jsonify(error="path requis"), 400
+        out = parse_structure(filepath)
+        if "error" in out:
+            return jsonify(out), 404
+        return jsonify(out)
 
     @app.post("/api/import-csv")
     @_require_token
@@ -676,7 +694,11 @@ def create_app() -> Flask:
 
     @app.errorhandler(500)
     def _ie(e):
-        return jsonify(error="Internal server error", detail=str(e)), 500
+        # Ne JAMAIS exposer le message d'exception côté client : il peut
+        # divulguer des chemins système, des versions de librairies, voire
+        # du contenu de fichier. On logge côté serveur, on renvoie générique.
+        app.logger.exception("Unhandled error: %s", e)
+        return jsonify(error="Internal server error"), 500
 
     return app
 
@@ -708,6 +730,21 @@ def main():
         f"  CORS origins: {', '.join(ALLOWED_ORIGINS) or '(none)'}\n"
     )
     print(banner)
+
+    # Garde-fou : refuser un binding non-local sans jeton. Laisser le bridge
+    # accessible au LAN sans auth serait une élévation de privilèges (lecture
+    # et écriture arbitraires de fichiers côté poste DIM via /api/inspect et
+    # /api/export).
+    if args.host not in ("127.0.0.1", "localhost", "::1") and not BRIDGE_TOKEN:
+        print(
+            "  [!] REFUS : host non-local sans SOVEREIGN_BRIDGE_TOKEN.\n"
+            "      Définissez un jeton ou restez sur 127.0.0.1."
+        )
+        raise SystemExit(2)
+
+    if args.debug:
+        print("  [!] debug=True : ne JAMAIS utiliser en production.")
+
     app.run(host=args.host, port=args.port, debug=args.debug)
 
 

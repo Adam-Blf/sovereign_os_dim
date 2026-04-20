@@ -41,3 +41,8 @@ PILOT_OUTPUT/
 
 # Manuel PDF généré par tools/generate_manual.py (non commité)
 docs/Sovereign_OS_DIM_Manuel.pdf
+
+# Réglages d'agent IDE locaux (allowlist de commandes par utilisateur)
+.claude/
+.cursor/
+.vscode/
