@@ -621,3 +621,29 @@ kbd {
         overflow: visible !important;
     }
 }
+
+/* ── Structure Tree (onglet Structure) ──────────────────────────────────────
+   Arbre expand/collapse utilisé pour afficher le fichier de structure
+   (pôles / services / UM). Rendu minimaliste : l'essentiel est porté par
+   Tailwind dans app.js ; ces règles traitent uniquement les détails dont
+   Tailwind ne s'occupe pas (liste sans puces, continuité du trait à
+   gauche). */
+.tree-root,
+.tree-children {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.tree-node {
+    position: relative;
+}
+
+.tree-row {
+    transition: background-color 120ms ease;
+    user-select: none;
+}
+
+.tree-chev {
+    transition: transform 120ms ease;
+}

@@ -25,6 +25,7 @@ import os
 import csv
 import webview
 from backend.data_processor import DataProcessor
+from backend.structure import parse_structure
 
 
 class Api:
@@ -152,6 +153,34 @@ class Api:
         if result and len(result) > 0:
             return result[0]
         return None
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # STRUCTURE — Arborescence pôles / services / UM (fichier de structure)
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def select_structure_file(self):
+        """
+        Ouvre un dialog natif filtré sur les formats de structure usuels
+        (CSV, TSV, TXT). L'utilisateur choisit son fichier TIC / structure.
+        """
+        result = webview.windows[0].create_file_dialog(
+            webview.OPEN_DIALOG,
+            file_types=(
+                "Fichier structure (*.csv;*.tsv;*.txt)",
+                "Tous les fichiers (*.*)",
+            ),
+        )
+        if result and len(result) > 0:
+            return result[0]
+        return None
+
+    def load_structure(self, filepath):
+        """
+        Parse un fichier de structure et retourne l'arbre JSON prêt à
+        être affiché. Le format est auto-détecté (CSV/TSV, avec ou sans
+        en-tête, BOM UTF-8 toléré).
+        """
+        return parse_structure(filepath)
 
     def import_csv_file(self, filepath):
         """
