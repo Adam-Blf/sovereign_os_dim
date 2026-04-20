@@ -26,16 +26,19 @@
 - ✅ **Dark Mode** — Thème sombre complet
 - ✅ **Raccourcis clavier** — Navigation rapide (Ctrl+1→6)
 - ✅ **EXE Portable** — Standalone 11 MB, aucune installation requise
+- ✅ **Bridge HTTP REST** — Expose le moteur ATIH à une application PHP
+- ✅ **Visualisation Excel** — Charts interactifs depuis un ou plusieurs `.xlsx`
+- ✅ **Mode d'emploi PDF** — Généré via `fpdf2` (`tools/generate_manual.py`)
 
 ### Formats ATIH couverts (2010–2026)
 
-| Champ | Formats | Depuis |
-|-------|---------|--------|
-| **PSY** | RPS, RAA, RPSA, R3A, FICHSUP-PSY, EDGAR, FICUM-PSY, RSF-ACE-PSY | 2007 |
-| **MCO** | RSS/RUM, RSFA, RSFB, RSFC | 1991 |
-| **SSR/SMR** | RHS, SSRHA, RAPSS, FICHCOMP-SMR | 2003 |
-| **HAD** | RPSS, RAPSS-HAD, FICHCOMP-HAD, SSRHA-HAD | 2005 |
-| **Transversal** | VID-HOSP, ANO-HOSP, FICHCOMP | 2009 |
+| Champ           | Formats                                                         | Depuis |
+| --------------- | --------------------------------------------------------------- | ------ |
+| **PSY**         | RPS, RAA, RPSA, R3A, FICHSUP-PSY, EDGAR, FICUM-PSY, RSF-ACE-PSY | 2007   |
+| **MCO**         | RSS/RUM, RSFA, RSFB, RSFC                                       | 1991   |
+| **SSR/SMR**     | RHS, SSRHA, RAPSS, FICHCOMP-SMR                                 | 2003   |
+| **HAD**         | RPSS, RAPSS-HAD, FICHCOMP-HAD, SSRHA-HAD                        | 2005   |
+| **Transversal** | VID-HOSP, ANO-HOSP, FICHCOMP                                    | 2009   |
 
 ## Installation
 
@@ -90,15 +93,27 @@ python -m pytest tests/ -v --cov=backend --cov-report=term-missing
 
 ```
 sovereign_os_dim/
-├── main.py                 # Point d'entrée pywebview
+├── main.py                 # Point d'entrée pywebview (desktop)
+├── bridge.py               # Point d'entrée bridge HTTP (PHP)
 ├── backend/
 │   ├── __init__.py         # Package init
 │   ├── api.py              # API exposée au frontend (js_api)
+│   ├── bridge.py           # Serveur Flask REST (intégration PHP)
 │   └── data_processor.py   # Moteur ATIH (scan, MPI, export)
 ├── frontend/
-│   ├── index.html          # Interface principale
+│   ├── index.html          # Interface principale (desktop)
 │   ├── css/style.css       # Design system premium
 │   └── js/app.js           # Logique frontend
+├── php/                    # Console PHP consommant le bridge
+│   ├── SovereignClient.php # Client cURL autonome
+│   ├── config.php          # URL + token (env vars)
+│   ├── index.php           # Tableau de bord
+│   ├── collisions.php      # Identitovigilance
+│   ├── chart.php           # Visualisation Excel (1+ fichiers)
+│   ├── assets/style.css    # Design cohérent avec le desktop
+│   └── README.md           # Guide PHP détaillé
+├── tools/
+│   └── generate_manual.py  # Mode d'emploi PDF (fpdf2)
 ├── tests/
 │   ├── conftest.py         # Fixtures partagées (10 fixtures)
 │   └── test_data_processor.py  # 147 tests unitaires
@@ -115,6 +130,62 @@ sovereign_os_dim/
 - **Build** : PyInstaller 6.11+
 - **Fonts** : Plus Jakarta Sans, JetBrains Mono
 
+## Intégration PHP (bridge HTTP REST)
+
+Un serveur HTTP optionnel ré-expose le moteur ATIH à une application PHP. Le
+desktop pywebview reste l'usage principal — le bridge est un complément pour
+les équipes qui souhaitent piloter le moteur depuis un navigateur.
+
+```bash
+# Terminal 1 — Lancer le bridge
+SOVEREIGN_BRIDGE_TOKEN=secret python bridge.py --port 8765
+
+# Terminal 2 — Lancer la console PHP
+export SOVEREIGN_BRIDGE_URL=http://127.0.0.1:8765
+export SOVEREIGN_BRIDGE_TOKEN=secret
+php -S 127.0.0.1:8080 -t php
+```
+
+Ouvrez http://127.0.0.1:8080. Voir [`php/README.md`](php/README.md) pour le
+guide détaillé (endpoints, authentification Bearer, CORS, client PHP).
+
+### Endpoints principaux
+
+| Endpoint                | Méthode | Rôle                                          |
+| ----------------------- | ------- | --------------------------------------------- |
+| `/health`               | GET     | Heartbeat (public)                            |
+| `/api/matrix`           | GET     | 23 formats ATIH                               |
+| `/api/scan`             | POST    | Scan de dossiers                              |
+| `/api/process`          | POST    | Scan + extraction MPI                         |
+| `/api/collisions`       | GET     | Liste des collisions IPP/DDN                  |
+| `/api/resolve`          | POST    | `set_pivot` manuel ou `auto=true`             |
+| `/api/export`           | POST    | Export CSV Pilot                              |
+| `/api/import-excel`     | POST    | Lecture `.xlsx`                               |
+| `/api/chart-from-excel` | POST    | Série agrégée pour Chart.js (1 ou N fichiers) |
+
+## Visualisation Excel (un ou plusieurs classeurs)
+
+La page `php/chart.php` transforme un ou plusieurs `.xlsx` en graphique
+interactif (Chart.js). Deux modes pour le multi-fichiers :
+
+- **`compare`** — une série par fichier, alignée sur l'union des labels
+  (comparaison 2024 vs 2025, plusieurs établissements…)
+- **`merge`** — fusion des lignes en une seule série (rapport consolidé)
+
+Agrégations : `sum`, `avg`, `count`. Types : `bar`, `line`, `pie`, `doughnut`.
+Les fichiers restent côté serveur — aucun upload depuis le navigateur.
+
+## Mode d'emploi PDF (fpdf2)
+
+```bash
+pip install "fpdf2>=2.8"
+python tools/generate_manual.py
+# → docs/Sovereign_OS_DIM_Manuel.pdf
+```
+
+Le script régénère le PDF à chaque évolution des endpoints. Le contenu reste
+la source de vérité dans `tools/generate_manual.py`.
+
 ## Compilation
 
 ```bash
@@ -124,14 +195,14 @@ build.bat
 
 ## Raccourcis Clavier
 
-| Raccourci | Action |
-|-----------|--------|
-| `Ctrl+1` | Dashboard |
-| `Ctrl+2` | Modo Files |
-| `Ctrl+3` | Identitovigilance |
-| `Ctrl+4` | Export PMSI |
-| `Ctrl+5` | Tutoriel |
-| `Echap` | Fermer les modales |
+| Raccourci | Action             |
+| --------- | ------------------ |
+| `Ctrl+1`  | Dashboard          |
+| `Ctrl+2`  | Modo Files         |
+| `Ctrl+3`  | Identitovigilance  |
+| `Ctrl+4`  | Export PMSI        |
+| `Ctrl+5`  | Tutoriel           |
+| `Echap`   | Fermer les modales |
 
 ## Auteur
 
@@ -157,7 +228,6 @@ build.bat
 - ✅ Nettoyage du projet (suppression des builds obsolètes)
 - ✅ Header ASCII professionnel sur tous les fichiers Python
 - ✅ Commentaires métier expliquant le POURQUOI
-
 
 ---
 

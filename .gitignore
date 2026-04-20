@@ -38,3 +38,6 @@ design-system/
 
 # Output
 PILOT_OUTPUT/
+
+# Manuel PDF généré par tools/generate_manual.py (non commité)
+docs/Sovereign_OS_DIM_Manuel.pdf
