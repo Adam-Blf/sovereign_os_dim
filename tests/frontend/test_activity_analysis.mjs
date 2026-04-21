@@ -97,6 +97,140 @@ async function countUmActivityAsync(lines, umCodes, onProgress) {
     return counts;
 }
 
+const _SECTOR_LETTER_RE = /^\s*(?:(\d{2,3})[-_\s]?)?([GIDPZ])[-_\s]?(\d{2,3})?\s*$/i;
+
+function _detectSectorType(code) {
+    if (!code) return null;
+    const m = _SECTOR_LETTER_RE.exec(String(code));
+    return m ? m[2].toUpperCase() : null;
+}
+
+function _detectDelimiter(sample) {
+    const candidates = [";", ",", "\t", "|"];
+    const first = (sample.split(/\r?\n/)[0] || "");
+    let best = ";", bestCount = 0;
+    candidates.forEach(d => {
+        const n = first.split(d).length - 1;
+        if (n > bestCount) { bestCount = n; best = d; }
+    });
+    return bestCount > 0 ? best : ";";
+}
+
+function _parseCsvLine(line, delim) {
+    const out = [];
+    let cur = "", inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { inQuote = !inQuote; continue; }
+        if (c === delim && !inQuote) { out.push(cur); cur = ""; continue; }
+        cur += c;
+    }
+    out.push(cur);
+    return out.map(x => x.trim());
+}
+
+function parseStructureText(text) {
+    const CODE_COLS = new Set(["code", "id", "identifiant", "um", "code_um", "code_service"]);
+    const PARENT_COLS = new Set(["parent", "parent_code", "code_parent", "rattache_a", "rattachement"]);
+    const LABEL_COLS = new Set(["label", "libelle", "libellé", "nom", "name", "designation"]);
+    const LEVEL_COLS = new Set(["level", "niveau", "type"]);
+    const FALLBACK_ORDER = ["level", "code", "parent", "label"];
+
+    const delim = _detectDelimiter(text.slice(0, 4096));
+    const rawLines = text.split(/\r?\n/).filter(l => l.length > 0);
+    if (!rawLines.length) return { tree: [], summary: { total_nodes: 0, roots: 0, max_depth: 0, by_level: {} } };
+
+    const allRows = rawLines.map(l => _parseCsvLine(l, delim));
+    const firstRow = allRows[0];
+    const firstTokens = new Set(firstRow.map(c => (c || "").trim().toLowerCase().replace(/^﻿/, "")));
+    const known = new Set([...CODE_COLS, ...PARENT_COLS, ...LABEL_COLS, ...LEVEL_COLS]);
+    const hasHeader = [...firstTokens].some(t => known.has(t));
+
+    const headers = hasHeader ? firstRow : [];
+    const rows = hasHeader ? allRows.slice(1) : allRows;
+
+    const mapping = {};
+    headers.forEach((h, i) => {
+        const key = (h || "").trim().toLowerCase().replace(/^﻿/, "");
+        if (CODE_COLS.has(key) && mapping.code === undefined) mapping.code = i;
+        else if (PARENT_COLS.has(key) && mapping.parent === undefined) mapping.parent = i;
+        else if (LABEL_COLS.has(key) && mapping.label === undefined) mapping.label = i;
+        else if (LEVEL_COLS.has(key) && mapping.level === undefined) mapping.level = i;
+    });
+    FALLBACK_ORDER.forEach((role, idx) => {
+        if (mapping[role] === undefined && idx < (headers.length || firstRow.length)) {
+            mapping[role] = idx;
+        }
+    });
+
+    const cellAt = (row, idx) => (idx === undefined || idx >= row.length) ? "" : (row[idx] || "").trim();
+
+    const nodes = new Map();
+    const order = [];
+    rows.forEach(row => {
+        if (!row || row.every(c => !(c || "").trim())) return;
+        const code = cellAt(row, mapping.code);
+        if (!code) return;
+        const parent = cellAt(row, mapping.parent);
+        const label = cellAt(row, mapping.label) || code;
+        const level = cellAt(row, mapping.level);
+
+        let sectorType = _detectSectorType(code);
+        if (!sectorType && label) {
+            const up = label.toUpperCase();
+            if (up.includes("UMD") || up.includes("MALADES DIFFICILES")) sectorType = "D";
+            else if (up.includes("UHSA") || up.includes("PÉNITENTIAIRE") || up.includes("PENITENTIAIRE")) sectorType = "P";
+            else if (up.includes("INFANTO") || up.includes("PÉDOPSY") || up.includes("PEDOPSY") || up.includes("ENFANT") || up.includes("ADOLESCENT")) sectorType = "I";
+            else if (up.includes("INTERSECTO") || up.includes("INTER-SECTO")) sectorType = "Z";
+        }
+
+        if (nodes.has(code)) {
+            const existing = nodes.get(code);
+            if (!existing.label && label) existing.label = label;
+            return;
+        }
+        nodes.set(code, {
+            code, parent: parent || null, label,
+            level: level || null, sector_type: sectorType, children: [],
+        });
+        order.push(code);
+    });
+
+    const roots = [];
+    order.forEach(code => {
+        const node = nodes.get(code);
+        const p = node.parent;
+        if (p && nodes.has(p) && p !== code) {
+            nodes.get(p).children.push(node);
+        } else {
+            roots.push(node);
+        }
+    });
+
+    const propagate = (n, inherited) => {
+        if (!n.sector_type && inherited) n.sector_type = inherited;
+        const pass = n.sector_type || inherited;
+        (n.children || []).forEach(c => propagate(c, pass));
+    };
+    roots.forEach(r => propagate(r, null));
+
+    let totalNodes = 0, maxDepth = 0;
+    const byLevel = {};
+    const walk = (n, depth) => {
+        totalNodes++;
+        maxDepth = Math.max(maxDepth, depth);
+        const lv = (n.level || "").toUpperCase();
+        if (lv) byLevel[lv] = (byLevel[lv] || 0) + 1;
+        (n.children || []).forEach(c => walk(c, depth + 1));
+    };
+    roots.forEach(r => walk(r, 0));
+
+    return {
+        tree: roots,
+        summary: { total_nodes: totalNodes, roots: roots.length, max_depth: maxDepth, by_level: byLevel },
+    };
+}
+
 function extractPeriodFromFilenames(filenames) {
     const years = new Set();
     const months = new Set();
@@ -384,6 +518,75 @@ test("extractPeriodFromFilenames · MMAAAA format alternatif", () => {
 
 test("extractPeriodFromFilenames · pas de date = null", () => {
     eq(extractPeriodFromFilenames(["sans_date.txt", "export.txt"]), null);
+});
+
+test("parseStructureText · CSV avec header standard", () => {
+    const csv = `LEVEL;CODE;PARENT;LABEL
+POLE;POLE_I;;Pole Infanto-juv
+SECTEUR;94I01;POLE_I;Secteur Gentilly
+UM;4001;94I01;HDJ Enfants
+UM;4002;94I01;HC Adolescents`;
+    const p = parseStructureText(csv);
+    eq(p.summary.total_nodes, 4);
+    eq(p.summary.roots, 1);
+    eq(p.tree[0].code, "POLE_I");
+    eq(p.tree[0].children.length, 1);
+    eq(p.tree[0].children[0].children.length, 2);
+    eq(p.tree[0].children[0].children[0].code, "4001");
+});
+
+test("parseStructureText · detection sector_type I via code 94I01", () => {
+    const csv = `CODE;PARENT;LABEL\n94I01;;Secteur`;
+    const p = parseStructureText(csv);
+    eq(p.tree[0].sector_type, "I");
+});
+
+test("parseStructureText · propagation sector_type aux enfants UM", () => {
+    const csv = `LEVEL;CODE;PARENT;LABEL
+SECTEUR;94I01;;Secteur I
+UM;4001;94I01;HDJ`;
+    const p = parseStructureText(csv);
+    eq(p.tree[0].children[0].sector_type, "I", "UM herite du secteur");
+});
+
+test("parseStructureText · auto-detect separator virgule", () => {
+    const csv = `CODE,PARENT,LABEL\nROOT,,Racine\nA,ROOT,Enfant A`;
+    const p = parseStructureText(csv);
+    eq(p.summary.total_nodes, 2);
+});
+
+test("parseStructureText · auto-detect separator tab", () => {
+    const csv = `CODE\tPARENT\tLABEL\nROOT\t\tRacine\nA\tROOT\tEnfant A`;
+    const p = parseStructureText(csv);
+    eq(p.summary.total_nodes, 2);
+});
+
+test("parseStructureText · sans header tombe sur ordre positionnel", () => {
+    // Pas de header · ordre level/code/parent/label
+    const csv = `POLE;MYPOLE;;Un pole
+UM;4001;MYPOLE;Une UM`;
+    const p = parseStructureText(csv);
+    ok(p.summary.total_nodes >= 1);
+});
+
+test("parseStructureText · dedup sur code duplique", () => {
+    const csv = `CODE;PARENT;LABEL
+A;;Root
+A;;Duplicate`;
+    const p = parseStructureText(csv);
+    eq(p.summary.total_nodes, 1);
+});
+
+test("parseStructureText · vide retourne arbre vide", () => {
+    const p = parseStructureText("");
+    eq(p.summary.total_nodes, 0);
+    eq(p.tree.length, 0);
+});
+
+test("parseStructureText · heuristique UMD depuis le label", () => {
+    const csv = `CODE;PARENT;LABEL\nUMD_HC;;UMD Henri Colin`;
+    const p = parseStructureText(csv);
+    eq(p.tree[0].sector_type, "D");
 });
 
 test("scénario métier complet · 3 UM sans activité sur 6", () => {

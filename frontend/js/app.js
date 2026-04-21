@@ -1349,6 +1349,149 @@
         return counts;
     }
 
+    // ─── Parseur structure CSV/TSV 100 % client-side ───────────────────────
+    // Port JS de backend/structure.py · permet de charger un fichier de
+    // structure sans dependance au pont natif (dialog WebView2 bloque sur
+    // certains postes). Accepte CSV/TSV/TXT avec colonnes libres ou fichier
+    // plat indente.
+
+    const _SECTOR_LETTER_RE = /^\s*(?:(\d{2,3})[-_\s]?)?([GIDPZ])[-_\s]?(\d{2,3})?\s*$/i;
+
+    function _detectSectorType(code) {
+        if (!code) return null;
+        const m = _SECTOR_LETTER_RE.exec(String(code));
+        return m ? m[2].toUpperCase() : null;
+    }
+
+    function _detectDelimiter(sample) {
+        const candidates = [";", ",", "\t", "|"];
+        const first = (sample.split(/\r?\n/)[0] || "");
+        let best = ";", bestCount = 0;
+        candidates.forEach(d => {
+            const n = first.split(d).length - 1;
+            if (n > bestCount) { bestCount = n; best = d; }
+        });
+        return bestCount > 0 ? best : ";";
+    }
+
+    function _parseCsvLine(line, delim) {
+        // CSV light · gere les guillemets simples sans virgule interne
+        const out = [];
+        let cur = "", inQuote = false;
+        for (let i = 0; i < line.length; i++) {
+            const c = line[i];
+            if (c === '"') { inQuote = !inQuote; continue; }
+            if (c === delim && !inQuote) { out.push(cur); cur = ""; continue; }
+            cur += c;
+        }
+        out.push(cur);
+        return out.map(x => x.trim());
+    }
+
+    function parseStructureText(text) {
+        const CODE_COLS = new Set(["code", "id", "identifiant", "um", "code_um", "code_service"]);
+        const PARENT_COLS = new Set(["parent", "parent_code", "code_parent", "rattache_a", "rattachement"]);
+        const LABEL_COLS = new Set(["label", "libelle", "libellé", "nom", "name", "designation"]);
+        const LEVEL_COLS = new Set(["level", "niveau", "type"]);
+        const FALLBACK_ORDER = ["level", "code", "parent", "label"];
+
+        const delim = _detectDelimiter(text.slice(0, 4096));
+        const rawLines = text.split(/\r?\n/).filter(l => l.length > 0);
+        if (!rawLines.length) return { tree: [], summary: { total_nodes: 0, roots: 0, max_depth: 0, by_level: {} } };
+
+        const allRows = rawLines.map(l => _parseCsvLine(l, delim));
+        const firstRow = allRows[0];
+        const firstTokens = new Set(firstRow.map(c => (c || "").trim().toLowerCase().replace(/^﻿/, "")));
+        const known = new Set([...CODE_COLS, ...PARENT_COLS, ...LABEL_COLS, ...LEVEL_COLS]);
+        const hasHeader = [...firstTokens].some(t => known.has(t));
+
+        const headers = hasHeader ? firstRow : [];
+        const rows = hasHeader ? allRows.slice(1) : allRows;
+
+        const mapping = {};
+        headers.forEach((h, i) => {
+            const key = (h || "").trim().toLowerCase().replace(/^﻿/, "");
+            if (CODE_COLS.has(key) && mapping.code === undefined) mapping.code = i;
+            else if (PARENT_COLS.has(key) && mapping.parent === undefined) mapping.parent = i;
+            else if (LABEL_COLS.has(key) && mapping.label === undefined) mapping.label = i;
+            else if (LEVEL_COLS.has(key) && mapping.level === undefined) mapping.level = i;
+        });
+        FALLBACK_ORDER.forEach((role, idx) => {
+            if (mapping[role] === undefined && idx < (headers.length || firstRow.length)) {
+                mapping[role] = idx;
+            }
+        });
+
+        const cellAt = (row, idx) => (idx === undefined || idx >= row.length) ? "" : (row[idx] || "").trim();
+
+        const nodes = new Map();
+        const order = [];
+        rows.forEach(row => {
+            if (!row || row.every(c => !(c || "").trim())) return;
+            const code = cellAt(row, mapping.code);
+            if (!code) return;
+            const parent = cellAt(row, mapping.parent);
+            const label = cellAt(row, mapping.label) || code;
+            const level = cellAt(row, mapping.level);
+
+            let sectorType = _detectSectorType(code);
+            if (!sectorType && label) {
+                const up = label.toUpperCase();
+                if (up.includes("UMD") || up.includes("MALADES DIFFICILES")) sectorType = "D";
+                else if (up.includes("UHSA") || up.includes("PÉNITENTIAIRE") || up.includes("PENITENTIAIRE")) sectorType = "P";
+                else if (up.includes("INFANTO") || up.includes("PÉDOPSY") || up.includes("PEDOPSY") || up.includes("ENFANT") || up.includes("ADOLESCENT")) sectorType = "I";
+                else if (up.includes("INTERSECTO") || up.includes("INTER-SECTO")) sectorType = "Z";
+            }
+
+            if (nodes.has(code)) {
+                const existing = nodes.get(code);
+                if (!existing.label && label) existing.label = label;
+                return;
+            }
+            nodes.set(code, {
+                code, parent: parent || null, label,
+                level: level || null, sector_type: sectorType, children: [],
+            });
+            order.push(code);
+        });
+
+        const roots = [];
+        order.forEach(code => {
+            const node = nodes.get(code);
+            const p = node.parent;
+            if (p && nodes.has(p) && p !== code) {
+                nodes.get(p).children.push(node);
+            } else {
+                roots.push(node);
+            }
+        });
+
+        // Propagation sector_type I depuis secteur -> UM (regle metier ARS)
+        const propagate = (n, inherited) => {
+            if (!n.sector_type && inherited) n.sector_type = inherited;
+            const pass = n.sector_type || inherited;
+            (n.children || []).forEach(c => propagate(c, pass));
+        };
+        roots.forEach(r => propagate(r, null));
+
+        // Summary
+        let totalNodes = 0, maxDepth = 0;
+        const byLevel = {};
+        const walk = (n, depth) => {
+            totalNodes++;
+            maxDepth = Math.max(maxDepth, depth);
+            const lv = (n.level || "").toUpperCase();
+            if (lv) byLevel[lv] = (byLevel[lv] || 0) + 1;
+            (n.children || []).forEach(c => walk(c, depth + 1));
+        };
+        roots.forEach(r => walk(r, 0));
+
+        return {
+            tree: roots,
+            summary: { total_nodes: totalNodes, roots: roots.length, max_depth: maxDepth, by_level: byLevel },
+        };
+    }
+
     // Extrait les années / mois (AAAA ou AAAAMM ou MMAAAA) depuis les noms de
     // fichiers ATIH. Convention GHT · `RPS_202410.txt`, `RAA_10_2024.txt`, etc.
     function extractPeriodFromFilenames(filenames) {
@@ -1424,28 +1567,119 @@
     function renderStructure(vp) {
         vp.innerHTML = `
             <div class="bg-white dark:bg-slate-800 rounded-[3rem] p-14 border border-slate-100 dark:border-slate-700 shadow-xl dark:shadow-none max-w-6xl mx-auto transition-colors duration-500">
-                <div class="text-center mb-10">
+                <div class="text-center mb-8">
                     <div class="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 transition-colors duration-500">
                         <i data-lucide="git-branch" class="w-10 h-10 text-gh-navy dark:text-blue-400"></i>
                     </div>
                     <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic mb-3">Fichier de structure</h3>
-                    <p class="text-slate-400 dark:text-slate-500 mb-8">Visualisez l'arborescence des pôles, services et UM d'un établissement</p>
-                    <button class="px-10 py-5 bg-gh-navy text-white rounded-full font-black uppercase text-xs tracking-[0.2em] shadow-lg hover:bg-blue-600 transition-all active:scale-95" id="btn-structure-select">
-                        <i data-lucide="file-up" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Sélectionner le fichier structure
+                    <p class="text-slate-400 dark:text-slate-500 mb-6">Visualisez l'arborescence des pôles, services et UM d'un établissement</p>
+                </div>
+
+                <input type="file" id="structure-file-input" accept=".csv,.tsv,.txt" class="hidden" />
+                <div id="structure-drop-zone" role="button" tabindex="0" aria-label="Déposer un fichier structure · ou appuyer sur Entrée pour ouvrir le sélecteur"
+                     class="mx-auto max-w-3xl border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-[2rem] p-10 text-center transition-all cursor-pointer hover:border-gh-navy hover:bg-blue-50/40 dark:hover:bg-blue-900/15 focus:outline-none focus:border-gh-navy focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900/40 mb-6">
+                    <i data-lucide="file-up" class="w-12 h-12 text-gh-navy dark:text-blue-400 mx-auto mb-5"></i>
+                    <p class="font-black uppercase tracking-wider text-gh-navy dark:text-blue-400 text-base mb-2">Glissez-déposez votre fichier structure</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">ou cliquez pour ouvrir le sélecteur · Entrée / Espace au clavier</p>
+                    <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Formats · CSV, TSV, TXT · colonnes LEVEL / CODE / PARENT / LABEL</p>
+                </div>
+
+                <div class="text-center mb-4">
+                    <button class="px-6 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full font-bold uppercase text-[10px] tracking-[0.25em] hover:bg-slate-200 dark:hover:bg-slate-600 transition-all" id="btn-structure-select" title="Utiliser le dialog Windows natif (si disponible)">
+                        <i data-lucide="folder-open" class="w-3.5 h-3.5 inline mr-1.5 -mt-0.5"></i>Ou utiliser le dialog Windows
                     </button>
                 </div>
+
                 <div id="structure-result" class="hidden"></div>
             </div>
         `;
 
+        // ─── Path client-side · drop-zone + file input HTML5 ──────────────
+        const dropZoneS = $("structure-drop-zone");
+        const fileInputS = $("structure-file-input");
+
+        async function handleStructureFile(file) {
+            if (!file) return;
+            toast("Structure", "Lecture du fichier…", "info");
+            let text;
+            try {
+                text = await new Promise((resolve, reject) => {
+                    const r = new FileReader();
+                    r.onload = e => resolve(String(e.target.result || ""));
+                    r.onerror = () => reject(new Error("Lecture impossible"));
+                    r.readAsText(file, "utf-8");
+                });
+            } catch (e) {
+                toast("Erreur", e.message, "error");
+                return;
+            }
+            const parsed = parseStructureText(text);
+            if (!parsed.tree.length) {
+                toast("Erreur", "Aucun nœud détecté · vérifiez le format du fichier", "error");
+                return;
+            }
+            performStructureRender({
+                filename: file.name,
+                summary: parsed.summary,
+                tree: parsed.tree,
+            }, /*filepath=*/ null);
+        }
+
+        if (dropZoneS && fileInputS) {
+            dropZoneS.addEventListener("click", () => fileInputS.click());
+            dropZoneS.addEventListener("keydown", e => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    fileInputS.click();
+                }
+            });
+            ["dragenter", "dragover"].forEach(ev => dropZoneS.addEventListener(ev, e => {
+                e.preventDefault(); e.stopPropagation();
+                dropZoneS.classList.add("border-gh-navy", "bg-blue-50/50", "dark:bg-blue-900/20");
+            }));
+            ["dragleave", "dragend"].forEach(ev => dropZoneS.addEventListener(ev, e => {
+                e.preventDefault(); e.stopPropagation();
+                dropZoneS.classList.remove("border-gh-navy", "bg-blue-50/50", "dark:bg-blue-900/20");
+            }));
+            dropZoneS.addEventListener("drop", e => {
+                e.preventDefault(); e.stopPropagation();
+                dropZoneS.classList.remove("border-gh-navy", "bg-blue-50/50", "dark:bg-blue-900/20");
+                if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleStructureFile(e.dataTransfer.files[0]);
+                }
+            });
+            fileInputS.addEventListener("change", e => {
+                if (e.target.files && e.target.files[0]) handleStructureFile(e.target.files[0]);
+            });
+        }
+
         const btn = $("btn-structure-select");
         if (btn) btn.addEventListener("click", async () => {
-            if (!API()) return;
-            const filepath = await API().select_structure_file();
+            if (!API()) {
+                toast("Indisponible", "Bridge non disponible · utilisez le drop-zone", "warn");
+                return;
+            }
+            let filepath;
+            try {
+                filepath = await API().select_structure_file();
+            } catch (e) {
+                toast("Erreur dialog", e.message || "Dialog natif indisponible · utilisez le drop-zone", "error");
+                return;
+            }
             if (!filepath) return;
 
             toast("Structure", "Analyse du fichier…", "info");
-            const data = await API().load_structure(filepath);
+            let data;
+            try {
+                data = await API().load_structure(filepath);
+            } catch (e) {
+                toast("Erreur bridge", e.message || "Échec du parsing · utilisez le drop-zone", "error");
+                return;
+            }
+            performStructureRender(data, filepath);
+        });
+
+        function performStructureRender(data, filepath) {
             const out = $("structure-result");
             if (!out) return;
 
@@ -1574,24 +1808,32 @@
                 setZoom(zoom + (e.deltaY < 0 ? 0.1 : -0.1));
             }, { passive: false });
 
-            // Export PDF — dialog Enregistrer-Sous + génération via fpdf2
+            // Export PDF · uniquement si on a un filepath natif (pas client-side)
             const btnPdf = $("btn-tree-export-pdf");
-            if (btnPdf) btnPdf.addEventListener("click", async () => {
-                if (!API()) return;
-                btnPdf.disabled = true;
-                btnPdf.classList.add("opacity-60");
-                toast("Export PDF", "Génération en cours…", "info");
-                const r = await API().export_structure_pdf(filepath);
-                btnPdf.disabled = false;
-                btnPdf.classList.remove("opacity-60");
-                if (r && r.error) {
-                    toast("Erreur", r.error, "error");
-                } else if (r && r.cancelled) {
-                    toast("Annulé", "Export PDF annulé", "info");
-                } else if (r && r.path) {
-                    toast("PDF généré", r.path.split(/[\\/]/).pop(), "success");
+            if (btnPdf) {
+                if (!filepath) {
+                    btnPdf.disabled = true;
+                    btnPdf.classList.add("opacity-40");
+                    btnPdf.title = "Export PDF indisponible pour un fichier chargé via drop-zone · utilisez le dialog natif";
+                } else {
+                    btnPdf.addEventListener("click", async () => {
+                        if (!API()) return;
+                        btnPdf.disabled = true;
+                        btnPdf.classList.add("opacity-60");
+                        toast("Export PDF", "Génération en cours…", "info");
+                        const r = await API().export_structure_pdf(filepath);
+                        btnPdf.disabled = false;
+                        btnPdf.classList.remove("opacity-60");
+                        if (r && r.error) {
+                            toast("Erreur", r.error, "error");
+                        } else if (r && r.cancelled) {
+                            toast("Annulé", "Export PDF annulé", "info");
+                        } else if (r && r.path) {
+                            toast("PDF généré", r.path.split(/[\\/]/).pop(), "success");
+                        }
+                    });
                 }
-            });
+            }
 
             // =====================================================
             // Analyse d'activité par UM (RPS / RAA)
@@ -1918,7 +2160,7 @@
 
             toast("Structure", `${data.filename} · ${s.total_nodes} nœuds`, "success");
             if (window.lucide) lucide.createIcons();
-        });
+        }
 
         if (window.lucide) lucide.createIcons();
     }
