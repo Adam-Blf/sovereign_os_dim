@@ -76,7 +76,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 # En 2021, certains établissements (ex: Fondation Vallée) ont produit des
 # fichiers RPS et RAA avec des longueurs de ligne différentes de la norme
 # actuelle. Cela crée deux formats distincts pour les numéros de dossier.
-# Pour garantir la cohérence avec les données 2022-2025 déjà dans BigQuery,
+# Pour garantir la cohérence avec les données 2022-2025 déjà dans BIQuery,
 # on définit ici les variantes historiques et on auto-détecte le bon format.
 #
 # RÈGLE : les données 2022-2025 utilisent le format standard (ATIH_MATRIX).
@@ -491,7 +491,7 @@ class DataProcessor:
         return True
 
     # ══════════════════════════════════════════════════════════════════════════
-    # NORMALISATION IPP — Cohérence des numéros de dossier (BigQuery compat)
+    # NORMALISATION IPP — Cohérence des numéros de dossier (BIQuery compat)
     # ══════════════════════════════════════════════════════════════════════════
 
     @staticmethod
@@ -505,7 +505,7 @@ class DataProcessor:
           - Format A : IPP paddé avec des espaces (ex: "12345               ")
           - Format B : IPP paddé avec des zéros  (ex: "00000000000000012345")
 
-        Pour que les données 2021 soient cohérentes avec 2022-2025 (BigQuery),
+        Pour que les données 2021 soient cohérentes avec 2022-2025 (BIQuery),
         on normalise en supprimant le padding gauche (zéros ET espaces),
         tout en conservant la valeur significative.
 
@@ -520,7 +520,7 @@ class DataProcessor:
             return stripped
 
         # Si l'IPP est purement numérique, on supprime les zéros de tête
-        # pour obtenir le format cohérent avec BigQuery (2022-2025)
+        # pour obtenir le format cohérent avec BIQuery (2022-2025)
         if stripped.isdigit():
             return stripped.lstrip("0") or "0"
 
@@ -683,7 +683,7 @@ class DataProcessor:
           1. Auto-détection de la variante de format (2021 vs standard)
           2. Auto-repair : tronque ou padde la ligne à la longueur détectée
           3. Extraction positionnelle de l'IPP et de la DDN
-          4. Normalisation de l'IPP (cohérence BigQuery 2022-2025)
+          4. Normalisation de l'IPP (cohérence BIQuery 2022-2025)
           5. Stockage dans le MPI local (fusionné plus tard avec le MPI global)
         """
         fp = finfo["path"]
@@ -740,7 +740,7 @@ class DataProcessor:
                     raw_ipp = line[i0:i1].strip()
                     ddn = line[d0:d1].strip()
 
-                    # Normalisation de l'IPP pour cohérence BigQuery
+                    # Normalisation de l'IPP pour cohérence BIQuery
                     # Important : garantit que les données 2021 (Fondation Vallée)
                     # utilisent le même format que les données 2022-2025
                     ipp = self.normalize_ipp(raw_ipp)
@@ -773,7 +773,7 @@ class DataProcessor:
         if stats["ipp_normalized"] > 0:
             self._log(
                 f"🔧 {finfo['name']} : {stats['ipp_normalized']} IPP normalisés "
-                f"(cohérence BigQuery)"
+                f"(cohérence BIQuery)"
             )
 
         return {

@@ -8,7 +8,7 @@
 #  Couverture :
 #    - Identification de format ATIH (23 formats)
 #    - Validation de ligne
-#    - Normalisation IPP (cohérence BigQuery)
+#    - Normalisation IPP (cohérence BIQuery)
 #    - Extraction IPP/DDN (tous champs : PSY, MCO, SSR, HAD)
 #    - Auto-détection de variantes 2021
 #    - Collisions MPI et résolution
@@ -185,7 +185,7 @@ class TestLineValidation:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 3 — NORMALISATION IPP (cohérence BigQuery)
+# TEST 3 — NORMALISATION IPP (cohérence BIQuery)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestNormalizeIPP:

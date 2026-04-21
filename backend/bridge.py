@@ -437,7 +437,7 @@ def create_app() -> Flask:
     # IMPORT EXCEL + VISUALISATION
     # ──────────────────────────────────────────────────────────────────────
     # Pourquoi ? Les équipes DIM reçoivent régulièrement des tableaux Excel
-    # (suivi mensuel, extractions BigQuery, retours ATIH). Le bridge lit ces
+    # (suivi mensuel, extractions BIQuery, retours ATIH). Le bridge lit ces
     # classeurs et renvoie soit la table brute, soit une série agrégée prête
     # à être tracée par Chart.js côté PHP (option `chart-from-excel`).
 
