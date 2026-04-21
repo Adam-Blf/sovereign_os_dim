@@ -6,10 +6,10 @@
 // on les exécute en isolation via `new Function(...)`.
 // ══════════════════════════════════════════════════════════════════════════════
 
-// Les helpers ci-dessous doivent être des copies EXACTES de ceux de
-// `frontend/js/app.js` (section STRUCTURE). Le test de parité en fin de
-// fichier compare les deux en tokenisant le source · tout divergence casse
-// un test dédié et force la resync.
+// Les helpers ci-dessous doivent rester synchronisés avec ceux de
+// `frontend/js/app.js` (section STRUCTURE). Ce fichier les réutilise comme
+// copies locales pour des tests isolés, sans navigateur ; toute évolution
+// côté app.js doit donc être répercutée ici.
 
 function collectUmLeaves(roots) {
     const out = [];
@@ -122,15 +122,19 @@ function extractPeriodFromFilenames(filenames) {
 // ── Assertions helpers ─────────────────────────────────────────────────────
 let pass = 0, fail = 0;
 const results = [];
+const pendingTests = [];
 function test(name, fn) {
-    try {
-        fn();
-        results.push({ name, ok: true });
-        pass++;
-    } catch (e) {
-        results.push({ name, ok: false, err: e.message });
-        fail++;
-    }
+    const run = Promise.resolve()
+        .then(() => fn())
+        .then(() => {
+            results.push({ name, ok: true });
+            pass++;
+        })
+        .catch((e) => {
+            results.push({ name, ok: false, err: e && e.message ? e.message : String(e) });
+            fail++;
+        });
+    pendingTests.push(run);
 }
 function eq(a, b, msg) {
     const A = JSON.stringify(a), B = JSON.stringify(b);
@@ -403,10 +407,12 @@ test("scénario métier complet · 3 UM sans activité sur 6", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 // Rapport final
 // ══════════════════════════════════════════════════════════════════════════════
-console.log("\n═══ Tests analyse d'activité UM ═══\n");
-results.forEach(r => {
-    const icon = r.ok ? "\x1b[32m✔\x1b[0m" : "\x1b[31m✘\x1b[0m";
-    console.log(`  ${icon} ${r.name}${r.ok ? "" : "\n      " + r.err}`);
+Promise.allSettled(pendingTests).then(() => {
+    console.log("\n═══ Tests analyse d'activité UM ═══\n");
+    results.forEach(r => {
+        const icon = r.ok ? "\x1b[32m✔\x1b[0m" : "\x1b[31m✘\x1b[0m";
+        console.log(`  ${icon} ${r.name}${r.ok ? "" : "\n      " + r.err}`);
+    });
+    console.log(`\n${pass}/${pass + fail} tests verts${fail > 0 ? ` · \x1b[31m${fail} échec(s)\x1b[0m` : " · \x1b[32mtout OK\x1b[0m"}\n`);
+    process.exit(fail > 0 ? 1 : 0);
 });
-console.log(`\n${pass}/${pass + fail} tests verts${fail > 0 ? ` · \x1b[31m${fail} échec(s)\x1b[0m` : " · \x1b[32mtout OK\x1b[0m"}\n`);
-process.exit(fail > 0 ? 1 : 0);

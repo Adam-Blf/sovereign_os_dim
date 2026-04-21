@@ -100,6 +100,9 @@
 
     // Structure
     parse_structure: (filePath) => call('POST', '/api/structure', { FilePath: filePath }),
+    load_structure: (filePath) => call('POST', '/api/structure', { FilePath: filePath }),
+    export_structure_pdf: (filePath, outputPath) =>
+      call('POST', '/api/export-structure-pdf', { FilePath: filePath, OutputPath: outputPath }),
 
     // DRUIDES pre-flight · catches errors before e-PMSI upload
     validate_preflight: () => call('POST', '/api/validate'),
@@ -123,6 +126,7 @@
     mpi_save: () => call('POST', '/api/mpi/save'),
     mpi_load: () => call('POST', '/api/mpi/load'),
     mpi_stats: () => call('GET', '/api/mpi/stats'),
+    get_mpi_stats: () => call('GET', '/api/mpi/stats'),
     mpi_clear: () => call('POST', '/api/mpi/clear'),
 
     // Dashboard live · agrégats MPI pour Chart.js
@@ -165,7 +169,6 @@
       return result.file || null;
     },
 
-    get_pending_logs: () => Promise.resolve([]),
   };
 
   window.pywebview = window.pywebview || {};
