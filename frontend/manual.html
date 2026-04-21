@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Sovereign OS DIM · Manuel utilisateur</title>
+<style>
+  @page { size: A4; margin: 20mm 15mm; }
+  :root {
+    --navy: #000091;
+    --teal: #00897B;
+    --error: #E11D48;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --slate-50: #F8FAFC;
+    --slate-200: #E2E8F0;
+    --slate-400: #94A3B8;
+    --slate-600: #475569;
+    --slate-900: #0F172A;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: "Plus Jakarta Sans", "Inter", -apple-system, system-ui, sans-serif;
+    color: var(--slate-900);
+    font-size: 11pt;
+    line-height: 1.55;
+    background: white;
+  }
+  .cover {
+    page-break-after: always;
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem 2rem;
+    border-left: 8px solid var(--navy);
+  }
+  .cover .eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10pt;
+    letter-spacing: 0.4em;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .cover h1 {
+    font-size: 42pt;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin: 0 0 1rem;
+    line-height: 0.95;
+  }
+  .cover .sub {
+    font-size: 14pt;
+    color: var(--slate-600);
+    max-width: 28em;
+  }
+  .cover .meta {
+    margin-top: 3rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9pt;
+    color: var(--slate-400);
+  }
+  h2 {
+    font-size: 20pt;
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    color: var(--navy);
+    border-bottom: 3px solid var(--teal);
+    padding-bottom: 0.3rem;
+    margin-top: 2.5rem;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 13pt;
+    font-weight: 800;
+    color: var(--slate-900);
+    margin-top: 1.5rem;
+    page-break-after: avoid;
+  }
+  p { margin: 0.6rem 0; }
+  ul, ol { margin: 0.5rem 0 0.5rem 1.2rem; }
+  li { margin: 0.25rem 0; }
+  code, kbd {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9.5pt;
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+  }
+  .callout {
+    margin: 1rem 0;
+    padding: 0.8rem 1rem;
+    border-left: 4px solid var(--teal);
+    background: #F0FDFA;
+    border-radius: 0 8px 8px 0;
+    page-break-inside: avoid;
+  }
+  .callout.warn { border-color: var(--warning); background: #FFFBEB; }
+  .callout.danger { border-color: var(--error); background: #FEF2F2; }
+  .callout strong { display: block; margin-bottom: 0.25rem; font-size: 10pt; letter-spacing: 0.1em; text-transform: uppercase; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 10pt; page-break-inside: avoid; }
+  th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--slate-200); }
+  th { background: var(--slate-50); font-weight: 700; text-transform: uppercase; font-size: 9pt; letter-spacing: 0.08em; }
+  .tok {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    background: var(--navy);
+    color: white;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8pt;
+    font-weight: 700;
+    border-radius: 4px;
+    margin-right: 0.3rem;
+  }
+  .tok.teal { background: var(--teal); }
+  .tok.pink { background: #EC4899; }
+  .tok.red { background: var(--error); }
+  .tok.violet { background: #7C3AED; }
+  .tok.orange { background: #F97316; }
+  .footer {
+    position: fixed;
+    bottom: 0;
+    left: 15mm;
+    right: 15mm;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8pt;
+    color: var(--slate-400);
+    border-top: 1px solid var(--slate-200);
+    padding-top: 4pt;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="eyebrow">Station DIM · GHT Sud Paris</div>
+  <h1>Sovereign&nbsp;OS<br>DIM</h1>
+  <p class="sub">
+    Manuel utilisateur · ingestion ATIH, Master Patient Index,
+    résolution des collisions, exports e-PMSI.
+  </p>
+  <div class="meta">
+    Fondation Vallée · Groupe Hospitalier Paul Guiraud<br>
+    Adam Beloucif · Équipe TIM
+  </div>
+</section>
+
+<h2>1. Démarrage</h2>
+
+<p>
+  Double-cliquez sur <code>SovereignOS.Desktop.exe</code>. L'application
+  démarre un serveur HTTP local sur <code>127.0.0.1:8787</code> et ouvre
+  l'interface dans une fenêtre native.
+</p>
+
+<div class="callout">
+  <strong>Poste cible</strong>
+  Windows 10 ou 11 x64. Le runtime .NET est embarqué, aucune installation
+  préalable n'est requise. WebView2 Runtime est présent par défaut sur
+  Windows 11 et Windows 10 à jour.
+</div>
+
+<h3>Raccourcis clavier</h3>
+<table>
+  <tr><th>Touche</th><th>Action</th></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>1</kbd></td><td>Vue Dashboard</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>2</kbd></td><td>Vue Modo Files · ingestion</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>3</kbd></td><td>Vue Identitovigilance · MPI</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>4</kbd></td><td>Vue PMSI Pilot CSV · export</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>5</kbd></td><td>Vue Import CSV</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>6</kbd></td><td>Vue Structure hospitalière</td></tr>
+  <tr><td><kbd>F5</kbd></td><td>Rafraîchir la vue courante</td></tr>
+</table>
+
+<h2>2. Workflow complet</h2>
+
+<ol>
+  <li>
+    <strong>Sélection des dossiers ATIH</strong> · onglet
+    <em>Modo Files</em>, bouton <em>Sélectionner un dossier</em>.
+    Les dossiers retenus doivent se trouver sous l'espace de travail
+    configuré (par défaut
+    <code>%LOCALAPPDATA%\SovereignOS\workspace</code>).
+  </li>
+  <li>
+    <strong>Scan</strong> · l'application énumère récursivement les
+    fichiers <code>.txt</code> et <code>.csv</code>, identifie
+    automatiquement le format ATIH par convention de nommage.
+  </li>
+  <li>
+    <strong>Traitement</strong> · chaque fichier est parsé en parallèle,
+    les couples <em>(IPP, DDN)</em> sont extraits et agrégés dans le
+    Master Patient Index (MPI).
+  </li>
+  <li>
+    <strong>Identitovigilance</strong> · onglet dédié · chaque IPP associé
+    à plusieurs DDN est listé comme collision. Choisir la DDN pivot
+    (manuellement ou via auto-résolution par fréquence).
+  </li>
+  <li>
+    <strong>Export PMSI Pilot</strong> · export CSV normalisé avec la
+    DDN pivot injectée, prêt à être téléversé vers e-PMSI.
+  </li>
+  <li>
+    <strong>Purification <code>.txt</code></strong> · réécriture du fichier
+    d'origine en largeur fixe avec la DDN pivot normalisée.
+  </li>
+</ol>
+
+<h2>3. Formats ATIH pris en charge</h2>
+
+<p>
+  Le moteur reconnaît 23 formats nationaux sur les quatre champs PMSI.
+  L'identification est basée sur le nom de fichier (convention ATIH).
+</p>
+
+<h3>Psychiatrie</h3>
+<p>
+  <span class="tok teal">G général</span>
+  <span class="tok pink">I infanto-juvénile</span>
+  <span class="tok red">D UMD</span>
+  <span class="tok violet">P UHSA</span>
+  <span class="tok orange">Z intersectoriel</span>
+</p>
+<table>
+  <tr><th>Code</th><th>Description</th><th>Depuis</th></tr>
+  <tr><td>RPS</td><td>Résumé Par Séquence · hospitalisation PSY</td><td>2007</td></tr>
+  <tr><td>RAA</td><td>Recueil Activité Ambulatoire · DAF</td><td>2007</td></tr>
+  <tr><td>RPSA</td><td>RPS Anonymisé · ARS</td><td>2007</td></tr>
+  <tr><td>R3A</td><td>RAA Anonymisé · ARS</td><td>2009</td></tr>
+  <tr><td>FICHSUP-PSY</td><td>Isolement, contention, fugue</td><td>2012</td></tr>
+  <tr><td>EDGAR</td><td>Cotation actes ambulatoires</td><td>2015</td></tr>
+  <tr><td>FICUM-PSY</td><td>Unités médicales psychiatriques</td><td>2017</td></tr>
+  <tr><td>RSF-ACE-PSY</td><td>Activité externe · OQN</td><td>2020</td></tr>
+</table>
+
+<h3>SSR/SMR · HAD · MCO · Transversal</h3>
+<table>
+  <tr><th>Champ</th><th>Formats</th></tr>
+  <tr><td>SSR / SMR</td><td>RHS · SSRHA · RAPSS · FICHCOMP-SMR</td></tr>
+  <tr><td>HAD</td><td>RPSS · RAPSS-HAD · FICHCOMP-HAD · SSRHA-HAD</td></tr>
+  <tr><td>MCO</td><td>RSS/RUM · RSFA · RSFB · RSFC</td></tr>
+  <tr><td>Transversal</td><td>VID-HOSP · ANO-HOSP · FICHCOMP</td></tr>
+</table>
+
+<div class="callout warn">
+  <strong>Variantes 2021 · Fondation Vallée</strong>
+  Les fichiers RPS et RAA de 2021 produits avec l'ancien gabarit
+  (142, 148, 86 ou 90 caractères) sont détectés automatiquement et
+  parsés avec les positions historiques pour garantir la cohérence
+  avec les données 2022-2025 présentes dans BIQuery.
+</div>
+
+<h2>4. Identitovigilance (MPI)</h2>
+
+<p>
+  Le MPI agrège toutes les observations <em>(IPP, DDN, source)</em>
+  issues des fichiers traités. Une collision apparaît lorsqu'un même
+  IPP est associé à plusieurs DDN distinctes.
+</p>
+
+<h3>Résolution</h3>
+<ul>
+  <li>
+    <strong>Auto-résolution</strong> · la DDN la plus fréquemment
+    observée gagne le statut pivot. Rapide, fiable sur gros volumes.
+  </li>
+  <li>
+    <strong>Résolution manuelle</strong> · l'utilisateur peut forcer
+    une DDN pivot depuis l'onglet Identitovigilance.
+  </li>
+  <li>
+    <strong>Pas de résolution</strong> · l'export conserve les DDN
+    d'origine, flag chaque ligne comme ambiguë pour revue DIM.
+  </li>
+</ul>
+
+<div class="callout">
+  <strong>Aucun dédoublonnage sur DxCare/CPage</strong>
+  Sovereign OS n'écrit jamais dans la facturation (CPage) ni dans
+  le dossier patient (DxCare). L'outil opère exclusivement sur les
+  exports ATIH et produit des exports CSV/.txt destinés à e-PMSI.
+</div>
+
+<h2>5. Exports</h2>
+
+<h3>Export CSV (PMSI Pilot)</h3>
+<ul>
+  <li>Colonnes · <code>IPP</code>, <code>DDN_PIVOT</code>, <code>DDN_OBSERVATIONS</code>, <code>SOURCE_FILES</code>.</li>
+  <li>Séparateur par défaut · <code>;</code> (compatible Excel FR).</li>
+  <li>Injection formule Excel bloquée · les valeurs commençant par
+    <code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>, tabulation ou retour chariot
+    sont préfixées par une apostrophe.</li>
+</ul>
+
+<h3>Purification <code>.txt</code></h3>
+<p>
+  Le fichier d'origine est réécrit ligne par ligne en remplaçant la
+  DDN par la DDN pivot du MPI. Les lignes invalides ou de padding sont
+  conservées telles quelles. Encodage latin-1 préservé.
+</p>
+
+<h3>HTML → PDF (dashboards)</h3>
+<p>
+  Les dashboards exportés depuis BIQuery (<em>Enregistrer la page
+  sous HTML</em> dans Chrome ou Edge) peuvent être convertis en PDF
+  propre via l'onglet <em>Export PDF</em>. Le moteur de rendu est
+  Chromium (identique à celui qui affiche l'UI), les polices web et
+  les graphiques Chart.js sont préservés.
+</p>
+
+<h2>6. Sécurité</h2>
+
+<ul>
+  <li>
+    Le serveur HTTP local est lié à <code>127.0.0.1</code> exclusivement.
+    Un en-tête <code>Host</code> non conforme renvoie un statut
+    <code>421</code> (défense contre le DNS rebinding).
+  </li>
+  <li>
+    Un token Bearer est généré aléatoirement à chaque démarrage et
+    injecté dans la fenêtre WebView2. Toute requête sans token valide
+    renvoie <code>401</code>.
+  </li>
+  <li>
+    Tous les chemins de fichier fournis par le frontend sont validés
+    contre la racine de l'espace de travail. Les chemins UNC et les
+    flux de données alternatifs (ADS) sont rejetés.
+  </li>
+  <li>
+    Aucune donnée patient ne quitte le poste. L'application ne fait
+    aucun appel réseau sortant, sauf à charger les polices Google Fonts
+    et les CDN Tailwind/Chart.js à l'ouverture.
+  </li>
+</ul>
+
+<div class="callout danger">
+  <strong>Données sensibles</strong>
+  Le MPI contient des couples (IPP, DDN) protégés par l'article 9 du
+  RGPD. Vider le MPI (<em>Reset</em>) à chaque fin de session partagée.
+  Les exports CSV et <code>.txt</code> doivent suivre la procédure
+  DIM locale pour l'archivage et la destruction.
+</div>
+
+<h2>7. Dépannage rapide</h2>
+
+<table>
+  <tr><th>Symptôme</th><th>Cause probable</th><th>Action</th></tr>
+  <tr>
+    <td>Écran blanc au lancement</td>
+    <td>WebView2 Runtime absent</td>
+    <td>Installer depuis <code>developer.microsoft.com/microsoft-edge/webview2</code></td>
+  </tr>
+  <tr>
+    <td>Port 8787 déjà utilisé</td>
+    <td>Instance précédente encore active</td>
+    <td>Fermer l'autre instance, ou définir <code>SOVEREIGN_BRIDGE_PORT</code></td>
+  </tr>
+  <tr>
+    <td>Dossier refusé après sélection</td>
+    <td>Hors espace de travail</td>
+    <td>Déplacer les fichiers, ou définir <code>SOVEREIGN_DIM_WORKSPACE</code></td>
+  </tr>
+  <tr>
+    <td>Aucune collision détectée</td>
+    <td>Scan sans traitement</td>
+    <td>Lancer <em>Scanner &amp; Traiter</em></td>
+  </tr>
+  <tr>
+    <td>Les accents s'affichent mal dans le CSV</td>
+    <td>Excel ouvre le CSV en ANSI</td>
+    <td>Ouvrir via <em>Données &gt; À partir d'un fichier</em>, choisir UTF-8</td>
+  </tr>
+</table>
+
+<h2>8. Variables d'environnement</h2>
+
+<table>
+  <tr><th>Variable</th><th>Rôle</th><th>Défaut</th></tr>
+  <tr>
+    <td><code>SOVEREIGN_BRIDGE_PORT</code></td>
+    <td>Port HTTP local</td>
+    <td><code>8787</code></td>
+  </tr>
+  <tr>
+    <td><code>SOVEREIGN_BRIDGE_TOKEN</code></td>
+    <td>Token Bearer fixe (sinon auto-généré)</td>
+    <td>aléatoire</td>
+  </tr>
+  <tr>
+    <td><code>SOVEREIGN_DIM_WORKSPACE</code></td>
+    <td>Racine de confinement des chemins</td>
+    <td><code>%LOCALAPPDATA%\SovereignOS\workspace</code></td>
+  </tr>
+</table>
+
+<div class="footer">
+  <span>Sovereign OS DIM</span>
+  <span>Manuel utilisateur</span>
+</div>
+
+</body>
+</html>
