@@ -916,3 +916,36 @@ kbd {
 
 .org-sector-z::before { background: #F97316 !important; }
 .org-sector-z .org-sector-badge { background: #F97316; }
+
+/* ── Badge UM sans activité sur l'organigramme ─────────────────────
+   Posé dynamiquement par runActivityAnalysis() après dépôt des RPS/RAA.
+   Pastille rouge en haut à droite du nœud + halo discret pour attirer
+   l'œil sans bousculer la lecture de l'arbre.
+   ================================================================ */
+.org-node.org-um-inactive {
+    box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.45), 0 10px 24px -12px rgba(225, 29, 72, 0.35);
+    position: relative;
+}
+
+.org-node.org-um-inactive::after {
+    content: "";
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 9999px;
+    background: #E11D48;
+    box-shadow: 0 0 0 3px #ffffff, 0 0 0 4px rgba(225, 29, 72, 0.25);
+    z-index: 5;
+    animation: pulse-red 2.2s ease-in-out infinite;
+}
+
+.dark .org-node.org-um-inactive::after {
+    box-shadow: 0 0 0 3px #1e293b, 0 0 0 4px rgba(225, 29, 72, 0.35);
+}
+
+@keyframes pulse-red {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.25); opacity: 0.75; }
+}

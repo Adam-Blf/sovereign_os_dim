@@ -151,7 +151,7 @@
         idv: { title: "Identitovigilance", sub: "Master Patient Index — Résolution des collisions" },
         pilot: { title: "PMSI Pilot CSV", sub: "Export des données réconciliées" },
         csv: { title: "Import CSV", sub: "Visualiseur de fichiers CSV externes" },
-        tuto: { title: "Tutoriel d'utilisation", sub: "Guide pas-à-pas Sentinel V35.0" }
+        tuto: { title: "Tutoriel d'utilisation", sub: "Guide pas-à-pas Sentinel" }
     };
 
     function navigateTo(view) {
@@ -1071,7 +1071,7 @@
                         </div>
                         <div>
                             <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic">Guide Opérationnel</h3>
-                            <p class="text-slate-400 dark:text-slate-500 font-bold tracking-widest uppercase text-[10px] mt-1">Sovereign OS V35.0</p>
+                            <p class="text-slate-400 dark:text-slate-500 font-bold tracking-widest uppercase text-[10px] mt-1">Sovereign OS DIM</p>
                         </div>
                     </div>
 
@@ -1239,6 +1239,143 @@
     // backend/structure.py) et renvoie un arbre {code, label, children[]}
     // qu'on rend en <ul> imbriqués expand/collapse.
 
+    // Collecte les UM (feuilles métier) de l'arbre · level=UM sinon feuilles
+    // sans enfants. Retourne [{code,label,parentCode,parentLabel,sector}].
+    function collectUmLeaves(roots) {
+        const out = [];
+        const walk = (nodes, parent) => {
+            (nodes || []).forEach(n => {
+                const isUm = (n.level || "").toUpperCase() === "UM"
+                    || (!n.children || !n.children.length);
+                if (isUm && n.code) {
+                    out.push({
+                        code: String(n.code).trim(),
+                        label: n.label || n.code,
+                        parentCode: parent ? parent.code : null,
+                        parentLabel: parent ? (parent.label || parent.code) : null,
+                        sector: n.sector_type || (parent && parent.sector_type) || null,
+                    });
+                }
+                if (n.children && n.children.length) walk(n.children, n);
+            });
+        };
+        walk(roots || [], null);
+        // Dédup par code (peut apparaître plusieurs fois dans l'arbre)
+        const seen = new Map();
+        out.forEach(u => { if (!seen.has(u.code)) seen.set(u.code, u); });
+        return [...seen.values()];
+    }
+
+    // Lit un fichier ATIH en latin-1 (encodage natif PMSI). FileReader côté
+    // navigateur · fonctionne même si le dialog natif WebView2 est bloqué.
+    function readAtihFile(file) {
+        return new Promise((resolve, reject) => {
+            const r = new FileReader();
+            r.onload = e => resolve(String(e.target.result || ""));
+            r.onerror = () => reject(new Error("Lecture impossible : " + file.name));
+            r.readAsText(file, "windows-1252");
+        });
+    }
+
+    // Détecte le format ATIH par longueur de ligne (≥80 % des 200 premières).
+    // RPS=154, RPSA=154, RAA=96, R3A=96, EDGAR=96. Tolérance ±2 chars.
+    function detectAtihFormat(lines) {
+        const sample = lines.filter(l => l.length >= 50).slice(0, 200);
+        if (!sample.length) return { format: "INCONNU", length: 0 };
+        const hist = new Map();
+        sample.forEach(l => hist.set(l.length, (hist.get(l.length) || 0) + 1));
+        const [modalLen] = [...hist.entries()].sort((a, b) => b[1] - a[1])[0];
+        if (modalLen >= 150 && modalLen <= 158) return { format: "RPS / RPSA", length: modalLen };
+        if (modalLen >= 94 && modalLen <= 98) return { format: "RAA / R3A / EDGAR", length: modalLen };
+        if (modalLen >= 140 && modalLen <= 150) return { format: "RPS (ancien P04)", length: modalLen };
+        if (modalLen >= 84 && modalLen <= 92) return { format: "RAA (ancien)", length: modalLen };
+        return { format: "ATIH (" + modalLen + "c)", length: modalLen };
+    }
+
+    // Compte les occurrences de chaque code UM dans les lignes. Regex compilée
+    // une fois avec alternance ordonnée (plus long d'abord) pour éviter les
+    // matchs partiels "40" dans "4012". Une ligne compte 1x par UM, même si
+    // le code apparaît plusieurs fois (évite double-compte sur actes multi).
+    function countUmActivity(lines, umCodes) {
+        const codes = [...new Set(umCodes.filter(Boolean))].sort((a, b) => b.length - a.length);
+        const counts = new Map(codes.map(c => [c, 0]));
+        if (!codes.length) return counts;
+        const escaped = codes.map(c => c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+        const re = new RegExp(escaped.join("|"), "g");
+        lines.forEach(line => {
+            if (!line) return;
+            const seen = new Set();
+            let m;
+            re.lastIndex = 0;
+            while ((m = re.exec(line)) !== null) {
+                if (!seen.has(m[0])) {
+                    seen.add(m[0]);
+                    counts.set(m[0], (counts.get(m[0]) || 0) + 1);
+                }
+            }
+        });
+        return counts;
+    }
+
+    // Variante asynchrone de countUmActivity. Découpe en chunks de 5000 lignes
+    // avec `setTimeout(0)` entre chaque pour libérer le main thread · évite le
+    // gel de l'UI sur RAA de 100k+ lignes (12 fichiers mensuels d'un CHS).
+    // `onProgress(pct)` est appelé entre chaque chunk.
+    async function countUmActivityAsync(lines, umCodes, onProgress) {
+        const codes = [...new Set(umCodes.filter(Boolean))].sort((a, b) => b.length - a.length);
+        const counts = new Map(codes.map(c => [c, 0]));
+        if (!codes.length) return counts;
+        const escaped = codes.map(c => c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+        const re = new RegExp(escaped.join("|"), "g");
+        const CHUNK = 5000;
+        for (let start = 0; start < lines.length; start += CHUNK) {
+            const end = Math.min(lines.length, start + CHUNK);
+            for (let i = start; i < end; i++) {
+                const line = lines[i];
+                if (!line) continue;
+                const seen = new Set();
+                let m;
+                re.lastIndex = 0;
+                while ((m = re.exec(line)) !== null) {
+                    if (!seen.has(m[0])) {
+                        seen.add(m[0]);
+                        counts.set(m[0], (counts.get(m[0]) || 0) + 1);
+                    }
+                }
+            }
+            if (onProgress) onProgress(Math.round((end / lines.length) * 100));
+            await new Promise(r => setTimeout(r, 0));  // yield to renderer
+        }
+        return counts;
+    }
+
+    // Extrait les années / mois (AAAA ou AAAAMM ou MMAAAA) depuis les noms de
+    // fichiers ATIH. Convention GHT · `RPS_202410.txt`, `RAA_10_2024.txt`, etc.
+    function extractPeriodFromFilenames(filenames) {
+        const years = new Set();
+        const months = new Set();
+        filenames.forEach(n => {
+            const base = String(n).replace(/\.[^.]+$/, "");
+            // Années 4 chiffres · 2020-2030
+            (base.match(/20[2-3]\d/g) || []).forEach(y => years.add(y));
+            // AAAAMM (année + mois)
+            (base.match(/20[2-3]\d(0[1-9]|1[0-2])/g) || []).forEach(ym => {
+                years.add(ym.slice(0, 4));
+                months.add(ym);
+            });
+            // MMAAAA
+            (base.match(/(0[1-9]|1[0-2])20[2-3]\d/g) || []).forEach(my => {
+                years.add(my.slice(2));
+                months.add(my.slice(2) + my.slice(0, 2));
+            });
+        });
+        const yrs = [...years].sort();
+        const mts = [...months].sort();
+        if (!yrs.length) return null;
+        const periodLabel = yrs.length === 1 ? yrs[0] : `${yrs[0]} → ${yrs[yrs.length - 1]}`;
+        return { years: yrs, months: mts, label: periodLabel, monthCount: mts.length };
+    }
+
     function escHtml(s) {
         return String(s == null ? "" : s)
             .replace(/&/g, "&amp;")
@@ -1355,6 +1492,44 @@
                         <div class="org-chart"><ul>${orgChartHtml(data.tree)}</ul></div>
                     </div>
                 </div>
+
+                <section id="activity-analysis" class="mt-10 bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-xl overflow-hidden">
+                    <header class="px-10 py-8 flex items-center justify-between gap-6 border-b border-slate-100 dark:border-slate-800 flex-wrap">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <i data-lucide="activity" class="w-6 h-6 text-gh-teal"></i>
+                                <h3 class="font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic text-xl leading-none">Analyse d'activité par UM</h3>
+                            </div>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">Déposez vos fichiers <span class="font-mono font-bold">RPS</span> / <span class="font-mono font-bold">RAA</span> pour détecter les UM sans activité sur la période. Traitement 100 % local, aucune donnée envoyée.</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="file" id="act-file-input" multiple accept=".txt,.RPS,.RAA,.RPSA,.R3A,.rps,.raa,.rpsa,.r3a" class="hidden" />
+                            <button id="btn-act-reset" class="px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full font-bold uppercase text-[10px] tracking-[0.25em] hover:bg-slate-200 dark:hover:bg-slate-600 transition-all hidden" title="Réinitialiser l'analyse">
+                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </header>
+
+                    <div id="act-drop-zone" role="button" tabindex="0" aria-label="Déposer des fichiers RPS ou RAA · ou appuyer sur Entrée pour ouvrir le sélecteur"
+                         class="mx-10 my-6 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-[2rem] p-12 text-center transition-all cursor-pointer hover:border-gh-teal hover:bg-teal-50/40 dark:hover:bg-teal-900/15 focus:outline-none focus:border-gh-teal focus:ring-4 focus:ring-teal-200 dark:focus:ring-teal-900/40">
+                        <i data-lucide="file-stack" class="w-12 h-12 text-gh-teal mx-auto mb-5"></i>
+                        <p class="font-black uppercase tracking-wider text-gh-navy dark:text-blue-400 text-base mb-2">Glissez-déposez vos fichiers RPS / RAA ici</p>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">ou cliquez pour ouvrir le sélecteur · Entrée / Espace au clavier</p>
+                        <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Formats · RPS (154 c) · RAA (96 c) · RPSA · R3A · EDGAR · encodage latin-1</p>
+                    </div>
+
+                    <div id="act-status" class="mx-10 mb-6 hidden"></div>
+                    <div id="act-progress" class="mx-10 mb-6 hidden">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-black uppercase tracking-[0.25em] text-gh-navy dark:text-blue-400" id="act-progress-label">Analyse…</span>
+                            <span class="font-mono text-xs font-bold text-gh-navy dark:text-blue-400" id="act-progress-pct">0 %</span>
+                        </div>
+                        <div class="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div id="act-progress-bar" class="h-full bg-gh-teal transition-all duration-150" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div id="act-result" class="hidden px-10 pb-10"></div>
+                </section>
             `;
             out.classList.remove("hidden");
 
@@ -1417,6 +1592,329 @@
                     toast("PDF généré", r.path.split(/[\\/]/).pop(), "success");
                 }
             });
+
+            // =====================================================
+            // Analyse d'activité par UM (RPS / RAA)
+            // =====================================================
+            const umLeaves = collectUmLeaves(data.tree || []);
+            const dropZone = $("act-drop-zone");
+            const fileInput = $("act-file-input");
+            const btnActReset = $("btn-act-reset");
+            const actStatus = $("act-status");
+            const actResult = $("act-result");
+            const actProgress = $("act-progress");
+            const actProgressBar = $("act-progress-bar");
+            const actProgressPct = $("act-progress-pct");
+            const actProgressLabel = $("act-progress-label");
+
+            function setStatus(html, kind) {
+                if (!actStatus) return;
+                const palette = {
+                    info: "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-200 border-blue-200 dark:border-blue-800",
+                    ok: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800",
+                    warn: "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-200 border-amber-200 dark:border-amber-800",
+                    err: "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800",
+                }[kind] || "";
+                actStatus.className = `mx-10 mb-6 p-5 rounded-2xl border text-sm font-medium ${palette}`;
+                actStatus.innerHTML = html;
+                actStatus.classList.remove("hidden");
+            }
+
+            function setProgress(pct, label) {
+                if (!actProgress) return;
+                actProgress.classList.remove("hidden");
+                if (actProgressBar) actProgressBar.style.width = Math.max(0, Math.min(100, pct)) + "%";
+                if (actProgressPct) actProgressPct.textContent = Math.round(pct) + " %";
+                if (actProgressLabel && label) actProgressLabel.textContent = label;
+            }
+
+            function hideProgress() {
+                if (actProgress) actProgress.classList.add("hidden");
+            }
+
+            function resetAnalysis() {
+                if (fileInput) fileInput.value = "";
+                if (actStatus) actStatus.classList.add("hidden");
+                if (actResult) { actResult.classList.add("hidden"); actResult.innerHTML = ""; }
+                if (btnActReset) btnActReset.classList.add("hidden");
+                hideProgress();
+                // Retire les badges "inactif" posés sur les nœuds de l'arbre
+                document.querySelectorAll(".org-node.org-um-inactive").forEach(n => n.classList.remove("org-um-inactive"));
+            }
+
+            // Exporte CSV (séparateur ; + BOM UTF-8 pour Excel FR)
+            function exportInactiveCsv(inactive, periodLabel) {
+                const rows = [["Code UM", "Libellé UM", "Secteur / Pôle parent", "Type ARS", "Période"]];
+                inactive.forEach(u => rows.push([
+                    u.code, u.label, u.parentLabel || "",
+                    u.sector || "", periodLabel || "",
+                ]));
+                const csv = rows.map(r => r.map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(";")).join("\r\n");
+                const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                const today = new Date().toISOString().slice(0, 10);
+                a.download = `UM_sans_activite_${today}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 100);
+                toast("Export CSV", `${inactive.length} UM · ${a.download}`, "success");
+            }
+
+            // Pose une classe sur les nœuds de l'arbre correspondant aux UM inactives.
+            // Matche par .org-code === code UM. Purement décoratif via CSS.
+            function markInactiveNodesOnTree(inactiveCodes) {
+                document.querySelectorAll(".org-node.org-um-inactive").forEach(n => n.classList.remove("org-um-inactive"));
+                if (!inactiveCodes.length) return;
+                const set = new Set(inactiveCodes);
+                document.querySelectorAll(".org-chart .org-code").forEach(codeEl => {
+                    const code = (codeEl.textContent || "").trim();
+                    if (set.has(code)) {
+                        const node = codeEl.closest(".org-node");
+                        if (node) node.classList.add("org-um-inactive");
+                    }
+                });
+            }
+
+            async function runActivityAnalysis(fileList) {
+                const files = [...(fileList || [])].filter(f => f && f.size > 0);
+                if (!files.length) {
+                    setStatus("Aucun fichier valide sélectionné.", "warn");
+                    return;
+                }
+                if (!umLeaves.length) {
+                    setStatus("La structure ne contient aucune UM détectable. Vérifiez votre fichier de structure.", "warn");
+                    return;
+                }
+
+                setStatus(`<i data-lucide="loader" class="w-4 h-4 inline mr-2 animate-spin"></i>${files.length} fichier${files.length > 1 ? "s" : ""} · lecture en cours…`, "info");
+                setProgress(0, "Lecture…");
+                if (window.lucide) lucide.createIcons();
+
+                const perFile = [];
+                const globalCounts = new Map(umLeaves.map(u => [u.code, 0]));
+                let grandTotalLines = 0;
+                const umCodes = umLeaves.map(u => u.code);
+
+                try {
+                    for (let idx = 0; idx < files.length; idx++) {
+                        const f = files[idx];
+                        const baseLabel = `Fichier ${idx + 1}/${files.length} · ${f.name}`;
+                        setProgress((idx / files.length) * 100, baseLabel + " · lecture");
+                        const text = await readAtihFile(f);
+                        const lines = text.split(/\r?\n/).filter(l => l.length > 0);
+                        const det = detectAtihFormat(lines);
+                        const counts = await countUmActivityAsync(lines, umCodes, pct => {
+                            const fileBase = (idx / files.length) * 100;
+                            const fileStep = (1 / files.length) * 100;
+                            setProgress(fileBase + (pct / 100) * fileStep, baseLabel + ` · analyse (${pct}%)`);
+                        });
+                        counts.forEach((v, k) => globalCounts.set(k, (globalCounts.get(k) || 0) + v));
+                        grandTotalLines += lines.length;
+                        perFile.push({ name: f.name, size: f.size, lines: lines.length, det });
+                    }
+                    setProgress(100, "Finalisation");
+                } catch (e) {
+                    hideProgress();
+                    setStatus(`<i data-lucide="alert-triangle" class="w-4 h-4 inline mr-2"></i>${escHtml(e.message || "Erreur de lecture")}`, "err");
+                    if (window.lucide) lucide.createIcons();
+                    return;
+                }
+
+                // Période détectée depuis les noms de fichier
+                const period = extractPeriodFromFilenames(files.map(f => f.name));
+                const periodLabel = period
+                    ? (period.monthCount > 0 ? `${period.label} · ${period.monthCount} mois` : period.label)
+                    : "période non détectée (vérifiez les noms de fichier)";
+
+                // Agrégation · actives / inactives / tri
+                const active = [], inactive = [];
+                umLeaves.forEach(u => {
+                    const c = globalCounts.get(u.code) || 0;
+                    (c > 0 ? active : inactive).push(Object.assign({ count: c }, u));
+                });
+                active.sort((a, b) => b.count - a.count);
+                inactive.sort((a, b) => {
+                    const p = (a.parentLabel || "").localeCompare(b.parentLabel || "");
+                    return p !== 0 ? p : a.code.localeCompare(b.code);
+                });
+
+                const totalUm = umLeaves.length;
+                const pctInactive = totalUm ? Math.round((inactive.length / totalUm) * 100) : 0;
+                const pctActive = 100 - pctInactive;
+
+                // Groupe par parent (pôle / secteur)
+                const inactiveByParent = new Map();
+                inactive.forEach(u => {
+                    const key = u.parentCode || "__ORPHAN__";
+                    if (!inactiveByParent.has(key)) {
+                        inactiveByParent.set(key, { label: u.parentLabel || "Sans parent", items: [] });
+                    }
+                    inactiveByParent.get(key).items.push(u);
+                });
+
+                const filesHtml = perFile.map(f => `
+                    <div class="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <i data-lucide="file-text" class="w-4 h-4 text-gh-navy dark:text-blue-400 flex-shrink-0"></i>
+                            <span class="font-mono text-xs font-bold text-slate-700 dark:text-slate-200 truncate">${escHtml(f.name)}</span>
+                            <span class="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-200 text-[10px] font-black uppercase tracking-wider">${escHtml(f.det.format)}</span>
+                        </div>
+                        <div class="flex items-center gap-4 text-[11px] font-mono text-slate-500 dark:text-slate-300 flex-shrink-0">
+                            <span>${f.lines.toLocaleString("fr-FR")} lignes</span>
+                            <span>${Math.round(f.size / 1024).toLocaleString("fr-FR")} Ko</span>
+                        </div>
+                    </div>
+                `).join("");
+
+                const inactiveHtml = inactive.length === 0
+                    ? `<div class="py-12 text-center">
+                           <i data-lucide="check-circle-2" class="w-12 h-12 text-gh-success mx-auto mb-3"></i>
+                           <p class="font-black uppercase tracking-wider text-gh-success">Toutes les UM ont de l'activité</p>
+                           <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Aucune UM de la structure n'est absente des fichiers ATIH déposés.</p>
+                       </div>`
+                    : [...inactiveByParent.entries()].map(([, grp]) => `
+                        <div class="mb-6 last:mb-0">
+                            <div class="flex items-center gap-2 mb-2 pb-2 border-b border-slate-100 dark:border-slate-700">
+                                <i data-lucide="folder" class="w-3.5 h-3.5 text-slate-400"></i>
+                                <span class="font-black text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-slate-300">${escHtml(grp.label)}</span>
+                                <span class="ml-auto text-[10px] font-mono font-bold text-red-600 dark:text-red-400">${grp.items.length} UM</span>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                ${grp.items.map(u => `
+                                    <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/25 border border-red-200 dark:border-red-800/50">
+                                        <span class="font-mono font-black text-red-700 dark:text-red-300 text-xs">${escHtml(u.code)}</span>
+                                        <span class="text-[11px] text-slate-700 dark:text-slate-200 truncate" title="${escHtml(u.label)}">${escHtml(u.label)}</span>
+                                    </div>
+                                `).join("")}
+                            </div>
+                        </div>
+                    `).join("");
+
+                const topActiveHtml = active.slice(0, 10).map(u => `
+                    <div class="flex items-center gap-3 py-2">
+                        <span class="font-mono font-black text-xs text-gh-navy dark:text-blue-400 w-14 flex-shrink-0">${escHtml(u.code)}</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs text-slate-700 dark:text-slate-200 truncate">${escHtml(u.label)}</p>
+                            <div class="h-1 bg-slate-100 dark:bg-slate-700 rounded-full mt-1 overflow-hidden">
+                                <div class="h-full bg-gh-teal" style="width: ${Math.min(100, Math.round((u.count / (active[0] ? active[0].count : 1)) * 100))}%"></div>
+                            </div>
+                        </div>
+                        <span class="font-mono text-[11px] font-bold text-gh-teal w-16 text-right flex-shrink-0">${u.count.toLocaleString("fr-FR")}</span>
+                    </div>
+                `).join("") || `<p class="text-xs text-slate-400 italic">Aucune UM active</p>`;
+
+                // Hiérarchie métier · 3 cards · actives / inactives / couverture
+                actResult.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        ${statCard("check-circle-2", "UM actives", active.length + " / " + totalUm, "green")}
+                        ${statCard("circle-slash", "UM sans activité", inactive.length, inactive.length > 0 ? "amber" : "green")}
+                        ${statCard("gauge", "Couverture", pctActive + " %", pctActive >= 80 ? "green" : pctActive >= 50 ? "amber" : "red")}
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="p-6 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/40 dark:bg-emerald-900/15">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-700 dark:text-emerald-300">Couverture d'activité</p>
+                                <span class="font-mono font-black text-2xl text-emerald-700 dark:text-emerald-300">${pctActive}%</span>
+                            </div>
+                            <div class="h-3 bg-emerald-100 dark:bg-emerald-900/40 rounded-full overflow-hidden">
+                                <div class="h-full bg-gh-success transition-all" style="width: ${Math.max(2, pctActive)}%"></div>
+                            </div>
+                            <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-3">${active.length} UM sur ${totalUm} ont au moins une occurrence dans les fichiers déposés.</p>
+                        </div>
+                        <div class="p-6 rounded-2xl border border-red-200 dark:border-red-800/50 bg-red-50/50 dark:bg-red-900/15">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-[10px] font-black uppercase tracking-[0.25em] text-red-700 dark:text-red-300">Sans activité</p>
+                                <span class="font-mono font-black text-2xl text-red-700 dark:text-red-300">${pctInactive}%</span>
+                            </div>
+                            <div class="h-3 bg-red-100 dark:bg-red-900/40 rounded-full overflow-hidden">
+                                <div class="h-full bg-gh-error transition-all" style="width: ${Math.max(2, pctInactive)}%"></div>
+                            </div>
+                            <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-3">${inactive.length} UM non trouvée${inactive.length > 1 ? "s" : ""} sur la période <strong>${escHtml(periodLabel)}</strong>.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-slate-900/40 rounded-2xl p-6 mb-8">
+                        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                            <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600 dark:text-slate-300">Fichiers analysés · ${perFile.length} · ${grandTotalLines.toLocaleString("fr-FR")} lignes</p>
+                            <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400">Période · ${escHtml(periodLabel)}</span>
+                        </div>
+                        ${filesHtml || '<p class="text-xs text-slate-400">—</p>'}
+                    </div>
+
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+                            <h4 class="font-black uppercase tracking-[0.2em] text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
+                                <i data-lucide="circle-slash" class="w-4 h-4"></i>
+                                Unités sans activité · ${inactive.length}
+                            </h4>
+                            <button id="btn-act-export-csv" class="px-5 py-2.5 bg-gh-navy text-white rounded-full font-black uppercase text-[10px] tracking-[0.25em] shadow hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-2 ${inactive.length === 0 ? "hidden" : ""}">
+                                <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                                Exporter CSV
+                            </button>
+                        </div>
+                        <div class="rounded-2xl border border-slate-100 dark:border-slate-700 p-6 bg-white dark:bg-slate-800/50">
+                            ${inactiveHtml}
+                        </div>
+                    </div>
+
+                    <details class="rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                        <summary class="px-6 py-4 cursor-pointer bg-slate-50 dark:bg-slate-900/40 font-black uppercase tracking-[0.2em] text-xs text-gh-navy dark:text-blue-400 flex items-center gap-2">
+                            <i data-lucide="trending-up" class="w-4 h-4"></i>
+                            Top 10 UM les plus actives
+                        </summary>
+                        <div class="p-6 bg-white dark:bg-slate-800/50">${topActiveHtml}</div>
+                    </details>
+                `;
+                actResult.classList.remove("hidden");
+                if (btnActReset) btnActReset.classList.remove("hidden");
+                hideProgress();
+
+                // Pose les badges rouges sur les UM inactives de l'arbre
+                markInactiveNodesOnTree(inactive.map(u => u.code));
+
+                // Bind export CSV
+                const btnExport = $("btn-act-export-csv");
+                if (btnExport) btnExport.addEventListener("click", () => exportInactiveCsv(inactive, periodLabel));
+
+                setStatus(
+                    `<i data-lucide="check-circle-2" class="w-4 h-4 inline mr-2"></i>Analyse terminée · ${perFile.length} fichier${perFile.length > 1 ? "s" : ""} · ${grandTotalLines.toLocaleString("fr-FR")} lignes · <strong>${inactive.length} UM sans activité</strong> sur la période <strong>${escHtml(periodLabel)}</strong>`,
+                    inactive.length > 0 ? "warn" : "ok"
+                );
+                if (window.lucide) lucide.createIcons();
+            }
+
+            if (fileInput) {
+                fileInput.addEventListener("change", e => runActivityAnalysis(e.target.files));
+            }
+            if (btnActReset) {
+                btnActReset.addEventListener("click", resetAnalysis);
+            }
+            if (dropZone) {
+                dropZone.addEventListener("click", () => fileInput && fileInput.click());
+                dropZone.addEventListener("keydown", e => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        fileInput && fileInput.click();
+                    }
+                });
+                ["dragenter", "dragover"].forEach(ev => dropZone.addEventListener(ev, e => {
+                    e.preventDefault(); e.stopPropagation();
+                    dropZone.classList.add("border-gh-teal", "bg-teal-50/50", "dark:bg-teal-900/20");
+                }));
+                ["dragleave", "dragend"].forEach(ev => dropZone.addEventListener(ev, e => {
+                    e.preventDefault(); e.stopPropagation();
+                    dropZone.classList.remove("border-gh-teal", "bg-teal-50/50", "dark:bg-teal-900/20");
+                }));
+                dropZone.addEventListener("drop", e => {
+                    e.preventDefault(); e.stopPropagation();
+                    dropZone.classList.remove("border-gh-teal", "bg-teal-50/50", "dark:bg-teal-900/20");
+                    if (e.dataTransfer && e.dataTransfer.files) runActivityAnalysis(e.dataTransfer.files);
+                });
+            }
+            // Expose à window · testabilité via console/tests
+            window.__sovActivity = { collectUmLeaves, readAtihFile, detectAtihFormat, countUmActivity, countUmActivityAsync, extractPeriodFromFilenames, umLeaves };
 
             toast("Structure", `${data.filename} · ${s.total_nodes} nœuds`, "success");
             if (window.lucide) lucide.createIcons();
