@@ -120,7 +120,7 @@
       try {
         const r = await window.pywebview.api.html_to_pdf(htmlPath, null, landscape);
         const out = r?.payload?.output || r?.output || '(inconnu)';
-        status.innerHTML = `✅ PDF généré · <code style="font-size:12px;">${out}</code>`;
+        status.innerHTML = `✅ PDF généré · <code style="font-size:12px;">${escapeHtml(out)}</code>`;
         status.style.color = '#10B981';
       } catch (e) {
         status.textContent = '❌ ' + (e.message || e);
@@ -144,6 +144,10 @@
     document.addEventListener('DOMContentLoaded', injectButton);
   } else {
     injectButton();
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   window.sovereignHtmlPdf = { open: openPanel, close: closePanel };
