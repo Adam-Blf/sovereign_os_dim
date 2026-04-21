@@ -148,11 +148,12 @@
           ${label}</div>
         <div style="font-size:1.8rem; font-weight:900; color:#0F172A; margin-top:0.25rem;">${value}</div>
       </div>`;
+    const num = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
     kpis.innerHTML =
-      kpiCard('Fichiers traités', data.totalFiles || 0, PALETTE.navy) +
-      kpiCard('IPP uniques', (data.totalIpp || 0).toLocaleString('fr-FR'), PALETTE.teal) +
-      kpiCard('Collisions', data.totalCollisions || 0, PALETTE.error) +
-      kpiCard('Taux collision', (data.collisionRate || 0) + ' %', PALETTE.warning);
+      kpiCard('Fichiers traités', num(data.totalFiles), PALETTE.navy) +
+      kpiCard('IPP uniques', num(data.totalIpp).toLocaleString('fr-FR'), PALETTE.teal) +
+      kpiCard('Collisions', num(data.totalCollisions), PALETTE.error) +
+      kpiCard('Taux collision', num(data.collisionRate) + ' %', PALETTE.warning);
 
     charts.forEach(c => { try { c.destroy(); } catch { /* ignore */ } });
     charts = [];
@@ -208,11 +209,15 @@
             <th style="text-align:right;">Obs</th>
             <th style="text-align:right;">Collisions</th>
           </tr></thead>
-          <tbody>${topIpp.map(r => `<tr style="border-top:1px solid #F1F5F9;">
-            <td style="padding:0.3rem 0;">${escapeHtml(r.ipp)}</td>
-            <td style="text-align:right; color:${PALETTE.teal};">${r.observations}</td>
-            <td style="text-align:right; color:${r.collisions > 1 ? PALETTE.error : '#94A3B8'};">${r.collisions}</td>
-          </tr>`).join('')}</tbody>
+          <tbody>${topIpp.map(r => {
+            const obs = Number(r.observations) || 0;
+            const col = Number(r.collisions) || 0;
+            return `<tr style="border-top:1px solid #F1F5F9;">
+              <td style="padding:0.3rem 0;">${escapeHtml(r.ipp)}</td>
+              <td style="text-align:right; color:${PALETTE.teal};">${obs}</td>
+              <td style="text-align:right; color:${col > 1 ? PALETTE.error : '#94A3B8'};">${col}</td>
+            </tr>`;
+          }).join('')}</tbody>
         </table>`;
   }
 

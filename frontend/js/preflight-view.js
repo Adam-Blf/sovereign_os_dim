@@ -177,15 +177,15 @@
                            border-radius:4px; font-size:10px; font-family:'JetBrains Mono',monospace;
                            letter-spacing:0.1em;">${s.label}</span></td>
             <td style="padding:0.5rem 0.8rem; font-family:'JetBrains Mono',monospace; font-size:12px;">
-              ${f.Code || ''}</td>
+              ${escapeHtml(f.Code || '')}</td>
             <td style="padding:0.5rem 0.8rem;">${escapeHtml(f.Message || '')}
               ${f.FixHint ? `<div style="font-size:11px; color:#64748B; margin-top:2px;">
                 💡 ${escapeHtml(f.FixHint)}</div>` : ''}</td>
             <td style="padding:0.5rem 0.8rem; font-family:'JetBrains Mono',monospace;
                        font-size:11px; color:#64748B;" title="${escapeHtml(f.SourceFile || '')}">
-              ${fname}</td>
+              ${escapeHtml(fname)}</td>
             <td style="padding:0.5rem 0.8rem; text-align:right; color:#64748B;">
-              ${f.LineNumber || ''}</td>
+              ${Number.isFinite(Number(f.LineNumber)) ? Number(f.LineNumber) : ''}</td>
           </tr>`;
         }).join('')}</tbody>
       </table>
