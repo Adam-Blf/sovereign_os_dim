@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM — Script de build Python
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V32.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V35.0 — Station DIM GHT Sud Paris
 #
 #  Description :
 #    Compile l'application en .exe portable Windows via PyInstaller.

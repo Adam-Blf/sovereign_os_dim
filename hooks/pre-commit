@@ -1,0 +1,53 @@
+#!/bin/sh
+# ══════════════════════════════════════════════════════════════════════════════
+#  Sovereign OS DIM — Git pre-commit hook
+# ══════════════════════════════════════════════════════════════════════════════
+# Synchronise la version du projet depuis le fichier VERSION vers tous les
+# fichiers qui en référencent une (code, HTML, README…). Toute divergence
+# est corrigée automatiquement et re-stagée dans le commit en cours.
+#
+# Activation (une seule fois après clone) :
+#   git config core.hooksPath hooks
+#
+# Bypass ponctuel :
+#   git commit --no-verify
+# ══════════════════════════════════════════════════════════════════════════════
+
+set -e
+
+ROOT="$(git rev-parse --show-toplevel)"
+SCRIPT="$ROOT/scripts/sync_version.py"
+VERSION_FILE="$ROOT/VERSION"
+
+if [ ! -f "$VERSION_FILE" ]; then
+    echo "[pre-commit] VERSION file manquant, hook passé."
+    exit 0
+fi
+
+if [ ! -f "$SCRIPT" ]; then
+    echo "[pre-commit] scripts/sync_version.py manquant, hook passé."
+    exit 0
+fi
+
+# Python peut s'appeler "python" ou "python3" selon l'OS.
+if command -v python >/dev/null 2>&1; then
+    PY=python
+elif command -v python3 >/dev/null 2>&1; then
+    PY=python3
+else
+    echo "[pre-commit] Python introuvable, hook passé."
+    exit 0
+fi
+
+echo "[pre-commit] Sync version depuis VERSION…"
+"$PY" "$SCRIPT"
+
+# Re-stage les fichiers potentiellement modifiés par la synchro.
+# On ne stage QUE les fichiers déjà suivis par git (pas de surprise).
+git diff --name-only | while IFS= read -r modified; do
+    if git ls-files --error-unmatch "$modified" >/dev/null 2>&1; then
+        git add "$modified"
+    fi
+done
+
+exit 0

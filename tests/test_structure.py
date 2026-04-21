@@ -130,6 +130,65 @@ def test_duplicate_code_keeps_first(tmp_path: Path):
     assert out["tree"][0]["label"] == "First"
 
 
+def test_sector_detection_ars_codes():
+    """Convention ARS : G=général, I=infanto, D=UMD, P=UHSA, Z=intersec."""
+    from backend.structure import detect_sector_type
+    cases = {
+        "94G01": "G", "94I01": "I", "94D01": "D",
+        "94P01": "P", "94Z01": "Z",
+        "92G12": "G", "75I03": "I",
+        "I01": "I", "D01": "D",
+        "G07": "G",
+        "PG-P1": None, "UM-HC-01": None,
+        "": None,
+    }
+    for code, expected in cases.items():
+        assert detect_sector_type(code) == expected, f"fail on {code}"
+
+
+def test_sector_type_inherited_by_children(tmp_path: Path):
+    # Les UM sous un secteur I doivent hériter du type infanto-juvénile.
+    path = _write(tmp_path, "s.csv", [
+        ["level", "code", "parent", "label"],
+        ["POLE", "FV-P1", "", "Pôle pédopsy"],
+        ["SECTEUR", "94I01", "FV-P1", "Secteur 94I01"],
+        ["UM", "94I01-HC", "94I01", "Hospitalisation complete"],
+        ["UM", "94I01-CMP", "94I01", "Consultations"],
+    ])
+    out = parse_structure(path)
+    sector = out["tree"][0]["children"][0]
+    assert sector["sector_type"] == "I"
+    for um in sector["children"]:
+        assert um["sector_type"] == "I"
+        assert um.get("sector_type_inherited") is True
+
+
+def test_sector_type_via_label_keyword(tmp_path: Path):
+    # Si le code ne matche pas le pattern ARS, on tente via mots-clés du libellé.
+    path = _write(tmp_path, "s.csv", [
+        ["level", "code", "parent", "label"],
+        ["POLE", "X1", "", "Pôle UMD Henri Colin"],
+        ["POLE", "X2", "", "Pôle UHSA Fresnes (pénitentiaire)"],
+        ["POLE", "X3", "", "Pôle adolescents (infanto-juvénile)"],
+    ])
+    out = parse_structure(path)
+    types = [n["sector_type"] for n in out["tree"]]
+    assert types == ["D", "P", "I"]
+
+
+def test_summary_counts_by_sector_type(tmp_path: Path):
+    path = _write(tmp_path, "s.csv", [
+        ["level", "code", "parent", "label"],
+        ["SECTEUR", "94G01", "", "Adulte 1"],
+        ["SECTEUR", "94G02", "", "Adulte 2"],
+        ["SECTEUR", "94I01", "", "Infanto 1"],
+        ["UM", "94I01-CMP", "94I01", "CMP enfants"],
+    ])
+    out = parse_structure(path)
+    types = out["summary"]["by_sector_type"]
+    assert types == {"G": 2, "I": 2}
+
+
 def test_bom_in_header_is_stripped(tmp_path: Path):
     # Certains fichiers Excel exportent un BOM UTF-8 sur la 1re cellule.
     # On s'assure que "\ufeffcode" est bien reconnu comme colonne code.

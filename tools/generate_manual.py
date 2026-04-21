@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM — Générateur de mode d'emploi PDF (fpdf2)
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V32.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V35.0 — Station DIM GHT Sud Paris
 #
 #  Description:
 #    Script utilitaire qui produit `docs/Sovereign_OS_DIM_Manuel.pdf`, le
@@ -386,7 +386,7 @@ def build_pdf(output_path: str) -> str:
     pdf.set_font("Helvetica", "B", 22)
     pdf.set_text_color(15, 23, 42)
     pdf.ln(10)
-    pdf.cell(0, 12, "Sovereign OS DIM V32.0", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 12, "Sovereign OS DIM V34.0", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", "", 13)
     pdf.set_text_color(71, 85, 105)
     pdf.cell(0, 8, "Bridge PHP + Visualisation Excel multi-fichiers", new_x="LMARGIN", new_y="NEXT")

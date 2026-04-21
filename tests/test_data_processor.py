@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM — Tests unitaires du Data Processor
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V32.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V34.0 — Station DIM GHT Sud Paris
 #  Date    : 2026-03-03
 #
 #  Couverture :

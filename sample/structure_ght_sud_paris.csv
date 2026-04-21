@@ -1,0 +1,53 @@
+LEVEL;CODE;PARENT;LABEL
+TERRITOIRE;GHT-SP;;GHT Sud Paris (territoire 94)
+ETABLISSEMENT;PG;GHT-SP;Groupe Hospitalier Paul Guiraud (Villejuif)
+ETABLISSEMENT;FV;GHT-SP;Fondation Vallée (Gentilly)
+POLE;PG-P1;PG;Pôle 94G01-02 (Adulte Villejuif / L'Haÿ)
+POLE;PG-P2;PG;Pôle 94G03-04 (Adulte Vitry / Choisy)
+POLE;PG-P3;PG;Pôle 92G12-13 (Adulte Clamart / Châtillon)
+POLE;PG-UMD;PG;Pôle UMD Henri Colin
+POLE;PG-UHSA;PG;Pôle UHSA Fresnes
+POLE;PG-INTER;PG;Pôle intersectoriel (addictologie / précarité)
+POLE;FV-P1;FV;Pôle infanto-juvénile Val-de-Marne
+POLE;FV-P2;FV;Pôle infanto-juvénile Hauts-de-Seine sud
+SECTEUR;94G01;PG-P1;Secteur adulte 94G01 (Villejuif Nord)
+SECTEUR;94G02;PG-P1;Secteur adulte 94G02 (L'Haÿ-les-Roses)
+SECTEUR;94G03;PG-P2;Secteur adulte 94G03 (Vitry-sur-Seine)
+SECTEUR;94G04;PG-P2;Secteur adulte 94G04 (Choisy-le-Roi)
+SECTEUR;92G12;PG-P3;Secteur adulte 92G12 (Clamart)
+SECTEUR;92G13;PG-P3;Secteur adulte 92G13 (Châtillon)
+SECTEUR;94D01;PG-UMD;UMD 94D01 (Henri Colin — malades difficiles)
+SECTEUR;94P01;PG-UHSA;UHSA 94P01 (Fresnes — pénitentiaire)
+SECTEUR;94Z01;PG-INTER;94Z01 Addictologie intersectorielle
+SECTEUR;94Z02;PG-INTER;94Z02 Équipe mobile précarité (EMPP)
+SECTEUR;94I01;FV-P1;Secteur infanto-juvénile 94I01 (Gentilly)
+SECTEUR;94I02;FV-P1;Secteur infanto-juvénile 94I02 (Villejuif)
+SECTEUR;94I03;FV-P1;Secteur infanto-juvénile 94I03 (Ivry)
+SECTEUR;92I05;FV-P2;Secteur infanto-juvénile 92I05 (Châtenay-Malabry)
+SECTEUR;92I06;FV-P2;Secteur infanto-juvénile 92I06 (Antony)
+UM;94G01-HC;94G01;Hospitalisation complète Villejuif
+UM;94G01-CMP;94G01;CMP Villejuif Centre
+UM;94G01-HDJ;94G01;Hôpital de jour Villejuif
+UM;94G02-HC;94G02;Hospitalisation complète L'Haÿ
+UM;94G02-CMP;94G02;CMP L'Haÿ-les-Roses
+UM;94G03-HC;94G03;Hospitalisation complète Vitry
+UM;94G03-CATTP;94G03;CATTP Vitry
+UM;94G04-HC;94G04;Hospitalisation complète Choisy
+UM;94G04-CMP;94G04;CMP Choisy
+UM;92G12-HC;92G12;Hospitalisation complète Clamart
+UM;92G12-CMP;92G12;CMP Clamart
+UM;92G13-HC;92G13;Hospitalisation complète Châtillon
+UM;94D01-HC;94D01;UMD Unité d'hospitalisation sécurisée
+UM;94D01-ISO;94D01;UMD Espace isolement renforcé
+UM;94P01-UHSA;94P01;UHSA Unité hospitalière détenus
+UM;94Z01-CONS;94Z01;Consultation addictologie transversale
+UM;94Z02-EMPP;94Z02;Équipe mobile psychiatrie précarité
+UM;94I01-HC;94I01;Hospit pédopsy Gentilly
+UM;94I01-CMP;94I01;CMP enfants Gentilly
+UM;94I01-HDJ;94I01;HDJ enfants Gentilly
+UM;94I02-CMP;94I02;CMP enfants Villejuif
+UM;94I02-HDJ;94I02;HDJ adolescents Villejuif
+UM;94I03-CMP;94I03;CMP enfants Ivry
+UM;92I05-CMP;92I05;CMP infanto Châtenay-Malabry
+UM;92I05-HDJ;92I05;HDJ infanto Châtenay-Malabry
+UM;92I06-CMP;92I06;CMP infanto Antony

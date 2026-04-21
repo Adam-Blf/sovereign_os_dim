@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM — API v3.0
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V32.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V35.0 — Station DIM GHT Sud Paris
 #  Date    : 2026-03-02
 #
 #  Description:
@@ -25,7 +25,7 @@ import os
 import csv
 import webview
 from backend.data_processor import DataProcessor
-from backend.structure import parse_structure
+from backend.structure import parse_structure, render_tree_pdf
 
 
 class Api:
@@ -182,6 +182,41 @@ class Api:
         """
         return parse_structure(filepath)
 
+    def export_structure_pdf(self, source_path):
+        """
+        Génère un PDF imprimable de l'arborescence et propose à
+        l'utilisateur un dialog natif Enregistrer-Sous.
+
+        Retourne :
+          {"path": chemin_pdf, "summary": {...}}  si succès
+          {"cancelled": True}                     si l'utilisateur ferme la dialog
+          {"error": "..."}                        si parsing/génération échoue
+        """
+        parsed = parse_structure(source_path)
+        if "error" in parsed:
+            return parsed
+
+        # Nom de fichier par défaut : <nom_source>_arborescence.pdf
+        base, _ = os.path.splitext(parsed.get("filename", "structure"))
+        default_name = f"{base}_arborescence.pdf"
+
+        result = webview.windows[0].create_file_dialog(
+            webview.SAVE_DIALOG,
+            save_filename=default_name,
+            file_types=("PDF (*.pdf)",),
+        )
+        if not result:
+            return {"cancelled": True}
+
+        # pywebview renvoie parfois un tuple, parfois une string selon l'OS
+        out_path = result if isinstance(result, str) else result[0]
+
+        try:
+            render_tree_pdf(parsed, out_path)
+            return {"path": out_path, "summary": parsed["summary"]}
+        except (OSError, ValueError) as e:
+            return {"error": f"Échec génération PDF : {e}"}
+
     def import_csv_file(self, filepath):
         """
         Lit un fichier CSV et retourne ses données pour affichage.
@@ -253,6 +288,23 @@ class Api:
     def get_mpi_stats(self):
         """Retourne les stats globales du MPI (total, collisions, résolues)."""
         return self.processor.get_mpi_stats()
+
+    def get_active_population(self):
+        """
+        File active PSY par année et par champ PMSI.
+        KPI central du rapport d'activité annuel DIM — pas disponible dans
+        CPage ni DxCare qui ne dé-doublonnent pas cross-recueils.
+        """
+        return self.processor.compute_active_population()
+
+    def get_cross_modality_patients(self, min_formats=2, limit=100):
+        """
+        Patients vus dans plusieurs modalités de soin (hospit + CMP + HDJ).
+        Indicateur de complexité de parcours — utile pour revues de cas.
+        """
+        return self.processor.get_cross_modality_patients(
+            min_formats=int(min_formats), limit=int(limit)
+        )
 
     def search_collisions(self, query):
         """Recherche dans les collisions par IPP partiel (filtre live)."""

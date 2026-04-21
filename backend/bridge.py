@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM — HTTP REST Bridge
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V32.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V35.0 — Station DIM GHT Sud Paris
 #
 #  Description:
 #    Pont HTTP REST exposant le moteur ATIH (DataProcessor) à des
@@ -154,7 +154,7 @@ def create_app() -> Flask:
         return jsonify(
             status="ok",
             service="sovereign-os-dim",
-            version="V32.0",
+            version="V35.0",
             auth_required=bool(BRIDGE_TOKEN),
             formats=len(_processor.matrix),
         )
@@ -312,6 +312,25 @@ def create_app() -> Flask:
             format_breakdown=_processor.get_format_breakdown(),
             file_stats=_processor.file_stats,
         )
+
+    @app.get("/api/active-population")
+    @_require_token
+    def api_active_population():
+        """File active PSY par année — KPI rapport d'activité DIM."""
+        return jsonify(_processor.compute_active_population())
+
+    @app.get("/api/cross-modality")
+    @_require_token
+    def api_cross_modality():
+        """Patients vus dans plusieurs modalités (hospit + CMP + HDJ)."""
+        try:
+            min_formats = int(request.args.get("min_formats", 2))
+            limit = int(request.args.get("limit", 100))
+        except ValueError:
+            return jsonify(error="min_formats et limit doivent être entiers"), 400
+        return jsonify(_processor.get_cross_modality_patients(
+            min_formats=min_formats, limit=limit,
+        ))
 
     # ──────────────────────────────────────────────────────────────────────
     # EXPORT

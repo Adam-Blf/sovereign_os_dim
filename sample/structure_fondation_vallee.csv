@@ -1,0 +1,42 @@
+LEVEL;CODE;PARENT;LABEL
+ETABLISSEMENT;FV;;Fondation Vallée - GHT Sud Paris
+POLE;PA;FV;Pôle Enfants
+POLE;PB;FV;Pôle Adolescents
+POLE;PT;FV;Pôle Transversal
+SERVICE;PA-HC;PA;Hospitalisation complète Enfants
+SERVICE;PA-HJ;PA;Hôpital de jour Enfants
+SERVICE;PA-CMP;PA;CMP Enfants (Centre Médico-Psychologique)
+SERVICE;PA-CATTP;PA;CATTP Enfants
+SERVICE;PB-HC;PB;Hospitalisation complète Adolescents
+SERVICE;PB-HJ;PB;Hôpital de jour Adolescents
+SERVICE;PB-CMP;PB;CMP Adolescents
+SERVICE;PB-CRISE;PB;Unité de crise Adolescents
+SERVICE;PT-URG;PT;Urgences pédopsychiatriques
+SERVICE;PT-ADDICT;PT;Service Addictologie
+SERVICE;PT-PHARMA;PT;Pharmacie à Usage Intérieur
+SERVICE;PT-LIAISON;PT;Psychiatrie de Liaison
+UM;PA-HC-01;PA-HC;UM Hospitalisation enfants 6-12 ans
+UM;PA-HC-02;PA-HC;UM Accueil familial thérapeutique
+UM;PA-HJ-01;PA-HJ;HDJ Villejuif
+UM;PA-HJ-02;PA-HJ;HDJ Gentilly
+UM;PA-HJ-03;PA-HJ;HDJ L'Haÿ-les-Roses
+UM;PA-CMP-01;PA-CMP;CMP Villejuif Centre
+UM;PA-CMP-02;PA-CMP;CMP Gentilly
+UM;PA-CMP-03;PA-CMP;CMP Arcueil
+UM;PA-CMP-04;PA-CMP;CMP Kremlin-Bicêtre
+UM;PA-CATTP-01;PA-CATTP;CATTP Villejuif
+UM;PA-CATTP-02;PA-CATTP;CATTP Gentilly
+UM;PB-HC-01;PB-HC;UM Hospitalisation adolescents 12-18 ans
+UM;PB-HC-02;PB-HC;UM Soins intensifs adolescents
+UM;PB-HJ-01;PB-HJ;HDJ Adolescents Villejuif
+UM;PB-HJ-02;PB-HJ;HDJ Adolescents Cachan
+UM;PB-CMP-01;PB-CMP;CMP Adolescents Villejuif
+UM;PB-CMP-02;PB-CMP;CMP Adolescents Gentilly
+UM;PB-CMP-03;PB-CMP;CMP Adolescents Ivry
+UM;PB-CRISE-01;PB-CRISE;Unité de crise 72h
+UM;PT-URG-01;PT-URG;Urgences pédopsy Bicêtre
+UM;PT-URG-02;PT-URG;Urgences pédopsy Villejuif
+UM;PT-ADDICT-01;PT-ADDICT;Consultation addictologie ado
+UM;PT-ADDICT-02;PT-ADDICT;Groupe thérapeutique addictologie
+UM;PT-LIAISON-01;PT-LIAISON;Liaison Bicêtre pédiatrie
+UM;PT-LIAISON-02;PT-LIAISON;Liaison Kremlin maternité

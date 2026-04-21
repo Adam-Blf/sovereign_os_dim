@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM — DATA PROCESSOR v3.1
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V32.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V35.0 — Station DIM GHT Sud Paris
 #  Date    : 2026-03-03
 #
 #  Description:
@@ -1208,3 +1208,172 @@ class DataProcessor:
             {"format": k, "count": v}
             for k, v in sorted(counts.items(), key=lambda x: -x[1])
         ]
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # FILE ACTIVE — KPI central du rapport d'activité annuel DIM PSY
+    # ══════════════════════════════════════════════════════════════════════════
+    # Pourquoi spécifique à la station ?
+    #   Ni CPage (facturation) ni DxCare (dossier patient) ne calculent la
+    #   "file active PSY" au sens PMSI : c'est un dé-dédoublonnage d'IPP sur
+    #   TOUS les recueils (RPS hospit + RAA/EDGAR ambu + RPSS HDJ + CMP), pour
+    #   une période donnée. C'est le TIM qui produit ce chiffre chaque année.
+    #
+    # Méthode :
+    #   1. L'année est extraite du NOM de fichier (convention ATIH standard :
+    #      "RPS_2024.txt", "EDGAR-2024.txt", etc.). Regex sur 4 chiffres
+    #      commençant par 20.
+    #   2. Chaque fichier rapporte un set d'IPP. On groupe par (année, format).
+    #   3. L'union des sets par année donne la file active globale ; par
+    #      champ (PSY / SSR / HAD / MCO) elle donne la file active sectorielle.
+    #
+    # Le résultat est une structure directement exploitable par le frontend
+    # pour un tableau par année ou un line chart d'évolution pluriannuelle.
+
+    _YEAR_RE = re.compile(r"(?:^|[^0-9])(20\d{2})(?:[^0-9]|$)")
+
+    def _year_from_filename(self, name: str) -> Optional[str]:
+        """Extrait une année 20xx du nom de fichier, None si absente."""
+        m = self._YEAR_RE.search(name)
+        return m.group(1) if m else None
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # PARCOURS CROSS-MODALITÉS — Patients vus en hospit + CMP + HDJ, etc.
+    # ══════════════════════════════════════════════════════════════════════════
+    # Cas d'usage DIM PSY :
+    #   Un patient psychiatrique chronique alterne souvent entre hospitalisation
+    #   complète (RPS), hôpital de jour (RPSS), et suivi ambulatoire CMP (EDGAR,
+    #   RAA). Le TIM a besoin d'identifier ces patients "complexes" pour :
+    #     - les indicateurs HAS (continuité de soins)
+    #     - les revues de cas équipe (staff)
+    #     - la file active sectorielle (comptage unique)
+    #
+    # Ni CPage ni DxCare ne produisent cette vue : CPage ne voit que la
+    # facturation (pas l'ambulatoire gratuit), DxCare ne fait que par patient.
+
+    def get_cross_modality_patients(
+        self, min_formats: int = 2, limit: int = 100
+    ) -> list:
+        """
+        Liste les IPP qui apparaissent dans >= `min_formats` formats ATIH
+        distincts. Triée par nombre de formats décroissant — les patients
+        "les plus complexes" en premier.
+
+        Chaque entrée : {
+            "ipp": str,
+            "formats": [list triée de formats ATIH],
+            "fields": [champs PMSI touchés — PSY, SSR, HAD, MCO],
+            "years": [années d'apparition],
+            "sources_count": int  (nombre total de fichiers-source distincts)
+        }
+        """
+        results = []
+        for ipp, data in self.mpi.items():
+            formats_seen: set[str] = set()
+            fields_seen: set[str] = set()
+            years_seen: set[str] = set()
+            sources: set[str] = set()
+
+            for _ddn, srcs in data["history"].items():
+                for src in srcs:
+                    sources.add(src)
+                    stats = self.file_stats.get(src, {})
+                    fmt = stats.get("format", "INCONNU")
+                    if fmt and fmt != "INCONNU":
+                        formats_seen.add(fmt)
+                    spec = self.matrix.get(fmt, {})
+                    field = spec.get("field")
+                    if field:
+                        fields_seen.add(field)
+                    yr = self._year_from_filename(src)
+                    if yr:
+                        years_seen.add(yr)
+
+            if len(formats_seen) >= min_formats:
+                results.append({
+                    "ipp": ipp,
+                    "formats": sorted(formats_seen),
+                    "fields": sorted(fields_seen),
+                    "years": sorted(years_seen),
+                    "sources_count": len(sources),
+                })
+
+        # Tri : nombre de formats décroissant, puis IPP pour stabilité.
+        results.sort(key=lambda x: (-len(x["formats"]), x["ipp"]))
+        return results[:limit]
+
+    def compute_active_population(self) -> dict:
+        """
+        Calcule la file active par année et par champ PMSI, en s'appuyant
+        sur le MPI déjà construit. Si un IPP est vu dans plusieurs formats
+        la même année, il n'est compté qu'une fois dans la file globale de
+        cette année (mais il comptera dans chaque champ où il apparaît).
+
+        Structure retournée :
+            {
+              "years": ["2023", "2024", ...],
+              "fields": ["PSY", "SSR", "HAD", "MCO", "TRANSVERSAL"],
+              "by_year_global": {"2024": 1523, ...},
+              "by_year_field":  {"2024": {"PSY": 1200, "SSR": 50, ...}, ...},
+              "by_year_format": {"2024": {"RPS": 980, "EDGAR": 400, ...}, ...},
+              "total_unique_ipp": 4821,  # sur toute la période cumulée
+            }
+
+        Si aucun fichier n'a d'année détectable, years est vide et
+        by_year_* sont des dicts vides — le frontend affiche alors un
+        message "impossible d'inférer l'année depuis les noms de fichiers".
+        """
+        # Index inverse : pour chaque (fichier, format), on retrouve l'année
+        # et le champ depuis le file_stats + la matrice ATIH.
+        file_meta = {}
+        for name, stats in self.file_stats.items():
+            fmt = stats.get("format", "INCONNU")
+            spec = self.matrix.get(fmt, {})
+            year = self._year_from_filename(name)
+            file_meta[name] = {
+                "format": fmt,
+                "field": spec.get("field", "INCONNU"),
+                "year": year,
+            }
+
+        # Agrégation : pour chaque IPP, on liste les (année, format, champ)
+        # d'apparition. On déduit la file active en prenant l'union unique.
+        by_year_global: dict[str, set] = defaultdict(set)
+        by_year_field: dict[str, dict[str, set]] = defaultdict(
+            lambda: defaultdict(set)
+        )
+        by_year_format: dict[str, dict[str, set]] = defaultdict(
+            lambda: defaultdict(set)
+        )
+
+        for ipp, data in self.mpi.items():
+            # data["history"] = {ddn: [sources]}
+            for _ddn, sources in data["history"].items():
+                for src in sources:
+                    meta = file_meta.get(src)
+                    if not meta or not meta["year"]:
+                        continue
+                    y = meta["year"]
+                    by_year_global[y].add(ipp)
+                    by_year_field[y][meta["field"]].add(ipp)
+                    by_year_format[y][meta["format"]].add(ipp)
+
+        # Sérialisation : set → int, tri des années chronologiquement
+        years = sorted(by_year_global.keys())
+        fields = sorted({
+            f for per_year in by_year_field.values() for f in per_year
+        })
+
+        return {
+            "years": years,
+            "fields": fields,
+            "by_year_global": {y: len(ipps) for y, ipps in by_year_global.items()},
+            "by_year_field": {
+                y: {f: len(ipps) for f, ipps in per_field.items()}
+                for y, per_field in by_year_field.items()
+            },
+            "by_year_format": {
+                y: {f: len(ipps) for f, ipps in per_format.items()}
+                for y, per_format in by_year_format.items()
+            },
+            "total_unique_ipp": len(self.mpi),
+        }

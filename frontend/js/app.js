@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * SOVEREIGN OS V32.0 — Frontend Application Logic (Optimized)
+ * SOVEREIGN OS V35.0 — Frontend Application Logic (Optimized)
  * =============================================================================
  * Features:
  *   - Boot sequence with anime.js
@@ -151,7 +151,7 @@
         idv: { title: "Identitovigilance", sub: "Master Patient Index — Résolution des collisions" },
         pilot: { title: "PMSI Pilot CSV", sub: "Export des données réconciliées" },
         csv: { title: "Import CSV", sub: "Visualiseur de fichiers CSV externes" },
-        tuto: { title: "Tutoriel d'utilisation", sub: "Guide pas-à-pas Sentinel V32.0" }
+        tuto: { title: "Tutoriel d'utilisation", sub: "Guide pas-à-pas Sentinel V35.0" }
     };
 
     function navigateTo(view) {
@@ -249,6 +249,22 @@
                     </div>
                 </div>
             </div>
+
+            <!-- FILE ACTIVE PSY — KPI rapport d'activité (dé-doublonnage cross-recueils) -->
+            <div class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl mt-10" id="active-pop-block">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-black text-gh-navy uppercase text-sm tracking-tighter italic flex items-center gap-3">
+                        <i data-lucide="users" class="w-5 h-5 text-gh-teal"></i> File active — par année et par champ
+                    </h3>
+                    <span class="text-[9px] font-mono text-slate-400 italic">IPP uniques dé-doublonnés cross-recueils</span>
+                </div>
+                <div id="active-pop-body">
+                    <p class="text-xs text-slate-400 italic text-center py-8">Chargement…</p>
+                </div>
+            </div>
+
+            <!-- PARCOURS CROSS-MODALITÉS — Patients traversant plusieurs recueils PMSI -->
+            <div id="cross-modality-block"></div>
         `;
 
         // Chart.js doughnut
@@ -294,7 +310,233 @@
             }
         } catch (e) { /* ok */ }
 
+        // File active PSY — tableau Année × Champ + total global.
+        // Si les noms de fichiers ne contiennent pas d'année détectable
+        // (convention "RPS_2024.txt"), on le signale à l'utilisateur.
+        try {
+            if (API()) {
+                const ap = await API().get_active_population();
+                renderActivePopulation(ap);
+            }
+        } catch (e) { /* ok */ }
+
+        // Parcours cross-modalités — top 50 patients les plus complexes.
+        try {
+            if (API()) {
+                const cm = await API().get_cross_modality_patients(2, 50);
+                const el = $("cross-modality-block");
+                if (el) renderCrossModality(el, cm);
+            }
+        } catch (e) { /* ok */ }
+
         if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================================
+    // PARCOURS CROSS-MODALITÉS — patients traversant plusieurs recueils PMSI
+    // =========================================================================
+    // Rendu "journey cartography" : chaque ligne = un patient. Numéral de
+    // complexité (2/3/4+) en teal→warning→error, chips format colorées par
+    // champ PMSI, timeline horizontale cellule-par-année.
+    function renderCrossModality(containerEl, data) {
+        const all = Array.isArray(data) ? data : [];
+
+        // Alignement des timelines : plage d'années couverte par l'ensemble
+        // des patients, pour que chaque ligne partage la même échelle.
+        const allYears = new Set();
+        all.forEach(p => (p.years || []).forEach(y => allYears.add(y)));
+        const yearRange = [...allYears].sort();
+
+        // FORMAT → CHAMP PMSI (cohérent avec ATIH_MATRIX côté backend).
+        const FIELD_OF = {
+            RPS: "PSY", RAA: "PSY", RPSA: "PSY", R3A: "PSY", EDGAR: "PSY",
+            "FICHSUP-PSY": "PSY", "FICUM-PSY": "PSY", "RSF-ACE-PSY": "PSY",
+            RHS: "SSR", SSRHA: "SSR", RAPSS: "SSR", "FICHCOMP-SMR": "SSR",
+            RPSS: "HAD", "RAPSS-HAD": "HAD", "FICHCOMP-HAD": "HAD", "SSRHA-HAD": "HAD",
+            RSS: "MCO", RSFA: "MCO", RSFB: "MCO", RSFC: "MCO",
+            "VID-HOSP": "TRANS", "ANO-HOSP": "TRANS", FICHCOMP: "TRANS",
+        };
+        const FIELD = {
+            PSY: { bg: "bg-indigo-50 dark:bg-indigo-900/30", text: "text-indigo-700 dark:text-indigo-300", dot: "bg-indigo-500", bar: "bg-indigo-400", cssVar: "#6366f1" },
+            SSR: { bg: "bg-teal-50 dark:bg-teal-900/30", text: "text-teal-700 dark:text-teal-300", dot: "bg-teal-500", bar: "bg-teal-400", cssVar: "#14b8a6" },
+            HAD: { bg: "bg-amber-50 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-300", dot: "bg-amber-500", bar: "bg-amber-400", cssVar: "#f59e0b" },
+            MCO: { bg: "bg-rose-50 dark:bg-rose-900/30", text: "text-rose-700 dark:text-rose-300", dot: "bg-rose-500", bar: "bg-rose-400", cssVar: "#f43f5e" },
+            TRANS: { bg: "bg-slate-100 dark:bg-slate-700/50", text: "text-slate-600 dark:text-slate-300", dot: "bg-slate-400", bar: "bg-slate-400", cssVar: "#94a3b8" },
+        };
+
+        // Champ "principal" pour l'accent de bordure gauche au hover.
+        // Priorité métier : PSY > HAD > SSR > MCO > Transversal.
+        const ORDER = ["PSY", "HAD", "SSR", "MCO", "TRANS"];
+        const primaryField = p => ORDER.find(f => (p.fields || []).includes(f)) || "TRANS";
+
+        const complexityColor = n =>
+            n >= 4 ? "text-gh-error" : n === 3 ? "text-gh-warning" : "text-gh-teal";
+
+        function renderRow(p) {
+            const n = p.formats.length;
+            const pf = primaryField(p);
+            const pfCol = FIELD[pf];
+
+            const chips = p.formats.map(f => {
+                const c = FIELD[FIELD_OF[f] || "TRANS"];
+                return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold ${c.bg} ${c.text}">
+                    <span class="w-1.5 h-1.5 rounded-full ${c.dot}"></span>${escHtml(f)}
+                </span>`;
+            }).join("");
+
+            const yearsSet = new Set(p.years || []);
+            const cells = yearRange.map(y =>
+                `<div class="journey-cell ${yearsSet.has(y) ? pfCol.bar : "bg-slate-100 dark:bg-slate-800"}" title="${escHtml(y)}"></div>`
+            ).join("");
+
+            const span = p.years.length
+                ? `${escHtml(p.years[0])}→${escHtml(p.years[p.years.length - 1])}`
+                : "—";
+
+            return `
+                <div class="journey-row relative grid grid-cols-12 gap-6 px-10 py-6 border-b border-slate-100 dark:border-slate-800 transition-colors"
+                     data-ipp="${escHtml(p.ipp).toLowerCase()}"
+                     style="--row-accent: ${pfCol.cssVar};">
+                    <div class="col-span-1 flex items-center">
+                        <div class="text-5xl font-black italic tracking-tighter leading-none ${complexityColor(n)}">${n}</div>
+                    </div>
+                    <div class="col-span-3 flex flex-col justify-center">
+                        <p class="font-mono font-black text-sm text-gh-navy dark:text-blue-400 tracking-tight truncate">${escHtml(p.ipp)}</p>
+                        <p class="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500 mt-1">
+                            ${n} modalités · ${p.sources_count} sources
+                        </p>
+                    </div>
+                    <div class="col-span-5 flex items-center flex-wrap gap-1.5">${chips}</div>
+                    <div class="col-span-3 flex flex-col justify-center">
+                        <div class="flex items-center gap-0.5">${cells}</div>
+                        <p class="text-[9px] font-mono text-slate-400 dark:text-slate-500 mt-2 tracking-wider">${span}</p>
+                    </div>
+                </div>`;
+        }
+
+        const yearHeader = yearRange.map(y =>
+            `<span class="journey-year-label">'${escHtml(y.slice(-2))}</span>`
+        ).join("");
+
+        const empty = `
+            <div class="flex flex-col items-center justify-center py-20 px-8 text-center">
+                <div class="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-6 rotate-3">
+                    <i data-lucide="circle-slash-2" class="w-7 h-7 text-slate-400"></i>
+                </div>
+                <p class="font-black text-slate-500 dark:text-slate-400 uppercase italic tracking-tighter text-lg">Aucun parcours cross-modalités</p>
+                <p class="text-xs text-slate-400 dark:text-slate-500 mt-3 max-w-md">
+                    Traitez un lot ATIH couvrant plusieurs recueils (RPS + EDGAR + RPSS…) pour révéler les patients à parcours complexe.
+                </p>
+            </div>`;
+
+        containerEl.innerHTML = `
+            <section class="bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-xl overflow-hidden mt-10">
+                <header class="px-10 py-8 flex items-end justify-between gap-6 flex-wrap border-b border-slate-100 dark:border-slate-800">
+                    <div>
+                        <div class="flex items-center gap-4 mb-2">
+                            <i data-lucide="git-fork" class="w-6 h-6 text-gh-teal"></i>
+                            <h3 class="font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic text-xl leading-none">
+                                Parcours cross-modalités
+                            </h3>
+                        </div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 tracking-wide max-w-lg">
+                            Patients traversant plusieurs recueils PMSI — hospit, CMP, HDJ. Indicateur de complexité clinique non visible dans CPage ni DxCare.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-5">
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-5xl font-black italic tracking-tighter text-gh-navy dark:text-blue-400 leading-none">${all.length}</span>
+                            <span class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">patients</span>
+                        </div>
+                        <label class="relative">
+                            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            <input id="journey-filter" type="text" placeholder="IPP…"
+                                   class="journey-filter pl-9 pr-4 py-2.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-mono text-xs w-40 focus:w-64 focus:bg-white dark:focus:bg-slate-800 outline-none transition-all" />
+                        </label>
+                    </div>
+                </header>
+                ${yearRange.length ? `
+                <div class="px-10 py-3 flex items-center justify-end gap-0.5 border-b border-slate-50 dark:border-slate-800/50 text-[9px] font-mono text-slate-400 dark:text-slate-500">
+                    <span class="mr-4 uppercase tracking-widest font-black">Timeline →</span>
+                    ${yearHeader}
+                </div>` : ""}
+                <div id="journey-list" class="max-h-[480px] overflow-y-auto custom-scroll">
+                    ${all.length ? all.map(renderRow).join("") : empty}
+                </div>
+            </section>
+        `;
+
+        // Filtre live IPP — display:none sur les lignes non-concernées
+        // (pas de rebuild du DOM, préserve l'état de scroll et les animations)
+        const input = containerEl.querySelector("#journey-filter");
+        const list = containerEl.querySelector("#journey-list");
+        if (input && list) {
+            input.addEventListener("input", e => {
+                const q = e.target.value.toLowerCase().trim();
+                list.querySelectorAll(".journey-row").forEach(row => {
+                    row.style.display = (!q || (row.dataset.ipp || "").includes(q)) ? "" : "none";
+                });
+            });
+        }
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    function renderActivePopulation(ap) {
+        const body = $("active-pop-body");
+        if (!body) return;
+        if (!ap || !ap.years || ap.years.length === 0) {
+            body.innerHTML = `
+                <p class="text-xs text-slate-400 italic text-center py-8">
+                    Aucune année détectée dans les noms de fichiers. Convention attendue :
+                    <span class="font-mono text-slate-500">RPS_2024.txt</span>,
+                    <span class="font-mono text-slate-500">EDGAR-2024.txt</span>, etc.
+                </p>`;
+            return;
+        }
+
+        // Tableau : une ligne par année, colonnes = champs PMSI + total.
+        const fields = ap.fields || [];
+        const fieldBadge = {
+            PSY: "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
+            SSR: "bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
+            HAD: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+            MCO: "bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300",
+            TRANSVERSAL: "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-200",
+        };
+
+        const header = `
+            <tr class="border-b border-slate-200 dark:border-slate-700">
+                <th class="text-left py-3 px-4 font-black text-[10px] uppercase tracking-widest text-slate-500">Année</th>
+                ${fields.map(f => `<th class="text-right py-3 px-4 font-black text-[10px] uppercase tracking-widest ${fieldBadge[f] || "text-slate-500"} rounded-md">${escHtml(f)}</th>`).join("")}
+                <th class="text-right py-3 px-4 font-black text-[10px] uppercase tracking-widest text-gh-navy dark:text-blue-400">File active</th>
+            </tr>`;
+
+        const rows = ap.years.map(y => {
+            const fieldCells = fields.map(f => {
+                const v = (ap.by_year_field[y] || {})[f] || 0;
+                return `<td class="text-right py-3 px-4 font-mono text-sm text-slate-600 dark:text-slate-300">${N(v)}</td>`;
+            }).join("");
+            const total = ap.by_year_global[y] || 0;
+            return `
+                <tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td class="py-3 px-4 font-mono font-bold text-gh-navy dark:text-blue-400">${escHtml(y)}</td>
+                    ${fieldCells}
+                    <td class="text-right py-3 px-4 font-mono font-black text-gh-teal text-lg">${N(total)}</td>
+                </tr>`;
+        }).join("");
+
+        body.innerHTML = `
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>${header}</thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-4 italic text-center">
+                Total IPP uniques cumulés sur la période : <span class="font-mono font-bold text-slate-600 dark:text-slate-300">${N(ap.total_unique_ipp)}</span>
+                &nbsp;·&nbsp; Un même patient est compté 1× par année et par champ (dé-doublonnage cross-recueils).
+            </p>
+        `;
     }
 
     function statCard(icon, label, value, color, extra = "") {
@@ -829,7 +1071,7 @@
                         </div>
                         <div>
                             <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic">Guide Opérationnel</h3>
-                            <p class="text-slate-400 dark:text-slate-500 font-bold tracking-widest uppercase text-[10px] mt-1">Sovereign OS V32.0</p>
+                            <p class="text-slate-400 dark:text-slate-500 font-bold tracking-widest uppercase text-[10px] mt-1">Sovereign OS V35.0</p>
                         </div>
                     </div>
 
@@ -1005,28 +1247,41 @@
             .replace(/"/g, "&quot;");
     }
 
-    function treeHtml(nodes, depth) {
+    // Rendu organigramme classique (boîtes + connecteurs tracés en CSS via
+    // ::before/::after). Pas de SVG : pur DOM, sélectable, zoomable par
+    // transform. Les classes .org-* sont définies dans frontend/css/style.css.
+    // Libellés FR pour les types de secteur ARS (G/I/D/P/Z).
+    const SECTOR_LABELS = {
+        G: "Général (adulte)", I: "Infanto-juv", D: "UMD", P: "UHSA", Z: "Intersec",
+    };
+
+    function orgChartHtml(nodes) {
         if (!nodes || !nodes.length) return "";
-        const items = nodes.map(n => {
+        return nodes.map(n => {
             const hasKids = n.children && n.children.length > 0;
-            const chevron = hasKids
-                ? `<i data-lucide="chevron-down" class="w-4 h-4 inline text-slate-400 tree-chev"></i>`
-                : `<span class="inline-block w-4"></span>`;
-            const levelBadge = n.level
-                ? `<span class="ml-2 px-2 py-0.5 text-[9px] font-black rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 uppercase tracking-wider">${escHtml(n.level)}</span>`
+            const level = (n.level || "").toUpperCase();
+            const levelClass = "org-level-" + (level || "default").toLowerCase();
+            const sector = n.sector_type || "";
+            const sectorClass = sector ? ` org-sector-${sector.toLowerCase()}` : "";
+            const sectorBadge = sector
+                ? `<span class="org-sector-badge" title="${escHtml(SECTOR_LABELS[sector] || sector)}">${escHtml(sector)}</span>`
+                : "";
+            const levelBadge = level
+                ? `<span class="org-level">${escHtml(level)}</span>`
                 : "";
             return `
-                <li class="tree-node" data-depth="${depth}">
-                    <div class="tree-row flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
-                        ${chevron}
-                        <span class="font-mono text-xs text-gh-navy dark:text-blue-400 font-bold">${escHtml(n.code)}</span>
-                        <span class="text-sm text-slate-600 dark:text-slate-300">${escHtml(n.label)}</span>
+                <li>
+                    <div class="org-node ${levelClass}${sectorClass}">
+                        <div class="org-header">
+                            <span class="org-code">${escHtml(n.code)}</span>
+                            ${sectorBadge}
+                        </div>
+                        <span class="org-label">${escHtml(n.label)}</span>
                         ${levelBadge}
                     </div>
-                    ${hasKids ? `<ul class="tree-children pl-6 border-l border-slate-100 dark:border-slate-700 ml-2">${treeHtml(n.children, depth + 1)}</ul>` : ""}
+                    ${hasKids ? `<ul>${orgChartHtml(n.children)}</ul>` : ""}
                 </li>`;
-        });
-        return items.join("");
+        }).join("");
     }
 
     function renderStructure(vp) {
@@ -1085,45 +1340,82 @@
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">${levelChips}</div>
                     <div class="flex items-center gap-2">
-                        <button id="btn-tree-expand" class="px-4 py-2 bg-white dark:bg-slate-700 rounded-lg text-xs font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600">Tout déplier</button>
-                        <button id="btn-tree-collapse" class="px-4 py-2 bg-white dark:bg-slate-700 rounded-lg text-xs font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600">Tout replier</button>
+                        <button id="btn-org-zoom-out" class="w-9 h-9 bg-white dark:bg-slate-700 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 flex items-center justify-center" title="Zoom arrière">−</button>
+                        <span id="org-zoom-label" class="font-mono text-xs font-bold text-slate-500 dark:text-slate-400 w-10 text-center">100%</span>
+                        <button id="btn-org-zoom-in" class="w-9 h-9 bg-white dark:bg-slate-700 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 flex items-center justify-center" title="Zoom avant">+</button>
+                        <button id="btn-org-fit" class="px-4 py-2 bg-white dark:bg-slate-700 rounded-lg text-xs font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600">Ajuster</button>
+                        <button id="btn-tree-export-pdf" class="px-4 py-2 bg-gh-navy text-white rounded-lg text-xs font-black uppercase tracking-wider hover:bg-blue-900 transition-all active:scale-95 flex items-center gap-2">
+                            <i data-lucide="file-down" class="w-3.5 h-3.5"></i>Télécharger PDF
+                        </button>
                     </div>
                 </div>
 
-                <div class="max-h-[60vh] overflow-auto custom-scroll rounded-2xl border border-slate-100 dark:border-slate-700 p-6 bg-white dark:bg-slate-800">
-                    <ul class="tree-root">${treeHtml(data.tree, 0)}</ul>
+                <div id="org-viewport" class="max-h-[65vh] overflow-auto custom-scroll rounded-2xl border border-slate-100 dark:border-slate-700 p-10 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/60 dark:to-slate-800">
+                    <div id="org-stage" class="inline-block origin-top-left transition-transform duration-200">
+                        <div class="org-chart"><ul>${orgChartHtml(data.tree)}</ul></div>
+                    </div>
                 </div>
             `;
             out.classList.remove("hidden");
 
-            // Expand/collapse individuel : clic sur une ligne avec enfants
-            out.querySelectorAll(".tree-row").forEach(row => {
-                row.addEventListener("click", (e) => {
-                    const li = row.closest(".tree-node");
-                    const kids = li && li.querySelector(":scope > .tree-children");
-                    if (!kids) return;
-                    kids.classList.toggle("hidden");
-                    const chev = row.querySelector(".tree-chev");
-                    if (chev) chev.setAttribute(
-                        "data-lucide",
-                        kids.classList.contains("hidden") ? "chevron-right" : "chevron-down"
-                    );
-                    if (window.lucide) lucide.createIcons();
-                    e.stopPropagation();
+            // Zoom — simple CSS transform sur #org-stage (pas de re-render).
+            const stage = $("org-stage");
+            const zoomLabel = $("org-zoom-label");
+            let zoom = 1;
+            const setZoom = z => {
+                zoom = Math.max(0.3, Math.min(2, z));
+                if (stage) stage.style.transform = `scale(${zoom})`;
+                if (zoomLabel) zoomLabel.textContent = Math.round(zoom * 100) + "%";
+            };
+            const zi = $("btn-org-zoom-in"), zo = $("btn-org-zoom-out"), zf = $("btn-org-fit");
+            const fitToViewport = () => {
+                const vp = $("org-viewport");
+                if (!vp || !stage) return;
+                setZoom(1);  // reset avant la mesure
+                requestAnimationFrame(() => {
+                    const vpW = vp.clientWidth - 80;  // padding p-10
+                    const vpH = vp.clientHeight - 80;
+                    const stageW = stage.scrollWidth;
+                    const stageH = stage.scrollHeight;
+                    const scaleW = vpW / stageW;
+                    const scaleH = vpH / stageH;
+                    const s = Math.min(scaleW, scaleH, 1);
+                    if (s < 1) setZoom(s);
                 });
-            });
+            };
+            if (zi) zi.addEventListener("click", () => setZoom(zoom + 0.1));
+            if (zo) zo.addEventListener("click", () => setZoom(zoom - 0.1));
+            if (zf) zf.addEventListener("click", fitToViewport);
 
-            // Tout déplier / replier — simple toggle sur tous les .tree-children
-            const exp = $("btn-tree-expand"), col = $("btn-tree-collapse");
-            if (exp) exp.addEventListener("click", () => {
-                out.querySelectorAll(".tree-children").forEach(c => c.classList.remove("hidden"));
-                out.querySelectorAll(".tree-chev").forEach(c => c.setAttribute("data-lucide", "chevron-down"));
-                if (window.lucide) lucide.createIcons();
-            });
-            if (col) col.addEventListener("click", () => {
-                out.querySelectorAll(".tree-children").forEach(c => c.classList.add("hidden"));
-                out.querySelectorAll(".tree-chev").forEach(c => c.setAttribute("data-lucide", "chevron-right"));
-                if (window.lucide) lucide.createIcons();
+            // Auto-fit au premier rendu : l'utilisateur voit tout l'organigramme
+            // d'un coup sans avoir à cliquer sur "Ajuster". Il peut ensuite
+            // zoomer manuellement s'il veut voir les détails.
+            requestAnimationFrame(fitToViewport);
+            // Ctrl+molette = zoom dans le viewport
+            const vp = $("org-viewport");
+            if (vp) vp.addEventListener("wheel", e => {
+                if (!e.ctrlKey) return;
+                e.preventDefault();
+                setZoom(zoom + (e.deltaY < 0 ? 0.1 : -0.1));
+            }, { passive: false });
+
+            // Export PDF — dialog Enregistrer-Sous + génération via fpdf2
+            const btnPdf = $("btn-tree-export-pdf");
+            if (btnPdf) btnPdf.addEventListener("click", async () => {
+                if (!API()) return;
+                btnPdf.disabled = true;
+                btnPdf.classList.add("opacity-60");
+                toast("Export PDF", "Génération en cours…", "info");
+                const r = await API().export_structure_pdf(filepath);
+                btnPdf.disabled = false;
+                btnPdf.classList.remove("opacity-60");
+                if (r && r.error) {
+                    toast("Erreur", r.error, "error");
+                } else if (r && r.cancelled) {
+                    toast("Annulé", "Export PDF annulé", "info");
+                } else if (r && r.path) {
+                    toast("PDF généré", r.path.split(/[\\/]/).pop(), "success");
+                }
             });
 
             toast("Structure", `${data.filename} · ${s.total_nodes} nœuds`, "success");

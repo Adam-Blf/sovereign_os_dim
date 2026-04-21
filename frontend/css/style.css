@@ -647,3 +647,272 @@ kbd {
 .tree-chev {
     transition: transform 120ms ease;
 }
+
+/* ── Parcours cross-modalités (Dashboard) ─────────────────────────────────
+   Timeline horizontale : une cellule = une année. Hover = accent coloré
+   en bordure gauche par champ PMSI principal du patient (--row-accent
+   est injectée inline sur chaque .journey-row). */
+.journey-row {
+    transition: background-color 180ms ease;
+}
+
+.journey-row:hover {
+    background-color: rgba(248, 250, 252, 0.8);
+}
+
+.dark .journey-row:hover {
+    background-color: rgba(30, 41, 59, 0.4);
+}
+
+.journey-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: transparent;
+    transition: background-color 180ms ease;
+}
+
+.journey-row:hover::before {
+    background: var(--row-accent, #00897B);
+}
+
+.journey-cell {
+    width: 10px;
+    height: 20px;
+    border-radius: 2px;
+    transition: transform 120ms ease;
+}
+
+.journey-row:hover .journey-cell {
+    transform: scaleY(1.15);
+}
+
+.journey-year-label {
+    display: inline-block;
+    width: 10px;
+    text-align: center;
+    font-size: 8px;
+    letter-spacing: -0.03em;
+    opacity: 0.7;
+}
+
+.journey-filter:focus {
+    box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.12);
+    border-color: #00897B;
+}
+
+/* ── Organigramme (onglet Structure) ─────────────────────────────────────
+   Pattern CSS classique : <ul> imbriqués, connecteurs tracés avec
+   ::before et ::after. Pas de SVG, pas de canvas : DOM natif, texte
+   sélectable, accessible, zoom = transform scale sur #org-stage. */
+
+.org-chart,
+.org-chart ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.org-chart {
+    display: inline-block;
+}
+
+.org-chart ul {
+    display: flex;
+    padding-top: 28px;
+    position: relative;
+    justify-content: center;
+}
+
+.org-chart li {
+    position: relative;
+    padding: 0 10px;
+    text-align: center;
+}
+
+/* Ligne verticale descendant du parent vers le point de jonction */
+.org-chart li::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 0;
+    height: 28px;
+    border-left: 1.5px solid #CBD5E1;
+}
+
+/* Ligne horizontale reliant les frères d'une même génération */
+.org-chart li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    border-top: 1.5px solid #CBD5E1;
+}
+
+.dark .org-chart li::before,
+.dark .org-chart li::after {
+    border-color: #334155;
+}
+
+.org-chart li:only-child::after {
+    display: none;
+}
+
+/* Premier frère : la ligne horizontale commence au milieu (pas à gauche) */
+.org-chart li:first-child::after {
+    left: 50%;
+    width: 50%;
+}
+
+.org-chart li:last-child::after {
+    width: 50%;
+}
+
+/* Racine(s) : pas de ligne montante */
+.org-chart > ul > li::before,
+.org-chart > ul > li::after {
+    display: none;
+}
+
+/* Noeud (boîte) */
+.org-node {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 160px;
+    max-width: 220px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    text-align: left;
+    position: relative;
+    transition: transform 150ms ease, box-shadow 150ms ease;
+    cursor: default;
+}
+
+.dark .org-node {
+    background: #1E293B;
+    border-color: #334155;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.org-node:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
+}
+
+.dark .org-node:hover {
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+}
+
+/* Liseré coloré à gauche — accent par level */
+.org-node::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 14px 0 0 14px;
+    background: #94A3B8;
+}
+
+.org-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 12px;
+    color: #000091;
+    letter-spacing: -0.02em;
+}
+
+.dark .org-code {
+    color: #60A5FA;
+}
+
+.org-level {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #F1F5F9;
+    color: #64748B;
+}
+
+.dark .org-level {
+    background: #334155;
+    color: #94A3B8;
+}
+
+.org-label {
+    font-size: 11px;
+    color: #334155;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+.dark .org-label {
+    color: #CBD5E1;
+}
+
+/* Couleurs par LEVEL — cohérent avec _LEVEL_COLORS (backend/structure.py) */
+.org-level-etablissement::before { background: #000091; }
+.org-level-etablissement .org-code { color: #000091; }
+
+.org-level-pole::before { background: #6366F1; }
+.org-level-pole .org-code { color: #6366F1; }
+
+.org-level-service::before { background: #00897B; }
+.org-level-service .org-code { color: #00897B; }
+
+.org-level-um::before { background: #F59E0B; }
+.org-level-um .org-code { color: #F59E0B; }
+
+/* Ligne d'en-tête : code à gauche, badge secteur à droite */
+.org-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+}
+
+/* Badge type de secteur ARS (G/I/D/P/Z) — petit pill coloré à droite du code */
+.org-sector-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 999px;
+    color: #FFFFFF;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+}
+
+/* Liseré gauche par TYPE DE SECTEUR — prioritaire sur le level.
+   Couleurs : G=bleu, I=rose, D=rouge, P=violet, Z=orange. */
+.org-sector-g::before { background: #2563EB !important; }
+.org-sector-g .org-sector-badge { background: #2563EB; }
+
+.org-sector-i::before { background: #EC4899 !important; }
+.org-sector-i .org-sector-badge { background: #EC4899; }
+
+.org-sector-d::before { background: #DC2626 !important; }
+.org-sector-d .org-sector-badge { background: #DC2626; }
+
+.org-sector-p::before { background: #7C3AED !important; }
+.org-sector-p .org-sector-badge { background: #7C3AED; }
+
+.org-sector-z::before { background: #F97316 !important; }
+.org-sector-z .org-sector-badge { background: #F97316; }

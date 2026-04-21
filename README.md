@@ -210,7 +210,7 @@ build.bat
 
 ## Changelog
 
-### V32.0 — 2026-03-03
+### V34.0 — 2026-03-03
 
 - ✅ Fix erreur `WebViewException` (ajout `pythonnet` dans les dépendances)
 - ✅ Vérification gracieuse des dépendances au démarrage

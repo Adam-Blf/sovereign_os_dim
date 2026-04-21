@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM — Point d'entrée principal
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V32.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V35.0 — Station DIM GHT Sud Paris
 #  Date    : 2026-03-03
 #
 #  Description:
@@ -115,7 +115,7 @@ def main():
 
     # Création de la fenêtre native pywebview
     window = webview.create_window(
-        title="Sovereign OS V32.0 | Station DIM - GHT Sud Paris",
+        title="Sovereign OS V35.0 | Station DIM - GHT Sud Paris",
         url=index_html,
         js_api=api,        # Expose toutes les méthodes publiques de Api()
         width=1440,        # Largeur optimale pour les écrans de bureau DIM
