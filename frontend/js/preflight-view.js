@@ -125,7 +125,7 @@
               font-family:'JetBrains Mono',monospace; letter-spacing:0.1em; font-size:11px;
               background:${state.filter === null ? '#000091' : '#E2E8F0'};
               color:${state.filter === null ? '#fff' : '#475569'};">TOUT · ${state.findings.length}</button>
-      <input id="preflight-search" placeholder="Filtre code/message..." value="${state.search}"
+      <input id="preflight-search" placeholder="Filtre code/message..." value="${escapeHtml(state.search)}"
              style="flex:1; min-width:200px; padding:0.4rem 0.8rem; border-radius:8px;
                     border:1px solid #CBD5E1; font-family:inherit;">
     `;
