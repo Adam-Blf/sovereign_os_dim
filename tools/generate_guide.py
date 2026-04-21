@@ -2115,6 +2115,405 @@ def _perf_chart(pdf, metrics):
     pdf.ln(4)
 
 
+def _feature_schema(pdf, feat_num):
+    """
+    Dessine un schema vectoriel specifique a la feature · rendu vectoriel
+    pur (rect/line/text fpdf2). Chaque feature a sa propre representation
+    de sa vue principale.
+    """
+    x0, y0 = pdf.get_x(), pdf.get_y()
+    w, h = 180, 85
+
+    # Cadre + titre bande
+    pdf.set_draw_color(*SLATE_300 if False else SLATE_200)
+    pdf.set_line_width(0.4)
+    pdf.rect(x0, y0, w, h)
+    pdf.set_fill_color(*GH_NAVY)
+    pdf.rect(x0, y0, w, 7, "F")
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_xy(x0 + 3, y0 + 1.5)
+    titles = {
+        1: "DASHBOARD", 2: "MODO FILES", 3: "IDENTITOVIGILANCE",
+        4: "PMSI PILOT CSV", 5: "INSPECTOR + PREFLIGHT", 6: "DASHBOARD LIVE",
+        7: "STRUCTURE", 8: "ANALYSE D'ACTIVITE UM", 9: "IMPORT CSV + HTML->PDF",
+        10: "ADMINISTRATION",
+    }
+    pdf.cell(0, 4, titles.get(feat_num, f"FEATURE {feat_num}"))
+
+    cx, cy, cw, ch = x0 + 4, y0 + 10, w - 8, h - 14
+
+    if feat_num == 1:
+        # Dashboard · 4 KPI cards + donut chart
+        for i in range(4):
+            kx = cx + i * (cw / 4 + 1)
+            pdf.set_fill_color(*SLATE_50)
+            pdf.rect(kx, cy, cw / 4 - 1, 18, "F")
+            pdf.set_draw_color(*SLATE_200)
+            pdf.rect(kx, cy, cw / 4 - 1, 18)
+            pdf.set_font("Helvetica", "", 6)
+            pdf.set_text_color(*SLATE_500)
+            pdf.set_xy(kx + 2, cy + 2)
+            labels = ["Fichiers", "IPP uniques", "Collisions", "Formats"]
+            pdf.cell(cw / 4 - 4, 3, labels[i])
+            pdf.set_font("Helvetica", "B", 12)
+            pdf.set_text_color(*GH_NAVY)
+            pdf.set_xy(kx + 2, cy + 6)
+            values = ["7", "4821", "147", "3"]
+            pdf.cell(cw / 4 - 4, 6, values[i])
+        # Donut chart zone
+        pdf.set_fill_color(*SLATE_50)
+        pdf.rect(cx, cy + 22, cw, ch - 22, "F")
+        # Pseudo donut
+        import math
+        center = (cx + 30, cy + 22 + (ch - 22) / 2)
+        radius = 15
+        colors = [GH_NAVY, GH_TEAL, GH_WARN, GH_ERR]
+        for i in range(36):
+            angle = i * 10
+            rad = math.radians(angle)
+            color = colors[i % 4]
+            pdf.set_fill_color(*color)
+            pdf.circle(center[0] + radius * math.cos(rad) * 0.6,
+                       center[1] + radius * math.sin(rad) * 0.6, 1.5, "F")
+        pdf.set_font("Helvetica", "", 7)
+        pdf.set_text_color(*SLATE_500)
+        pdf.set_xy(cx + 55, cy + 28)
+        pdf.cell(100, 4, "Repartition par format PMSI")
+
+    elif feat_num == 2:
+        # Modo Files · liste de fichiers
+        pdf.set_fill_color(*GH_NAVY)
+        pdf.rect(cx, cy, cw, 6, "F")
+        pdf.set_font("Helvetica", "B", 6.5)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_xy(cx + 2, cy + 1)
+        pdf.cell(40, 4, "NOM")
+        pdf.cell(25, 4, "FORMAT")
+        pdf.cell(25, 4, "LIGNES")
+        pdf.cell(25, 4, "TAILLE")
+        files = [
+            ("RPS_202407.txt", "RPS", "4 782", "742 Ko"),
+            ("RAA_202407.txt", "RAA", "12 450", "1.2 Mo"),
+            ("FICHSUP-PSY_202407", "FICHSUP-PSY", "218", "26 Ko"),
+            ("RPS_202408.txt", "RPS", "3 984", "618 Ko"),
+            ("RAA_202408.txt", "RAA", "11 238", "1.1 Mo"),
+            ("RPS_202409.txt", "RPS", "5 021", "779 Ko"),
+        ]
+        for i, f in enumerate(files):
+            row_y = cy + 7 + i * 8
+            if i % 2 == 0:
+                pdf.set_fill_color(*SLATE_50)
+                pdf.rect(cx, row_y, cw, 8, "F")
+            pdf.set_font("Courier", "", 6.5)
+            pdf.set_text_color(*SLATE_700)
+            pdf.set_xy(cx + 2, row_y + 2)
+            pdf.cell(40, 4, f[0][:24])
+            pdf.set_font("Helvetica", "B", 6.5)
+            pdf.set_text_color(*GH_TEAL)
+            pdf.cell(25, 4, f[1])
+            pdf.set_font("Courier", "", 6.5)
+            pdf.set_text_color(*SLATE_700)
+            pdf.cell(25, 4, f[2])
+            pdf.cell(25, 4, f[3])
+
+    elif feat_num == 3:
+        # Identitovigilance · paires de collisions
+        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_text_color(*GH_ERR)
+        pdf.set_xy(cx + 2, cy)
+        pdf.cell(0, 4, "3 collisions detectees")
+        collisions = [
+            ("IPP_042A7", "2", "19870415 (12x)  vs  19870514 (2x)"),
+            ("IPP_019B2", "3", "20020301 (8x)   vs  20020103 (2x)  vs  20023001 (1x)"),
+            ("IPP_073C5", "2", "19951122 (15x)  vs  19951222 (1x)"),
+        ]
+        for i, c in enumerate(collisions):
+            row_y = cy + 8 + i * 16
+            pdf.set_fill_color(255, 245, 248)
+            pdf.rect(cx, row_y, cw, 14, "F")
+            pdf.set_draw_color(*GH_ERR)
+            pdf.set_line_width(0.3)
+            pdf.rect(cx, row_y, cw, 14)
+            pdf.set_font("Courier", "B", 8)
+            pdf.set_text_color(*GH_ERR)
+            pdf.set_xy(cx + 3, row_y + 2)
+            pdf.cell(30, 4, c[0])
+            pdf.set_font("Helvetica", "B", 7)
+            pdf.set_text_color(*SLATE_700)
+            pdf.cell(15, 4, c[1] + " DDN")
+            pdf.set_xy(cx + 3, row_y + 7)
+            pdf.set_font("Courier", "", 6.5)
+            pdf.set_text_color(*SLATE_500)
+            pdf.cell(0, 4, c[2])
+
+    elif feat_num == 4:
+        # PMSI Pilot CSV · flux export
+        boxes = [
+            (cx + 5, cy + 15, 35, 18, SLATE_50, "MPI", "(memoire)"),
+            (cx + 70, cy + 5, 40, 15, GH_TEAL, "CSV", "normalise"),
+            (cx + 70, cy + 30, 40, 15, GH_NAVY, ".txt", "sanitized"),
+            (cx + 135, cy + 5, 35, 15, GH_OK, "BIQuery", "ingest"),
+            (cx + 135, cy + 30, 35, 15, GH_WARN, "DRUIDES", "upload"),
+        ]
+        for bx, by, bw, bh, color, label, sublabel in boxes:
+            pdf.set_fill_color(*color)
+            pdf.rect(bx, by, bw, bh, "F")
+            pdf.set_font("Helvetica", "B", 8)
+            fg = (255, 255, 255) if color != SLATE_50 else SLATE_900
+            pdf.set_text_color(*fg)
+            pdf.set_xy(bx + 2, by + 3)
+            pdf.cell(bw - 4, 4, label, align="C")
+            pdf.set_font("Helvetica", "", 6)
+            pdf.set_xy(bx + 2, by + 8)
+            pdf.cell(bw - 4, 3, sublabel, align="C")
+        # Fleches
+        pdf.set_draw_color(*SLATE_400)
+        pdf.set_line_width(0.6)
+        pdf.line(cx + 40, cy + 24, cx + 70, cy + 12)
+        pdf.line(cx + 40, cy + 24, cx + 70, cy + 37)
+        pdf.line(cx + 110, cy + 12, cx + 135, cy + 12)
+        pdf.line(cx + 110, cy + 37, cx + 135, cy + 37)
+
+    elif feat_num == 5:
+        # Inspector + Preflight · terminal decomposition
+        pdf.set_fill_color(15, 23, 42)
+        pdf.rect(cx, cy, cw, ch, "F")
+        pdf.set_font("Courier", "", 6.5)
+        pdf.set_text_color(16, 185, 129)  # green
+        pdf.set_xy(cx + 2, cy + 2)
+        pdf.cell(0, 4, "$ inspect RPS_202407.txt --line 2341")
+        pdf.set_xy(cx + 2, cy + 7)
+        pdf.set_text_color(148, 163, 184)
+        pdf.cell(0, 4, "POS   CHAMP                   VALEUR")
+        fields = [
+            ("01-09", "FINESS",             "940000001", True),
+            ("10-16", "Num sequentiel",     "0000012",   False),
+            ("21-40", "IPP",                "IPP_[pseudo]", False),
+            ("41-48", "DDN",                "19870415",  False),
+            ("67-70", "Mode legal",         "SL",        False),
+            ("79-82", "Num UM",             "4001",      False),
+        ]
+        for i, (pos, label, value, err) in enumerate(fields):
+            pdf.set_xy(cx + 2, cy + 13 + i * 5)
+            pdf.set_text_color(148, 163, 184)
+            pdf.cell(15, 4, pos)
+            pdf.set_text_color(255, 255, 255)
+            pdf.cell(45, 4, label)
+            pdf.set_text_color(225, 29, 72) if err else pdf.set_text_color(34, 197, 94)
+            pdf.cell(0, 4, value)
+        pdf.set_xy(cx + 2, cy + 13 + 6 * 5 + 3)
+        pdf.set_text_color(225, 29, 72)
+        pdf.cell(0, 4, "[ERREUR] FINESS incoherent avec lot (attendu 940110018)")
+
+    elif feat_num == 6:
+        # Dashboard Live · 4 charts en grille 2x2
+        chart_w = cw / 2 - 2
+        chart_h = ch / 2 - 2
+        for row in range(2):
+            for col in range(2):
+                gx = cx + col * (chart_w + 2)
+                gy = cy + row * (chart_h + 2)
+                pdf.set_fill_color(*SLATE_50)
+                pdf.rect(gx, gy, chart_w, chart_h, "F")
+                pdf.set_draw_color(*SLATE_200)
+                pdf.rect(gx, gy, chart_w, chart_h)
+                pdf.set_font("Helvetica", "B", 6.5)
+                pdf.set_text_color(*GH_NAVY)
+                pdf.set_xy(gx + 2, gy + 2)
+                labels_ch = [["File active", "Secteurs ARS"], ["Top 10 UM", "Collisions"]]
+                pdf.cell(chart_w - 4, 3, labels_ch[row][col])
+                # Mini chart
+                if row == 0 and col == 0:
+                    # Line chart
+                    points_x = [gx + 6 + i * (chart_w - 12) / 8 for i in range(9)]
+                    points_y = [gy + chart_h - 4 - (i * 2 + (i % 3) * 3) for i in range(9)]
+                    pdf.set_draw_color(*GH_TEAL)
+                    pdf.set_line_width(0.6)
+                    for j in range(len(points_x) - 1):
+                        pdf.line(points_x[j], points_y[j], points_x[j + 1], points_y[j + 1])
+                elif row == 0 and col == 1:
+                    # Pie
+                    pdf.set_fill_color(*GH_TEAL)
+                    pdf.circle(gx + chart_w / 2, gy + chart_h / 2 + 2, 8, "F")
+                elif row == 1 and col == 0:
+                    # Horizontal bars
+                    for i in range(5):
+                        by = gy + 8 + i * 5
+                        bw = (chart_w - 8) * (1 - i * 0.15)
+                        pdf.set_fill_color(*GH_NAVY)
+                        pdf.rect(gx + 4, by, bw, 3, "F")
+                else:
+                    # Heatmap (grid of squares)
+                    cells_per_row = 6
+                    for r in range(3):
+                        for c in range(cells_per_row):
+                            intensity = (r + c) % 5
+                            colors_h = [(230, 240, 250), (180, 205, 230),
+                                        (100, 150, 200), (50, 100, 180),
+                                        (30, 60, 150)]
+                            pdf.set_fill_color(*colors_h[intensity])
+                            pdf.rect(gx + 4 + c * 4, gy + 10 + r * 4, 3.5, 3.5, "F")
+
+    elif feat_num == 7:
+        # Structure · arbre
+        nodes = [
+            (cx + cw / 2 - 20, cy + 2, 40, 10, GH_NAVY, "Fondation Vallee"),
+            (cx + cw / 4 - 22, cy + 20, 44, 9, GH_TEAL, "Pole Infanto-juv"),
+            (cx + 3 * cw / 4 - 22, cy + 20, 44, 9, (249, 115, 22), "Pole Intersec"),
+            (cx + 8, cy + 40, 30, 8, SLATE_100, "94I01"),
+            (cx + 45, cy + 40, 30, 8, SLATE_100, "94I02"),
+            (cx + cw - 45, cy + 40, 30, 8, SLATE_100, "94Z01"),
+            (cx + 3, cy + 55, 18, 7, SLATE_50, "UM 4001"),
+            (cx + 25, cy + 55, 18, 7, SLATE_50, "UM 4002"),
+            (cx + 47, cy + 55, 18, 7, SLATE_50, "UM 4010"),
+            (cx + 69, cy + 55, 18, 7, SLATE_50, "UM 4011"),
+            (cx + cw - 45, cy + 55, 18, 7, SLATE_50, "UM 4050"),
+        ]
+        for nx, ny, nw, nh, color, label in nodes:
+            pdf.set_fill_color(*color)
+            pdf.rect(nx, ny, nw, nh, "F")
+            pdf.set_draw_color(*SLATE_400)
+            pdf.set_line_width(0.2)
+            pdf.rect(nx, ny, nw, nh)
+            pdf.set_font("Helvetica", "B", 6)
+            fg = (255, 255, 255) if color in (GH_NAVY, GH_TEAL, (249, 115, 22)) else SLATE_900
+            pdf.set_text_color(*fg)
+            pdf.set_xy(nx + 1, ny + 1.5)
+            pdf.cell(nw - 2, 4, label, align="C")
+        # Connecteurs
+        pdf.set_draw_color(*SLATE_400)
+        pdf.set_line_width(0.3)
+        pdf.line(cx + cw / 2, cy + 12, cx + cw / 4, cy + 20)
+        pdf.line(cx + cw / 2, cy + 12, cx + 3 * cw / 4, cy + 20)
+        pdf.line(cx + cw / 4, cy + 29, cx + 23, cy + 40)
+        pdf.line(cx + cw / 4, cy + 29, cx + 60, cy + 40)
+        pdf.line(cx + 3 * cw / 4, cy + 29, cx + cw - 30, cy + 40)
+
+    elif feat_num == 8:
+        # Analyse activite UM · drop zone + liste inactives
+        pdf.set_draw_color(*GH_TEAL)
+        pdf.set_line_width(0.6)
+        pdf.set_dash_pattern(dash=2, gap=2)
+        pdf.rect(cx + 5, cy + 3, cw - 10, 20)
+        pdf.set_dash_pattern()
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*GH_TEAL)
+        pdf.set_xy(cx + 5, cy + 10)
+        pdf.cell(cw - 10, 4, "GLISSEZ VOS FICHIERS RPS / RAA ICI", align="C")
+        pdf.set_font("Helvetica", "", 6.5)
+        pdf.set_text_color(*SLATE_500)
+        pdf.set_xy(cx + 5, cy + 15)
+        pdf.cell(cw - 10, 3, "7 fichiers · 50 802 lignes · periode 2024 · 3 mois", align="C")
+        # Jauges
+        pdf.set_fill_color(*GH_OK)
+        pdf.rect(cx + 5, cy + 28, (cw - 10) * 0.83, 4, "F")
+        pdf.set_fill_color(*SLATE_200)
+        pdf.rect(cx + 5 + (cw - 10) * 0.83, cy + 28, (cw - 10) * 0.17, 4, "F")
+        pdf.set_font("Helvetica", "", 6.5)
+        pdf.set_text_color(*GH_OK)
+        pdf.set_xy(cx + 5, cy + 33)
+        pdf.cell(0, 3, "Couverture · 83 %  (5 UM sur 6 actives)")
+        # UM inactives
+        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_text_color(*GH_ERR)
+        pdf.set_xy(cx + 5, cy + 40)
+        pdf.cell(0, 3, "UM sans activite · 1")
+        for i, (code, label) in enumerate([("4050", "Addictologie ado")]):
+            by = cy + 45 + i * 8
+            pdf.set_fill_color(255, 245, 248)
+            pdf.rect(cx + 5, by, cw - 10, 6, "F")
+            pdf.set_font("Courier", "B", 7)
+            pdf.set_text_color(*GH_ERR)
+            pdf.set_xy(cx + 8, by + 1)
+            pdf.cell(20, 4, code)
+            pdf.set_font("Helvetica", "", 6.5)
+            pdf.set_text_color(*SLATE_700)
+            pdf.cell(0, 4, label)
+
+    elif feat_num == 9:
+        # Import CSV · tableau preview
+        pdf.set_fill_color(*GH_NAVY)
+        pdf.rect(cx, cy, cw, 6, "F")
+        pdf.set_font("Helvetica", "B", 6.5)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_xy(cx + 2, cy + 1)
+        pdf.cell(35, 4, "IPP")
+        pdf.cell(30, 4, "DDN")
+        pdf.cell(20, 4, "SEXE")
+        pdf.cell(30, 4, "FORMAT")
+        pdf.cell(25, 4, "ANNEE")
+        rows = [
+            ("IPP_001", "19850312", "M", "RPS", "2024"),
+            ("IPP_042", "19920701", "F", "RAA", "2024"),
+            ("IPP_129", "20010915", "M", "RPS", "2024"),
+            ("IPP_256", "19780322", "F", "EDGAR", "2024"),
+            ("IPP_312", "19911201", "M", "RPS", "2024"),
+            ("IPP_478", "20050617", "F", "RAA", "2024"),
+        ]
+        for i, r in enumerate(rows):
+            row_y = cy + 7 + i * 7
+            if i % 2 == 0:
+                pdf.set_fill_color(*SLATE_50)
+                pdf.rect(cx, row_y, cw, 7, "F")
+            pdf.set_font("Courier", "", 6.5)
+            pdf.set_text_color(*SLATE_700)
+            pdf.set_xy(cx + 2, row_y + 1.5)
+            pdf.cell(35, 4, r[0])
+            pdf.cell(30, 4, r[1])
+            pdf.cell(20, 4, r[2])
+            pdf.set_font("Helvetica", "B", 6.5)
+            pdf.set_text_color(*GH_TEAL)
+            pdf.cell(30, 4, r[3])
+            pdf.set_font("Courier", "", 6.5)
+            pdf.set_text_color(*SLATE_700)
+            pdf.cell(25, 4, r[4])
+
+    elif feat_num == 10:
+        # Administration · raccourcis clavier
+        shortcuts = [
+            ("Ctrl+1", "Dashboard"),
+            ("Ctrl+2", "Modo Files"),
+            ("Ctrl+3", "Identitovigilance"),
+            ("Ctrl+4", "PMSI Pilot CSV"),
+            ("Ctrl+5", "Import CSV"),
+            ("Ctrl+6", "Structure"),
+            ("Ctrl+7", "Tutoriel"),
+            ("F1", "Manuel HTML"),
+            ("F2", "Inspector Terminal"),
+            ("F3", "Preflight DRUIDES"),
+            ("F4", "Dashboard Live"),
+            ("Ctrl+D", "Toggle dark mode"),
+        ]
+        cols = 2
+        per_col = 6
+        for i, (k, label) in enumerate(shortcuts):
+            col = i // per_col
+            row = i % per_col
+            rx = cx + col * (cw / cols)
+            ry = cy + row * 11
+            pdf.set_fill_color(*SLATE_50)
+            pdf.rect(rx + 2, ry, 22, 8, "F")
+            pdf.set_draw_color(*SLATE_400)
+            pdf.rect(rx + 2, ry, 22, 8)
+            pdf.set_font("Courier", "B", 7)
+            pdf.set_text_color(*GH_NAVY)
+            pdf.set_xy(rx + 3, ry + 2)
+            pdf.cell(20, 4, k, align="C")
+            pdf.set_font("Helvetica", "", 7)
+            pdf.set_text_color(*SLATE_700)
+            pdf.set_xy(rx + 26, ry + 2)
+            pdf.cell(cw / cols - 30, 4, label)
+
+    # Legende sous le schema
+    pdf.set_xy(x0, y0 + h + 2)
+    pdf.set_font("Helvetica", "I", 7.5)
+    pdf.set_text_color(*SLATE_500)
+    pdf.cell(0, 4, "Schema · representation vectorielle de la vue (rendu pixel-perfect dans l'application)",
+             new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.ln(3)
+
+
 def _section_banner(pdf, text, color=None):
     """Banniere decorative pour separer des sous-sections."""
     if color is None:
@@ -2159,10 +2558,9 @@ def render_feature(pdf, feat, logo_path, feat_num, total_feats, screenshot_path=
     _subheading(pdf, "Acces")
     _body_text(pdf, feat["access"])
 
-    if screenshot_path and os.path.exists(screenshot_path):
-        pdf.ln(1)
-        _subheading(pdf, "Capture d'ecran")
-        _screenshot_box(pdf, screenshot_path, caption=ft)
+    pdf.ln(1)
+    _subheading(pdf, "Apercu de la vue")
+    _feature_schema(pdf, feat_num)
 
     # ═══ PAGE 2 · WORKFLOW + OPTIONS ═══
     pdf.add_page()
