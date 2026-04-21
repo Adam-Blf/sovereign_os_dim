@@ -795,6 +795,7 @@ class DataProcessor:
           3. On compte les IPP uniques et les collisions
         """
         self.mpi = {}
+        self.file_stats = {}
         totals = {
             "files_processed": 0, "files_skipped": 0,
             "lines_total": 0, "lines_valid": 0, "lines_filtered": 0,
