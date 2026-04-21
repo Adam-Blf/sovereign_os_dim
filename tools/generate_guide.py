@@ -1805,7 +1805,7 @@ def _page_title(pdf, number, label):
 def _body_text(pdf, text):
     pdf.set_font("Helvetica", "", 10.5)
     pdf.set_text_color(*SLATE_700)
-    pdf.multi_cell(0, 6, text)
+    pdf.multi_cell(0, 6, text, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(2)
 
 
@@ -1824,7 +1824,7 @@ def _alert(pdf, kind, text):
     pdf.set_font("Helvetica", "B", 9.5)
     pdf.cell(4, 5, "", new_x="RIGHT", new_y="TOP", fill=True)
     pdf.set_font("Helvetica", "", 10)
-    pdf.multi_cell(0, 5.5, " " + text, fill=True)
+    pdf.multi_cell(0, 5.5, " " + text, fill=True, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(2)
 
 
@@ -1835,25 +1835,14 @@ def _alert(pdf, kind, text):
 # pas d'image raster, rendu vectoriel pur, leger.
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _screenshot_box(pdf, png_path, caption=None):
+def _screenshot_box(pdf, png_path, caption=None, max_w=150):
     """
-    Embarque un screenshot PNG dans le PDF · largeur totale, ratio preserve.
-    Ajoute une legende en italique sous l'image.
+    Embarque un screenshot PNG dans le PDF · largeur controlee, ratio preserve.
+    Bascule automatiquement en nouvelle page si l'image ne tient pas.
     """
     if not png_path or not os.path.exists(png_path):
         return False
-    x0 = pdf.get_x()
-    y0 = pdf.get_y()
-    max_w = 180
-    # Cadre decoratif
-    pdf.set_draw_color(*SLATE_200)
-    pdf.set_line_width(0.4)
-    # fpdf2 calcule la hauteur automatiquement quand on passe que w
-    try:
-        pdf.image(png_path, x=x0, y=y0, w=max_w)
-    except Exception:
-        return False
-    # Estime la hauteur (2400x1500 -> ratio 1.6)
+    # Estime la hauteur avant placement
     try:
         from PIL import Image
         with Image.open(png_path) as im:
@@ -1861,14 +1850,24 @@ def _screenshot_box(pdf, png_path, caption=None):
             h = max_w * ih / iw
     except Exception:
         h = max_w * 1500 / 2400
-    # Bordure apres l'image
+    # Page break si pas assez d'espace
+    page_h = pdf.h - pdf.b_margin
+    if pdf.get_y() + h + 10 > page_h:
+        pdf.add_page()
+    x0 = (pdf.w - max_w) / 2  # centre horizontalement
+    y0 = pdf.get_y()
+    try:
+        pdf.image(png_path, x=x0, y=y0, w=max_w)
+    except Exception:
+        return False
     pdf.set_draw_color(*SLATE_200)
+    pdf.set_line_width(0.4)
     pdf.rect(x0, y0, max_w, h)
     pdf.set_y(y0 + h + 2)
     if caption:
         pdf.set_font("Helvetica", "I", 8)
         pdf.set_text_color(*SLATE_500)
-        pdf.multi_cell(0, 4, "Capture d'ecran · " + caption, align="C")
+        pdf.multi_cell(0, 4, "Capture d'ecran · " + caption, align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(3)
     return True
 
@@ -1997,7 +1996,7 @@ def _workflow_diagram(pdf, steps_labels=("Etape 1", "Etape 2", "Etape 3")):
         pdf.set_xy(cx + 2, y0 + 10)
         # Truncate label si trop long
         short = label[:32] + ("..." if len(label) > 32 else "")
-        pdf.multi_cell(card_w - 4, 5, short)
+        pdf.multi_cell(card_w - 4, 5, short, new_x="LEFT", new_y="NEXT")
         # Fleche
         if i < 2:
             ax = cx + card_w
@@ -2131,209 +2130,83 @@ def _section_banner(pdf, text, color=None):
 
 
 def render_feature(pdf, feat, logo_path, feat_num, total_feats, screenshot_path=None):
-    """Rend les 20 pages d'une feature."""
+    """Rend une feature en 3 pages compactes · vue d'ensemble, workflow, depannage."""
     ft = feat["title"]
     cat = feat["category"]
 
-    # ═══ PAGE 1 · COVER DE FEATURE ═══
+    # ═══ PAGE 1 · VUE D'ENSEMBLE + CAPTURE ═══
     pdf.add_page()
-    # Couverture speciale · pas d'entete standard, mise en valeur
-    if os.path.exists(logo_path):
-        try:
-            pdf.image(logo_path, x=90, y=20, h=30)
-        except Exception:
-            pass  # pragma: no cover
-    pdf.set_y(60)
+    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
+    # Titre de feature
     pdf.set_font("Helvetica", "B", 9)
     pdf.set_text_color(*GH_TEAL)
-    pdf.cell(0, 5, f"FEATURE {feat_num:02d} / {total_feats}  ·  {cat.upper()}",
-             new_x="LMARGIN", new_y="NEXT", align="C")
-    pdf.ln(3)
-    pdf.set_font("Helvetica", "B", 22)
+    pdf.cell(0, 4, f"FEATURE {feat_num:02d} / {total_feats}  ·  {cat.upper()}",
+             new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "B", 18)
     pdf.set_text_color(*GH_NAVY)
-    pdf.multi_cell(0, 10, ft, align="C")
-    pdf.ln(3)
-    pdf.set_font("Helvetica", "I", 12)
+    pdf.cell(0, 9, ft, new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "I", 10)
     pdf.set_text_color(*SLATE_500)
-    pdf.multi_cell(0, 7, feat["tagline"], align="C")
-    pdf.ln(15)
-    pdf.set_draw_color(*GH_TEAL)
-    pdf.set_line_width(0.8)
-    pdf.line(70, pdf.get_y(), 140, pdf.get_y())
-    pdf.ln(8)
-    pdf.set_font("Helvetica", "", 10)
-    pdf.set_text_color(*SLATE_500)
-    pdf.multi_cell(
-        0, 6,
-        "Ce chapitre de 20 pages couvre l'integralite de la feature · "
-        "objectif, prerequis, interface, workflow, options, integration, "
-        "cas d'usage, performance, securite, depannage, FAQ, bonnes "
-        "pratiques, metriques et references.",
-        align="C",
-    )
-    pdf.ln(15)
-    pdf.set_font("Helvetica", "I", 9)
-    pdf.set_text_color(*SLATE_400)
-    pdf.cell(0, 5, f"Sovereign OS DIM V35.0 · {date.today().isoformat()}",
-             new_x="LMARGIN", new_y="NEXT", align="C")
-
-    # ═══ PAGE 2 · RESUME / TL;DR ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 2, "Resume executif")
-    _body_text(pdf,
-               "En synthese · cette feature adresse un besoin identifie du "
-               "quotidien TIM. Les elements essentiels a retenir sont "
-               "listes ci-dessous. Les sections suivantes detaillent chaque "
-               "aspect exhaustivement.")
-    _subheading(pdf, "Pitch")
-    _body_text(pdf, feat["tagline"])
-    _subheading(pdf, "Categorie")
-    _body_text(pdf, cat + " · accessible depuis la barre laterale Sovereign OS.")
-    _subheading(pdf, "Duree typique de prise en main")
-    _body_text(pdf,
-               "15 minutes pour maitriser les operations courantes, 2 heures "
-               "pour explorer les options avancees, 1 journee de pratique "
-               "pour etre totalement autonome.")
-    _alert(pdf, "info",
-           "Cette feature fait partie du cycle standard DIM mensuel. "
-           "Ne pas la sauter.")
-
-    # ═══ PAGE 3 · POURQUOI CETTE FEATURE ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 3, "Pourquoi cette feature")
-    _body_text(pdf, feat["purpose"])
-
-    # ═══ PAGE 4 · PREREQUIS ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 4, "Prerequis")
-    _body_text(pdf, feat["prerequisites"])
-    _alert(pdf, "warn",
-           "Sans les prerequis ci-dessus, la feature peut ne pas se lancer "
-           "ou afficher un etat vide avec un call-to-action.")
-
-    # ═══ PAGE 5 · ACCES ET LANCEMENT ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 5, "Acces et lancement")
-    _body_text(pdf, feat["access"])
-
-    # ═══ PAGE 6 · VUE D'ENSEMBLE INTERFACE (avec capture reelle) ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 6, "Vue d'ensemble de l'interface")
-    _body_text(pdf, feat["interface"])
-    _section_banner(pdf, "Capture d'ecran de la vue")
-    if screenshot_path and _screenshot_box(pdf, screenshot_path, caption=ft):
-        pass
-    else:
-        _ui_mockup(pdf, highlight_zone="content")
-
-    # ═══ PAGES 7-9 · WORKFLOW ETAPES 1-3 ═══
-    for step_idx, step_key in enumerate(("workflow_1", "workflow_2", "workflow_3"), start=1):
-        pdf.add_page()
-        _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-        _page_title(pdf, 6 + step_idx, f"Workflow · Etape {step_idx} sur 3")
-        _subheading(pdf, f"Etape {step_idx}")
-        _body_text(pdf, feat[step_key])
-        if step_idx == 1:
-            # Diagramme de workflow sur la 1ere etape
-            _section_banner(pdf, "Diagramme de progression")
-            # Labels courts · 1ere phrase de chaque etape
-            labels = []
-            for k in ("workflow_1", "workflow_2", "workflow_3"):
-                txt = feat[k].split(".")[0]
-                labels.append(txt[:40])
-            _workflow_diagram(pdf, steps_labels=labels)
-        if step_idx == 3:
-            _alert(pdf, "ok",
-                   "A l'issue de ces 3 etapes, la feature a produit son "
-                   "resultat attendu. Passer aux sections suivantes pour "
-                   "les options avancees.")
-
-    # ═══ PAGE 10 · OPTIONS ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 10, "Options de configuration")
-    _body_text(pdf, feat["options"])
-
-    # ═══ PAGE 11 · INTEGRATION ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 11, "Integration avec les autres modules")
-    _body_text(pdf, feat["integration"])
-
-    # ═══ PAGES 12-13 · CAS D'USAGE ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 12, "Cas d'usage principal")
-    _body_text(pdf, feat["usecase_1"])
-
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 13, "Cas d'usage secondaire")
-    _body_text(pdf, feat["usecase_2"])
-
-    # ═══ PAGE 14 · PERFORMANCE ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 14, "Performance et limites")
-    _body_text(pdf, feat["performance"])
-
-    # ═══ PAGE 15 · SECURITE ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 15, "Securite et conformite RGPD")
-    _body_text(pdf, feat["security"])
-    _alert(pdf, "warn",
-           "Toute exposition de donnees patient hors du poste doit etre "
-           "validee par le DPO et loggee dans le cahier DIM papier.")
-
-    # ═══ PAGE 16 · DEPANNAGE ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 16, "Depannage")
-    _body_text(pdf, feat["troubleshooting"])
-
-    # ═══ PAGE 17 · FAQ ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 17, "Questions frequentes")
-    for q, a in feat["faq"]:
-        _subheading(pdf, q)
-        _body_text(pdf, a)
-
-    # ═══ PAGE 18 · BONNES PRATIQUES ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 18, "Bonnes pratiques")
-    _body_text(pdf, feat["best_practices"])
-
-    # ═══ PAGE 19 · METRIQUES ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 19, "Metriques et indicateurs")
-    _body_text(pdf, feat["metrics"])
-
-    # ═══ PAGE 20 · REFERENCES ═══
-    pdf.add_page()
-    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
-    _page_title(pdf, 20, "References et pour aller plus loin")
-    _body_text(pdf, feat["references"])
-    pdf.ln(8)
+    pdf.multi_cell(0, 5.5, feat["tagline"], new_x="LMARGIN", new_y="NEXT")
     pdf.set_draw_color(*GH_TEAL)
     pdf.set_line_width(0.6)
-    pdf.line(pdf.get_x(), pdf.get_y(), pdf.get_x() + 30, pdf.get_y())
+    pdf.line(pdf.get_x(), pdf.get_y(), pdf.get_x() + 25, pdf.get_y())
     pdf.ln(4)
-    pdf.set_font("Helvetica", "I", 9)
-    pdf.set_text_color(*SLATE_500)
-    pdf.multi_cell(
-        0, 5.5,
-        f"Fin du chapitre '{ft}'. Feature suivante dans la table des "
-        f"matieres. Support · adam.beloucif@psysudparis.fr."
-    )
+
+    _subheading(pdf, "A quoi ca sert")
+    _body_text(pdf, feat["purpose"])
+
+    _subheading(pdf, "Acces")
+    _body_text(pdf, feat["access"])
+
+    if screenshot_path and os.path.exists(screenshot_path):
+        pdf.ln(1)
+        _subheading(pdf, "Capture d'ecran")
+        _screenshot_box(pdf, screenshot_path, caption=ft)
+
+    # ═══ PAGE 2 · WORKFLOW + OPTIONS ═══
+    pdf.add_page()
+    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
+    _page_title(pdf, 2, "Utilisation")
+
+    _subheading(pdf, "Prerequis")
+    _body_text(pdf, feat["prerequisites"])
+
+    # Workflow 3 etapes fusionnes
+    _subheading(pdf, "Workflow en 3 etapes")
+    for i, key in enumerate(("workflow_1", "workflow_2", "workflow_3"), start=1):
+        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_text_color(*GH_TEAL)
+        pdf.cell(0, 5, f"Etape {i}", new_x="LMARGIN", new_y="NEXT")
+        _body_text(pdf, feat[key])
+
+    _subheading(pdf, "Options principales")
+    _body_text(pdf, feat["options"])
+
+    # ═══ PAGE 3 · DEPANNAGE + FAQ + REFERENCES ═══
+    pdf.add_page()
+    _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
+    _page_title(pdf, 3, "Depannage et bonnes pratiques")
+
+    _subheading(pdf, "Depannage courant")
+    _body_text(pdf, feat["troubleshooting"])
+
+    _subheading(pdf, "Questions frequentes")
+    for q, a in feat["faq"][:3]:
+        pdf.set_font("Helvetica", "B", 9.5)
+        pdf.set_text_color(*SLATE_900)
+        pdf.multi_cell(0, 5.5, "Q · " + q, new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font("Helvetica", "", 9.5)
+        pdf.set_text_color(*SLATE_700)
+        pdf.multi_cell(0, 5.5, "R · " + a, new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(1)
+
+    _subheading(pdf, "Securite et RGPD")
+    _body_text(pdf, feat["security"][:400] + ("..." if len(feat["security"]) > 400 else ""))
+
+    _alert(pdf, "info",
+           f"Support · adam.beloucif@psysudparis.fr  ·  "
+           f"https://github.com/Adam-Blf/sovereign_os_dim/issues")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -2386,7 +2259,7 @@ def build_pdf(output_path: str) -> str:
     pdf.ln(8)
     pdf.set_font("Helvetica", "", 12)
     pdf.set_text_color(*SLATE_500)
-    pdf.cell(0, 7, f"Version 35.0  ·  {total_feats} fonctionnalites  ·  20 pages par feature",
+    pdf.cell(0, 7, f"Version 35.0  ·  {total_feats} fonctionnalites  ·  guide compact",
              new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.cell(0, 7, "Station DIM GHT Sud Paris",
              new_x="LMARGIN", new_y="NEXT", align="C")
@@ -2402,13 +2275,12 @@ def build_pdf(output_path: str) -> str:
     pdf.set_text_color(*SLATE_500)
     pdf.multi_cell(
         0, 5,
-        "Ce guide documente exhaustivement chaque fonctionnalite de l'application. "
-        "Chaque feature fait l'objet d'un chapitre dedie de 20 pages couvrant "
-        "objectif, prerequis, workflow, options, integration, cas d'usage, "
-        "performance, securite, depannage, FAQ, bonnes pratiques, metriques "
-        "et references. A conserver pres du poste DIM pour consultation "
-        "ponctuelle.",
+        "Guide compact de consultation quotidienne. Chaque fonctionnalite est "
+        "documentee en 3 pages · vue d'ensemble avec capture d'ecran, workflow "
+        "et options, depannage et FAQ. A garder pres du poste DIM.",
         align="C",
+        new_x="LMARGIN",
+        new_y="NEXT",
     )
 
     # ══════ SOMMAIRE ══════
@@ -2440,32 +2312,31 @@ def build_pdf(output_path: str) -> str:
     _page_header(pdf, LOGO_PATH, "Introduction generale", "Introduction", 0, total_feats)
     _page_title(pdf, 1, "Comment utiliser ce guide")
     _body_text(pdf,
-               "Ce document est structure en chapitres autonomes. Chaque "
-               "fonctionnalite dispose de ses 20 pages dediees, dans le meme "
-               "ordre pour toutes · resume, pourquoi, prerequis, acces, "
-               "interface, workflow (3 pages), options, integration, cas "
-               "d'usage (2 pages), performance, securite, depannage, FAQ, "
-               "bonnes pratiques, metriques, references.")
+               "Ce document est structure en chapitres courts. Chaque "
+               "fonctionnalite dispose de 3 pages · vue d'ensemble avec "
+               "capture d'ecran, workflow et options, depannage et FAQ.")
     _body_text(pdf,
-               "Usage recommande · lire la feature active au moment ou vous "
-               "en avez besoin, plutot que tout d'un trait. Les TIM "
-               "experimenets peuvent se limiter aux sections Workflow et "
-               "Depannage. Les cadres DIM trouveront dans Integration, "
-               "Metriques et Securite les elements necessaires a la "
-               "gouvernance.")
+               "Usage recommande · consulter la feature pertinente quand "
+               "le besoin se presente, pas d'un trait. Pour les details "
+               "exhaustifs (architecture, metriques, references), se "
+               "reporter au README GitHub et au code source.")
     _subheading(pdf, "Legende")
     _alert(pdf, "info", "Information generale ou contexte utile.")
     _alert(pdf, "ok", "Bonne pratique validee, a privilegier.")
     _alert(pdf, "warn", "Point d'attention · impact sur la qualite ou la conformite.")
     _alert(pdf, "err", "Erreur a eviter absolument · impact critique.")
 
-    # ══════ RENDU DE CHAQUE FEATURE · 20 PAGES CHACUNE ══════
+    # ══════ RENDU DE CHAQUE FEATURE · 3 PAGES CHACUNE ══════
     for i, feat in enumerate(FEATURES, start=1):
         shot_name = FEATURE_SCREENSHOTS.get(i - 1)
         shot_path = os.path.join(SCREENSHOT_DIR, shot_name) if shot_name else None
         if shot_path and not os.path.exists(shot_path):
             shot_path = None
-        render_feature(pdf, feat, LOGO_PATH, i, total_feats, screenshot_path=shot_path)
+        try:
+            render_feature(pdf, feat, LOGO_PATH, i, total_feats, screenshot_path=shot_path)
+        except Exception as e:
+            print(f"[ERR] Feature {i} · {feat['title']} · {e}", file=sys.stderr)
+            raise
 
     # ══════ PAGE FINALE · SUPPORT ET CREDITS ══════
     pdf.add_page()
@@ -2524,7 +2395,7 @@ def main() -> None:
     try:
         from pypdf import PdfReader
         pages = len(PdfReader(path).pages)
-        expected = len(FEATURES) * 20 + 4  # +cover, sommaire, intro, support
+        expected = len(FEATURES) * 3 + 4  # +cover, sommaire, intro, support
         print(f"[OK] Guide genere · {path}")
         print(f"      {pages} pages · {size_kb} Ko · attendu ~{expected} pages")
     except Exception:
