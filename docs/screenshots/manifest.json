@@ -1,0 +1,42 @@
+[
+  {
+    "name": "01_dashboard",
+    "title": "Dashboard · vue d'ensemble",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\01_dashboard.png"
+  },
+  {
+    "name": "02_modo_files",
+    "title": "Modo Files · selection des fichiers ATIH",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\02_modo_files.png"
+  },
+  {
+    "name": "03_idv",
+    "title": "Identitovigilance · collisions IPP / DDN",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\03_idv.png"
+  },
+  {
+    "name": "04_pilot_csv",
+    "title": "PMSI Pilot CSV · exports normalises",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\04_pilot_csv.png"
+  },
+  {
+    "name": "05_csv_import",
+    "title": "Import CSV externe",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\05_csv_import.png"
+  },
+  {
+    "name": "06_structure",
+    "title": "Structure · arborescence polaire",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\06_structure.png"
+  },
+  {
+    "name": "07_structure_activity",
+    "title": "Analyse d'activite par UM",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\07_structure_activity.png"
+  },
+  {
+    "name": "08_tuto",
+    "title": "Tutoriel integre",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\08_tuto.png"
+  }
+]

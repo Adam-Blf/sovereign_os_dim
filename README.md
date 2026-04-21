@@ -3,7 +3,7 @@
 ![Status](https://img.shields.io/badge/status-production-green)
 ![Python](https://img.shields.io/badge/python-3.12+-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
-![Tests](https://img.shields.io/badge/tests-147%20passed-brightgreen)
+![Tests](https://img.shields.io/badge/tests-178%20passed%20%2B%2021%20JS-brightgreen)
 
 ## Description
 
@@ -14,7 +14,7 @@
 - ✅ **Scan multi-dossiers** — Détection automatique des fichiers `.txt` et `.csv` PMSI
 - ✅ **23 formats ATIH** — Couverture complète des 4 champs PMSI (PSY, MCO, SSR/SMR, HAD)
 - ✅ **Variantes de format 2021** — Auto-détection des anciens formats (Fondation Vallée)
-- ✅ **Normalisation IPP** — Cohérence des numéros de dossier entre années (BigQuery compat)
+- ✅ **Normalisation IPP** — Cohérence des numéros de dossier entre années (BIQuery compat)
 - ✅ **Traitement parallèle** — ThreadPoolExecutor multi-cœur pour le parsing
 - ✅ **Master Patient Index (MPI)** — Croisement automatique des couples (IPP, DDN)
 - ✅ **Identitovigilance** — Détection et résolution des collisions d'identité
@@ -29,6 +29,9 @@
 - ✅ **Bridge HTTP REST** — Expose le moteur ATIH à une application PHP
 - ✅ **Visualisation Excel** — Charts interactifs depuis un ou plusieurs `.xlsx`
 - ✅ **Mode d'emploi PDF** — Généré via `fpdf2` (`tools/generate_manual.py`)
+- ✅ **Structure polaire** — Organigramme Pôle/Secteur/UM avec export PDF multi-pages
+- ✅ **Analyse d'activité par UM** *(V35)* — Croise structure + RPS/RAA pour détecter les UM dormantes · drop-zone HTML5 accessible clavier · parsing async chunks 5k lignes · export CSV UTF-8 BOM · badges rouges clignotants sur l'arbre
+- ✅ **Guide PDF 204 pages** — 20 pages par feature · logo Paul Guiraud en header · `tools/generate_guide.py`
 
 ### Formats ATIH couverts (2010–2026)
 
@@ -79,15 +82,19 @@ python -m pytest tests/ -v
 python -m pytest tests/ -v --cov=backend --cov-report=term-missing
 ```
 
-**147 tests** couvrant :
+**178 tests Python + 21 tests JS** couvrant :
 
 - Identification des 23 formats ATIH (PSY, MCO, SSR, HAD, transversal)
 - Validation de ligne (padding, artefacts d'export)
-- Normalisation IPP (cohérence BigQuery 2022-2025)
+- Normalisation IPP (cohérence BIQuery 2022-2025)
 - Auto-détection variantes de format 2021
 - Collisions MPI et résolution bayésienne
 - Export CSV et .txt purifié
 - Intégrité de la matrice ATIH
+- Analyse d'activité par UM · `tests/frontend/test_activity_analysis.mjs` ·
+  helpers `collectUmLeaves`, `detectAtihFormat`, `countUmActivity`,
+  `countUmActivityAsync`, `extractPeriodFromFilenames` · 21 cas couverts
+  (format RPS/RAA, périodes, perf 1000×50 UM, scénario métier complet).
 
 ## Architecture
 
@@ -214,7 +221,7 @@ build.bat
 
 - ✅ Fix erreur `WebViewException` (ajout `pythonnet` dans les dépendances)
 - ✅ Vérification gracieuse des dépendances au démarrage
-- ✅ Normalisation IPP pour cohérence BigQuery (2021 Fondation Vallée)
+- ✅ Normalisation IPP pour cohérence BIQuery (2021 Fondation Vallée)
 - ✅ Variantes de format 2021 RPS/RAA (auto-détection par longueur de ligne)
 - ✅ Suite de tests unitaires complète (147 tests, 11 classes)
 - ✅ Fixtures de test pour PSY, MCO, variantes 2021, collisions
