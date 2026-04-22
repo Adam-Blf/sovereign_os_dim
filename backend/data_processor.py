@@ -396,12 +396,12 @@ _MIN_LINE = 50
 # Nombre de lignes à échantillonner pour auto-détecter la longueur dominante
 _SAMPLE_SIZE_FOR_VARIANT = 100
 
-# Characters that Excel/LibreOffice Calc interprets as formula prefixes.
+# Caractères qu'Excel/LibreOffice Calc interprète comme préfixes de formule.
 _FORMULA_PREFIXES = frozenset("=+-@\t\r")
 
 
 def _csv_safe(v: str) -> str:
-    """Prevent CSV formula injection by prefixing trigger characters with '."""
+    """Neutralise l'injection de formules CSV en préfixant les déclencheurs par '."""
     return "'" + v if v and v[0] in _FORMULA_PREFIXES else v
 
 
@@ -1075,7 +1075,8 @@ class DataProcessor:
                           errors="replace") as fi, \
                      open(csv_path, "w", encoding="utf-8", newline="") as fo:
 
-                    fo.write("IPP;DDN;FORMAT;NOM_FICHIER;LIGNE_BRUTE\n")
+                    writer = csv.writer(fo, delimiter=";")
+                    writer.writerow(["IPP", "DDN", "FORMAT", "NOM_FICHIER", "LIGNE_BRUTE"])
 
                     for raw in fi:
                         line = raw.rstrip("\r\n")
@@ -1104,11 +1105,10 @@ class DataProcessor:
                                 ddn_out = piv
                                 stats["ddn_corrected"] += 1
 
-                        esc = line.replace('"', '""')
-                        fo.write(
-                            f'{_csv_safe(ipp)};{_csv_safe(ddn_out)};'
-                            f'{fmt};{_csv_safe(src)};"{esc}"\n'
-                        )
+                        writer.writerow([
+                            _csv_safe(ipp), _csv_safe(ddn_out),
+                            fmt, _csv_safe(src), line,
+                        ])
                         stats["lines_exported"] += 1
 
                 generated.append({

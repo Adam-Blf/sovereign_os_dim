@@ -601,8 +601,8 @@ class TestLogging:
 
 class TestCsvSafe:
     """
-    Verifies that _csv_safe() neutralizes formula-injection prefixes before
-    writing fields to the PILOT CSV output.
+    Vérifie que _csv_safe() neutralise les préfixes d'injection de formules
+    avant l'écriture des champs dans le CSV PILOT.
     """
 
     @pytest.mark.parametrize("raw,expected", [
@@ -622,7 +622,7 @@ class TestCsvSafe:
         assert _csv_safe(raw) == expected
 
     def test_export_csv_sanitizes_formula_filename(self, processor, temp_dir):
-        """A source file whose name starts with '=' is prefixed with ' in the CSV."""
+        """Un fichier source dont le nom commence par '=' est préfixé par ' dans le CSV."""
         spec = ATIH_MATRIX["RPS"]
         length = spec["length"]
 
