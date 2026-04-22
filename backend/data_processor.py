@@ -810,17 +810,20 @@ class DataProcessor:
             "ipp_unique": 0, "collisions": 0
         }
 
-        # Le nombre de workers est adapté à la taille du batch (max 8)
-        workers = min(8, max(1, len(file_list)))
         results = []
 
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = {
-                pool.submit(self._process_single_file, f): f
-                for f in file_list
-            }
-            for future in as_completed(futures):
-                results.append(future.result())
+        if len(file_list) == 1:
+            # Single file: bypass thread pool to avoid synchronization overhead.
+            results = [self._process_single_file(file_list[0])]
+        elif file_list:
+            workers = min(8, len(file_list))
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                futures = {
+                    pool.submit(self._process_single_file, f): f
+                    for f in file_list
+                }
+                for future in as_completed(futures):
+                    results.append(future.result())
 
         # Fusion des MPI locaux dans le MPI global
         for res in results:
