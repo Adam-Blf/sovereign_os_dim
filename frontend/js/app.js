@@ -1537,12 +1537,13 @@
 
     function orgChartHtml(nodes) {
         if (!nodes || !nodes.length) return "";
+        const toSafeClass = s => s.replace(/[^a-z0-9-]/g, "");
         return nodes.map(n => {
             const hasKids = n.children && n.children.length > 0;
             const level = (n.level || "").toUpperCase();
-            const levelClass = "org-level-" + (level || "default").toLowerCase();
+            const levelClass = "org-level-" + toSafeClass((level || "default").toLowerCase());
             const sector = n.sector_type || "";
-            const sectorClass = sector ? ` org-sector-${sector.toLowerCase()}` : "";
+            const sectorClass = sector ? ` org-sector-${toSafeClass(sector.toLowerCase())}` : "";
             const sectorBadge = sector
                 ? `<span class="org-sector-badge" title="${escHtml(SECTOR_LABELS[sector] || sector)}">${escHtml(sector)}</span>`
                 : "";
