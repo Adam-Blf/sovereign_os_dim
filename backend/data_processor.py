@@ -803,6 +803,7 @@ class DataProcessor:
           3. On compte les IPP uniques et les collisions
         """
         self.mpi = {}
+        self.file_stats = {}
         totals = {
             "files_processed": 0, "files_skipped": 0,
             "lines_total": 0, "lines_valid": 0, "lines_filtered": 0,
@@ -1277,6 +1278,15 @@ class DataProcessor:
             "sources_count": int  (nombre total de fichiers-source distincts)
         }
         """
+        # Precompute year and field per source file so the inner loop only does
+        # dict lookups instead of running the regex once per (IPP, DDN, src).
+        src_meta: dict[str, tuple[str, str, str]] = {}
+        for fname, fstats in self.file_stats.items():
+            fmt = fstats.get("format", "INCONNU")
+            field = self.matrix.get(fmt, {}).get("field", "")
+            yr = self._year_from_filename(fname) or ""
+            src_meta[fname] = (fmt, field, yr)
+
         results = []
         for ipp, data in self.mpi.items():
             formats_seen: set[str] = set()
@@ -1287,15 +1297,11 @@ class DataProcessor:
             for _ddn, srcs in data["history"].items():
                 for src in srcs:
                     sources.add(src)
-                    stats = self.file_stats.get(src, {})
-                    fmt = stats.get("format", "INCONNU")
+                    fmt, field, yr = src_meta.get(src, ("INCONNU", "", ""))
                     if fmt and fmt != "INCONNU":
                         formats_seen.add(fmt)
-                    spec = self.matrix.get(fmt, {})
-                    field = spec.get("field")
                     if field:
                         fields_seen.add(field)
-                    yr = self._year_from_filename(src)
                     if yr:
                         years_seen.add(yr)
 
