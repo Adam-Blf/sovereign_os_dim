@@ -936,13 +936,12 @@ class DataProcessor:
     def get_mpi_stats(self) -> dict:
         """Retourne les statistiques globales du MPI."""
         total = len(self.mpi)
-        collisions = sum(
-            1 for d in self.mpi.values() if len(d["history"]) > 1
-        )
-        resolved = sum(
-            1 for d in self.mpi.values()
-            if len(d["history"]) > 1 and d["pivot"] is not None
-        )
+        collisions = resolved = 0
+        for d in self.mpi.values():
+            if len(d["history"]) > 1:
+                collisions += 1
+                if d["pivot"] is not None:
+                    resolved += 1
         return {
             "total_ipp": total,
             "collisions": collisions,
