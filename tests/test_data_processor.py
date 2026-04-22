@@ -664,7 +664,7 @@ class TestInspectFile:
     Vérifie que inspect_file utilise la spec variant-aware, comme process_files.
 
     Sans le fix, un fichier RPS 2021 (142 chars) est inspecté avec la spec
-    standard (154 chars), ce qui génère de fausses annotations "Paddée 142->154"
+    standard (154 chars), ce qui génère de fausses annotations "Paddée 142→154"
     sur chaque ligne valide.
     """
 
