@@ -661,14 +661,14 @@ class TestCsvSafe:
 
 class TestInspectFile:
     """
-    Verifie que inspect_file utilise le spec variant-aware, comme process_files.
+    Vérifie que inspect_file utilise la spec variant-aware, comme process_files.
 
-    Sans le fix, un fichier RPS 2021 (142 chars) est inspecte avec le spec
-    standard (154 chars), ce qui genere de fausses annotations "Paddee 142->154"
+    Sans le fix, un fichier RPS 2021 (142 chars) est inspecté avec la spec
+    standard (154 chars), ce qui génère de fausses annotations "Paddée 142->154"
     sur chaque ligne valide.
     """
 
-    def test_standard_file_no_false_repair(self, processor, sample_rps_file, temp_dir):
+    def test_standard_file_no_false_repair(self, processor, sample_rps_file):
         """Fichier standard (154 chars) : aucune annotation de repair sur les lignes OK."""
         result = processor.inspect_file(sample_rps_file)
         assert "error" not in result
@@ -677,11 +677,11 @@ class TestInspectFile:
         for line in ok_lines:
             assert line["repair"] is None, f"False repair on standard line: {line['repair']!r}"
 
-    def test_variant_2021_no_false_repair(self, processor, sample_rps_2021_variant, temp_dir):
+    def test_variant_2021_no_false_repair(self, processor, sample_rps_2021_variant):
         """
-        Fichier variante RPS 2021 (142 chars) : inspect_file doit utiliser le
-        spec variant et non le spec standard, donc aucune fausse annotation
-        "Paddee" sur les lignes de longueur correcte pour ce format.
+        Fichier variante RPS 2021 (142 chars) : inspect_file doit utiliser la
+        spec variante et non la spec standard, donc aucune fausse annotation
+        "Paddée" sur les lignes de longueur correcte pour ce format.
         """
         result = processor.inspect_file(sample_rps_2021_variant)
         assert "error" not in result
@@ -692,7 +692,7 @@ class TestInspectFile:
                 f"inspect_file used wrong spec for 2021 variant: repair={line['repair']!r}"
             )
 
-    def test_inspect_extracts_correct_ipp_ddn(self, processor, sample_rps_file, temp_dir):
+    def test_inspect_extracts_correct_ipp_ddn(self, processor, sample_rps_file):
         """Les IPP et DDN extraits par inspect_file sont corrects."""
         result = processor.inspect_file(sample_rps_file)
         ok_lines = [l for l in result["lines"] if l["status"] == "OK"]
