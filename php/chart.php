@@ -265,9 +265,9 @@ function h($v): string
         <script>
           // Rendu Chart.js — multi-séries si plusieurs fichiers en mode compare.
           (function () {
-            const labels = <?= json_encode($chartPayload['labels'], JSON_UNESCAPED_UNICODE) ?>;
-            const datasets = <?= json_encode($chartPayload['datasets'] ?? [], JSON_UNESCAPED_UNICODE) ?>;
-            const chartType = <?= json_encode($chartType) ?>;
+            const labels = <?= json_encode($chartPayload['labels'], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+            const datasets = <?= json_encode($chartPayload['datasets'] ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+            const chartType = <?= json_encode($chartType, JSON_HEX_TAG) ?>;
 
             // Palette cohérente avec le dark mode desktop
             const palette = [
