@@ -47,6 +47,9 @@ $valueCol = (string) ($_POST['value'] ?? '');
 $agg = (string) ($_POST['agg'] ?? 'sum');
 $mode = (string) ($_POST['mode'] ?? '');          // merge|compare|'' (auto)
 $chartType = (string) ($_POST['chart_type'] ?? 'bar');
+if (!in_array($chartType, ['bar', 'line', 'pie', 'doughnut'], true)) {
+    $chartType = 'bar';
+}
 $top = (int) ($_POST['top'] ?? 20);
 $action = (string) ($_POST['action'] ?? '');
 
