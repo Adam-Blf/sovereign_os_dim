@@ -1,3 +1,5 @@
+![version](https://img.shields.io/badge/version-V36.0-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
+
 # Sovereign OS DIM · Station PMSI
 
 [![CI](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml)
