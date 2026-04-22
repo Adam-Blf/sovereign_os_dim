@@ -396,6 +396,14 @@ _MIN_LINE = 50
 # Nombre de lignes à échantillonner pour auto-détecter la longueur dominante
 _SAMPLE_SIZE_FOR_VARIANT = 100
 
+# Characters that Excel/LibreOffice Calc interprets as formula prefixes.
+_FORMULA_PREFIXES = frozenset("=+-@\t\r")
+
+
+def _csv_safe(v: str) -> str:
+    """Prevent CSV formula injection by prefixing trigger characters with '."""
+    return "'" + v if v and v[0] in _FORMULA_PREFIXES else v
+
 
 class DataProcessor:
     """
@@ -1097,7 +1105,10 @@ class DataProcessor:
                                 stats["ddn_corrected"] += 1
 
                         esc = line.replace('"', '""')
-                        fo.write(f'{ipp};{ddn_out};{fmt};{src};"{esc}"\n')
+                        fo.write(
+                            f'{_csv_safe(ipp)};{_csv_safe(ddn_out)};'
+                            f'{fmt};{_csv_safe(src)};"{esc}"\n'
+                        )
                         stats["lines_exported"] += 1
 
                 generated.append({

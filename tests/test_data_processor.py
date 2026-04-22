@@ -21,7 +21,7 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from backend.data_processor import DataProcessor, ATIH_MATRIX, ATIH_FORMAT_VARIANTS
+from backend.data_processor import DataProcessor, ATIH_MATRIX, ATIH_FORMAT_VARIANTS, _csv_safe
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -593,3 +593,63 @@ class TestLogging:
         assert logs[0]["level"] == "INFO"
         assert logs[1]["level"] == "ERROR"
         assert logs[2]["level"] == "WARN"
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TEST 12 — CSV FORMULA INJECTION PROTECTION
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestCsvSafe:
+    """
+    Verifies that _csv_safe() neutralizes formula-injection prefixes before
+    writing fields to the PILOT CSV output.
+    """
+
+    @pytest.mark.parametrize("raw,expected", [
+        ("=SUM(A1)", "'=SUM(A1)"),
+        ("+cmd", "'+cmd"),
+        ("-1", "'-1"),
+        ("@SUM", "'@SUM"),
+        ("\t leading", "'\t leading"),
+        ("\r leading", "'\r leading"),
+        ("12345", "12345"),
+        ("19850315", "19850315"),
+        ("RPS", "RPS"),
+        ("", ""),
+        ("normal text", "normal text"),
+    ])
+    def test_csv_safe_prefixes_formula_triggers(self, raw, expected):
+        assert _csv_safe(raw) == expected
+
+    def test_export_csv_sanitizes_formula_filename(self, processor, temp_dir):
+        """A source file whose name starts with '=' is prefixed with ' in the CSV."""
+        spec = ATIH_MATRIX["RPS"]
+        length = spec["length"]
+
+        def make_line(ipp, ddn, filler="A"):
+            line = filler * 21 + ipp.ljust(20) + ddn.ljust(8)
+            return (line + filler * length)[:length]
+
+        fname = "=evil_rps_2024.txt"
+        filepath = os.path.join(temp_dir, fname)
+        with open(filepath, "w", encoding="latin-1") as f:
+            f.write(make_line("12345", "19850315") + "\n")
+
+        files = processor.scan_directory(temp_dir)
+        processor.process_files(files)
+        output_dir = os.path.join(temp_dir, "PILOT_OUTPUT")
+        result = processor.export_csv(files, output_dir)
+
+        assert result["stats"]["lines_exported"] > 0
+        csv_path = result["files"][0]["path"]
+        with open(csv_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        for line in content.splitlines()[1:]:
+            src_field = line.split(";")[3]
+            assert not src_field.startswith("="), (
+                f"Formula injection not neutralized in src field: {src_field!r}"
+            )
+            assert src_field.startswith("'"), (
+                f"Expected ' prefix for formula-trigger filename, got: {src_field!r}"
+            )
