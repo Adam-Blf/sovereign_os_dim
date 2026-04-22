@@ -39,7 +39,7 @@
 
     function badge(format) {
         const c = "fmt-" + (format || "inconnu").toLowerCase().replace(/[^a-z]/g, "-");
-        return `<span class="fmt-badge ${c}">${format || "?"}</span>`;
+        return `<span class="fmt-badge ${c}">${escHtml(format) || "?"}</span>`;
     }
 
     // =========================================================================
@@ -302,8 +302,8 @@
                     g.innerHTML = mx.map(m => `
                         <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 hover:border-gh-navy/20 transition-all">
                             <div class="flex items-center justify-between mb-1">${badge(m.key)}<span class="text-[9px] font-mono text-slate-400">${m.length} c</span></div>
-                            <p class="text-[10px] text-slate-500 mt-1">${m.desc}</p>
-                            <p class="text-[8px] font-mono text-slate-400 mt-1">IPP [${m.ipp[0]}:${m.ipp[1]}] DDN [${m.ddn[0]}:${m.ddn[1]}]</p>
+                            <p class="text-[10px] text-slate-500 mt-1">${escHtml(m.desc)}</p>
+                            <p class="text-[8px] font-mono text-slate-400 mt-1">IPP [${escHtml(m.ipp[0])}:${escHtml(m.ipp[1])}] DDN [${escHtml(m.ddn[0])}:${escHtml(m.ddn[1])}]</p>
                         </div>
                     `).join("");
                 }
@@ -660,7 +660,7 @@
             l.innerHTML = f.map((x, i) => `
                 <div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 px-5 py-3 rounded-xl text-sm transition-colors duration-500">
                     <i data-lucide="folder" class="w-4 h-4 text-gh-navy dark:text-blue-400 shrink-0"></i>
-                    <span class="font-mono text-slate-600 dark:text-slate-300 truncate flex-1 text-[11px]">${x}</span>
+                    <span class="font-mono text-slate-600 dark:text-slate-300 truncate flex-1 text-[11px]">${escHtml(x)}</span>
                     <span class="text-[9px] font-black text-gh-teal">#${i + 1}</span>
                 </div>
             `).join("");
