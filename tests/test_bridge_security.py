@@ -5,14 +5,14 @@ Without these checks, any bearer-token holder could read arbitrary files
 (e.g. /etc/shadow, private keys) by passing an arbitrary path to
 /api/import-csv or /api/import-excel.
 """
-import os
 import pytest
+import backend.bridge as _bridge
 from backend.bridge import create_app, _ext_ok, _CSV_EXTS, _EXCEL_EXTS
 
 
 @pytest.fixture
-def client():
-    # BRIDGE_TOKEN defaults to "" (env not set) -> auth disabled in tests.
+def client(monkeypatch):
+    monkeypatch.setattr(_bridge, "BRIDGE_TOKEN", "")
     app = create_app()
     app.config["TESTING"] = True
     with app.test_client() as c:
@@ -38,11 +38,11 @@ class TestExtOk:
     def test_xlsx_ext_accepted(self):
         assert _ext_ok("/data/report.xlsx", _EXCEL_EXTS)
 
-    def test_xls_ext_accepted(self):
-        assert _ext_ok("/data/old.XLS", _EXCEL_EXTS)
+    def test_xls_ext_rejected(self):
+        assert not _ext_ok("/data/old.XLS", _EXCEL_EXTS)
 
-    def test_ods_ext_accepted(self):
-        assert _ext_ok("/data/calc.ods", _EXCEL_EXTS)
+    def test_ods_ext_rejected(self):
+        assert not _ext_ok("/data/calc.ods", _EXCEL_EXTS)
 
     def test_csv_ext_rejected_from_excel(self):
         assert not _ext_ok("/data/file.csv", _EXCEL_EXTS)
