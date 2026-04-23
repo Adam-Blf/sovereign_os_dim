@@ -22,13 +22,13 @@ class TestStructureExtensionGuard:
         p = tmp_path / "struct.csv"
         p.write_text("LEVEL;CODE;PARENT;LABEL\n")
         r = _post(client, str(p))
-        assert r.status_code != 400
+        assert r.status_code in {200, 404}
 
     def test_tsv_passes_guard(self, client, tmp_path):
         p = tmp_path / "struct.tsv"
         p.write_text("LEVEL\tCODE\tPARENT\tLABEL\n")
         r = _post(client, str(p))
-        assert r.status_code != 400
+        assert r.status_code in {200, 404}
 
     def test_txt_rejected(self, client, tmp_path):
         p = tmp_path / "notes.txt"
@@ -59,4 +59,8 @@ class TestStructureExtensionGuard:
         p = tmp_path / "STRUCT.CSV"
         p.write_text("LEVEL;CODE;PARENT;LABEL\n")
         r = _post(client, str(p))
-        assert r.status_code != 400
+        assert r.status_code in {200, 404}
+
+    def test_non_string_path_rejected(self, client):
+        r = client.post("/api/structure", json={"path": 42})
+        assert r.status_code == 400

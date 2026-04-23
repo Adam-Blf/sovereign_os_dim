@@ -388,10 +388,10 @@ def create_app() -> Flask:
         """
         payload = request.get_json(silent=True) or {}
         filepath = payload.get("path")
-        if not filepath:
+        if not filepath or not isinstance(filepath, str):
             return jsonify(error="path requis"), 400
         if os.path.splitext(filepath)[1].lower() not in {".csv", ".tsv"}:
-            return jsonify(error="Extension non autorisee (.csv, .tsv attendu)"), 400
+            return jsonify(error="Extension non autorisée (.csv, .tsv attendu)"), 400
         out = parse_structure(filepath)
         if "error" in out:
             return jsonify(out), 404
