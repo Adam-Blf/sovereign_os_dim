@@ -60,6 +60,8 @@ DEFAULT_PORT = int(os.environ.get("SOVEREIGN_BRIDGE_PORT", "8765"))
 # Jeton partagé entre le bridge et le client PHP. Un jeton vide DÉSACTIVE
 # l'authentification — à n'utiliser qu'en développement local.
 BRIDGE_TOKEN = os.environ.get("SOVEREIGN_BRIDGE_TOKEN", "")
+# Extensions autorisées pour les endpoints ATIH (inspect, export-sanitized).
+_ATIH_EXTS = frozenset({".txt"})
 # Origines autorisées pour CORS (séparées par des virgules). "*" = tout
 # autoriser (déconseillé en prod). Par défaut : localhost uniquement.
 ALLOWED_ORIGINS = [
@@ -368,8 +370,10 @@ def create_app() -> Flask:
         payload = request.get_json(silent=True) or {}
         filepath = payload.get("path")
         output_dir = payload.get("output_dir")
-        if not filepath:
+        if not isinstance(filepath, str) or not filepath:
             return jsonify(error="path requis"), 400
+        if os.path.splitext(filepath)[1].lower() not in _ATIH_EXTS:
+            return jsonify(error="Extension non autorisée (.txt attendu)"), 400
         if not output_dir:
             if not _current_folders:
                 return jsonify(error="output_dir requis"), 400
@@ -385,8 +389,10 @@ def create_app() -> Flask:
     def api_inspect():
         payload = request.get_json(silent=True) or {}
         filepath = payload.get("path")
-        if not filepath:
+        if not isinstance(filepath, str) or not filepath:
             return jsonify(error="path requis"), 400
+        if os.path.splitext(filepath)[1].lower() not in _ATIH_EXTS:
+            return jsonify(error="Extension non autorisée (.txt attendu)"), 400
         return jsonify(_processor.inspect_file(filepath))
 
     @app.post("/api/structure")
