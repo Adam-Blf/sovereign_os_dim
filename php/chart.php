@@ -47,6 +47,9 @@ $valueCol = (string) ($_POST['value'] ?? '');
 $agg = (string) ($_POST['agg'] ?? 'sum');
 $mode = (string) ($_POST['mode'] ?? '');          // merge|compare|'' (auto)
 $chartType = (string) ($_POST['chart_type'] ?? 'bar');
+if (!in_array($chartType, ['bar', 'line', 'pie', 'doughnut'], true)) {
+    $chartType = 'bar';
+}
 $top = (int) ($_POST['top'] ?? 20);
 $action = (string) ($_POST['action'] ?? '');
 
@@ -265,9 +268,9 @@ function h($v): string
         <script>
           // Rendu Chart.js — multi-séries si plusieurs fichiers en mode compare.
           (function () {
-            const labels = <?= json_encode($chartPayload['labels'], JSON_UNESCAPED_UNICODE) ?>;
-            const datasets = <?= json_encode($chartPayload['datasets'] ?? [], JSON_UNESCAPED_UNICODE) ?>;
-            const chartType = <?= json_encode($chartType) ?>;
+            const labels = <?= json_encode($chartPayload['labels'], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+            const datasets = <?= json_encode($chartPayload['datasets'] ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+            const chartType = <?= json_encode($chartType, JSON_HEX_TAG) ?>;
 
             // Palette cohérente avec le dark mode desktop
             const palette = [
