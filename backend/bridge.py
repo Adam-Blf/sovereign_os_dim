@@ -92,6 +92,17 @@ def _reset_state() -> None:
     _current_files = []
 
 
+# Extension allowlists for import endpoints.
+# Prevents reading arbitrary system files (e.g. /etc/passwd, private keys)
+# via a valid Bearer token when the bridge is exposed on LAN.
+_CSV_EXTS: frozenset[str] = frozenset({".csv", ".txt", ".tsv"})
+_EXCEL_EXTS: frozenset[str] = frozenset({".xlsx"})
+
+
+def _ext_ok(filepath: str, allowed: frozenset[str]) -> bool:
+    return os.path.splitext(filepath.lower())[1] in allowed
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # FLASK APP
 # ──────────────────────────────────────────────────────────────────────────────
@@ -404,6 +415,10 @@ def create_app() -> Flask:
         filepath = payload.get("path")
         if not filepath or not os.path.isfile(filepath):
             return jsonify(error="Fichier introuvable"), 404
+        if not _ext_ok(filepath, _CSV_EXTS):
+            _s = sorted(_CSV_EXTS)
+            _label = f"{', '.join(_s[:-1])} ou {_s[-1]}" if len(_s) > 1 else _s[0]
+            return jsonify(error=f"Extension non autorisee ({_label} attendu)"), 400
         try:
             with open(filepath, "r", encoding="utf-8", errors="replace") as f:
                 sample = f.read(4096)
@@ -491,6 +506,10 @@ def create_app() -> Flask:
         limit = int(payload.get("limit") or 5000)
         if not filepath or not os.path.isfile(filepath):
             return jsonify(error="Fichier introuvable"), 404
+        if not _ext_ok(filepath, _EXCEL_EXTS):
+            _s = sorted(_EXCEL_EXTS)
+            _label = f"{', '.join(_s[:-1])} ou {_s[-1]}" if len(_s) > 1 else _s[0]
+            return jsonify(error=f"Extension non autorisee ({_label} attendu)"), 400
         try:
             headers, rows, sheets = _read_excel(filepath, sheet, limit)
         except RuntimeError as e:
@@ -566,6 +585,12 @@ def create_app() -> Flask:
         ]
         if not paths:
             return jsonify(error="Aucun fichier Excel valide trouvé"), 404
+        bad_ext = next(
+            (os.path.basename(p) for p in paths if not _ext_ok(p, _EXCEL_EXTS)),
+            None,
+        )
+        if bad_ext is not None:
+            return jsonify(error=f"Extension non autorisee : {bad_ext}"), 400
 
         label_col = payload.get("label")
         value_col = payload.get("value")
