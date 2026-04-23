@@ -9,7 +9,7 @@
 ![C#](https://img.shields.io/badge/C%23-.NET_8-239120?logo=c-sharp&logoColor=white)
 ![WebView2](https://img.shields.io/badge/WebView2-Chromium-3C4A5A?logo=microsoftedge&logoColor=white)
 ![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?logo=tailwindcss&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-190_Py_%2B_30_JS-brightgreen)
+![Tests](https://img.shields.io/badge/tests-233_Py_%2B_30_JS-brightgreen)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -69,7 +69,7 @@ python build.py
 ## Tests
 
 ```bash
-# Python · 178 tests unitaires + intégration
+# Python · 233 tests unitaires + intégration
 python -m pytest tests/ -q
 
 # Frontend · 30 tests Node.js (helpers JS sans navigateur)
@@ -123,7 +123,7 @@ sovereign_os_dim/
 │   ├── generate_guide.py   · PDF guide complet 34 pages
 │   └── capture_screenshots.py · Playwright headless
 ├── tests/
-│   ├── test_data_processor.py  · 178 tests Python
+│   ├── test_data_processor.py  · 233 tests Python
 │   └── frontend/
 │       └── test_activity_analysis.mjs · 30 tests JS
 ├── Sovereign_OS_DIM_Guide.pdf  · Guide utilisateur 34 pages
