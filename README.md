@@ -81,6 +81,38 @@ normalisation IPP (cohérence BIQuery 2022-2025), auto-détection des variantes
 2021, collisions MPI et résolution, exports CSV et .txt, parser de structure
 client-side, détection des UM sans activité.
 
+## Développement
+
+Commandes courantes pour contribuer au projet ·
+
+```bash
+# Lint (config dans pyproject.toml · rules E/W/F)
+ruff check backend/ tests/ tools/ scripts/
+
+# Auto-fix (imports unused, trailing whitespace, etc.)
+ruff check backend/ tests/ tools/ scripts/ --fix
+
+# Format check
+ruff format backend/ tests/ tools/ scripts/ --check
+
+# Security scan
+python -m bandit -r backend/ -ll
+
+# CVE audit sur les dépendances
+pip-audit -r requirements.txt
+
+# Smoke test backend sur un vrai lot ATIH (nécessite D:/Adam/ monté)
+python scripts/analyze_real_data.py
+
+# Rebuild .exe C# (nécessite .NET 8 SDK, source dans dev/hospitalier/SovereignOS.DIM.CSharp)
+dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+```
+
+Toutes ces commandes tournent aussi dans la CI GitHub Actions à chaque push
+sur `main` et PR. Config partagée · `pyproject.toml` pour ruff/pytest,
+`.github/workflows/test.yml` pour les 4 jobs parallèles (python, frontend,
+deps, lint).
+
 ## Raccourcis clavier
 
 | Touche | Action |
