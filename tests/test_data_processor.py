@@ -31,7 +31,7 @@ from backend.data_processor import DataProcessor, ATIH_MATRIX, ATIH_FORMAT_VARIA
 class TestIdentifyFormat:
     """
     Vérifie que chaque nom de fichier ATIH est correctement identifié.
-    
+
     Pourquoi c'est critique ? L'identification du format est la première
     étape du pipeline. Une erreur ici propage des positions IPP/DDN
     incorrectes dans tout le traitement.
@@ -191,7 +191,7 @@ class TestLineValidation:
 class TestNormalizeIPP:
     """
     Vérifie la normalisation des numéros de dossier (IPP).
-    
+
     Critique pour résoudre le problème Fondation Vallée 2021 :
     les mêmes patients avaient des IPP dans deux formats distincts.
     """
@@ -276,7 +276,7 @@ class TestExtraction:
         """Traitement mixte PSY + MCO dans le même dossier."""
         files = processor.scan_directory(temp_dir)
         stats = processor.process_files(files)
-        # RPS: 12345, 67890, 11111 + RSS: MCO001, MCO002 = 5 IPP 
+        # RPS: 12345, 67890, 11111 + RSS: MCO001, MCO002 = 5 IPP
         assert stats["ipp_unique"] == 5
         assert stats["files_processed"] == 2
 
@@ -288,7 +288,7 @@ class TestExtraction:
 class TestFormatVariants:
     """
     Vérifie l'auto-détection des variantes de format pour 2021.
-    
+
     Le scénario Fondation Vallée : fichiers RPS 2021 avec des lignes
     de 142 chars (ancien format P04) au lieu de 154 (format P05 standard).
     """
@@ -337,7 +337,7 @@ class TestFormatVariants:
 class TestCollisions:
     """
     Vérifie la détection et résolution des collisions d'identité.
-    
+
     Une collision = un même IPP trouvé avec plusieurs DDN différentes.
     Cela arrive quand un patient a des erreurs de saisie sur sa DDN
     dans certains fichiers ATIH.

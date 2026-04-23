@@ -39,7 +39,7 @@ def temp_dir():
 def sample_rps_file(temp_dir):
     """
     Génère un fichier RPS de test au format standard (154 chars/ligne).
-    
+
     Contenu : 3 patients distincts avec des IPP/DDN cohérents.
     L'IPP est en position [21:41], la DDN en [41:49].
     """
