@@ -1,0 +1,59 @@
+[project]
+name = "sovereign-os-dim"
+version = "35.0.0"
+description = "Station DIM PMSI · GHT Sud Paris · moteur ATIH + MPI + identito-vigilance"
+requires-python = ">=3.12"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Adam Beloucif", email = "adam@beloucif.com" },
+]
+
+# ════════════════════════════════════════════════════════════════════════════
+# RUFF · lint + format config
+# Keeps local ruff check and CI ruff check in lock-step.
+# Rules selected below · safe defaults for a WPF+Flask+pywebview codebase.
+# Line length matches the existing codebase (no noise on current code).
+# ════════════════════════════════════════════════════════════════════════════
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = [
+    ".venv",
+    "build",
+    "dist",
+    "__pycache__",
+    "frontend",
+    "docs",
+    "sample",
+    "php",
+]
+
+[tool.ruff.lint]
+# Enabled rule sets · the set the codebase already passes today.
+# Adding I/UP/B/SIM later would require a cleanup pass (~52 findings).
+#   E, W · pycodestyle (style + warnings)
+#   F    · pyflakes (unused imports, undefined names, dead vars)
+select = ["E", "W", "F"]
+ignore = [
+    "E501",  # line too long · keep current wrapping (~110 chars target)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests · tolerate ambiguous single-letter loop vars occasionally
+"tests/**/*.py" = ["E741"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+# ════════════════════════════════════════════════════════════════════════════
+# PYTEST · discovery + defaults
+# ════════════════════════════════════════════════════════════════════════════
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--tb=short --strict-markers"
