@@ -1,0 +1,42 @@
+# Default · normalize line endings to LF in the repo, checkout native
+* text=auto eol=lf
+
+# Text files · explicit LF
+*.py text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.php text eol=lf
+*.sh text eol=lf
+
+# Windows-only scripts · keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary · never touch
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.xlsx binary
+*.xls binary
+*.docx binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.exe binary
+*.dll binary
+*.pfx binary
+*.cer binary
