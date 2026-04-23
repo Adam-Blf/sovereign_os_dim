@@ -133,7 +133,7 @@ def sync(new_version: str | None = None, check: bool = False) -> int:
                 "[!] Version désynchronisée dans :\n  - "
                 + "\n  - ".join(desynced_files)
                 + f"\n    Attendu : {version}"
-                + f"\n    Correctif : python scripts/sync_version.py",
+                + "\n    Correctif : python scripts/sync_version.py",
                 file=sys.stderr,
             )
             return 1

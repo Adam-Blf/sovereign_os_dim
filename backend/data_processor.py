@@ -708,7 +708,6 @@ class DataProcessor:
         d0, d1 = spec["ddn"]   # Bornes de la DDN (start, end)
         exp_len = spec["length"]  # Longueur attendue de la ligne
         max_pos = max(i1, d1)    # Position max nécessaire dans la ligne
-        is_variant = "_variant" in spec  # True si format non-standard détecté
 
         local_mpi: dict = {}
         stats = {

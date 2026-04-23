@@ -2,7 +2,6 @@
 # On monte un MPI factice en bypassant le scan, pour contrôler exactement
 # les couples (IPP, année, format) et vérifier le dé-dédoublonnage.
 
-import pytest
 
 from backend.data_processor import DataProcessor
 

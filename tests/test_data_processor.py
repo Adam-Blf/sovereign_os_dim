@@ -672,7 +672,7 @@ class TestInspectFile:
         """Fichier standard (154 chars) : aucune annotation de repair sur les lignes OK."""
         result = processor.inspect_file(sample_rps_file)
         assert "error" not in result
-        ok_lines = [l for l in result["lines"] if l["status"] == "OK"]
+        ok_lines = [ln for ln in result["lines"] if ln["status"] == "OK"]
         assert len(ok_lines) > 0
         for line in ok_lines:
             assert line["repair"] is None, f"False repair on standard line: {line['repair']!r}"
@@ -685,7 +685,7 @@ class TestInspectFile:
         """
         result = processor.inspect_file(sample_rps_2021_variant)
         assert "error" not in result
-        ok_lines = [l for l in result["lines"] if l["status"] == "OK"]
+        ok_lines = [ln for ln in result["lines"] if ln["status"] == "OK"]
         assert len(ok_lines) > 0
         for line in ok_lines:
             assert line["repair"] is None, (
@@ -695,9 +695,9 @@ class TestInspectFile:
     def test_inspect_extracts_correct_ipp_ddn(self, processor, sample_rps_file):
         """Les IPP et DDN extraits par inspect_file sont corrects."""
         result = processor.inspect_file(sample_rps_file)
-        ok_lines = [l for l in result["lines"] if l["status"] == "OK"]
-        ipps = {l["ipp"] for l in ok_lines}
-        ddns = {l["ddn"] for l in ok_lines}
+        ok_lines = [ln for ln in result["lines"] if ln["status"] == "OK"]
+        ipps = {ln["ipp"] for ln in ok_lines}
+        ddns = {ln["ddn"] for ln in ok_lines}
         assert "12345" in ipps
         assert "19850315" in ddns
 

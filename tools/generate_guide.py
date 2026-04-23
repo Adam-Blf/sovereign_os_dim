@@ -2125,7 +2125,7 @@ def _feature_schema(pdf, feat_num):
     w, h = 180, 85
 
     # Cadre + titre bande
-    pdf.set_draw_color(*SLATE_300 if False else SLATE_200)
+    pdf.set_draw_color(*SLATE_200)
     pdf.set_line_width(0.4)
     pdf.rect(x0, y0, w, h)
     pdf.set_fill_color(*GH_NAVY)
@@ -2603,8 +2603,8 @@ def render_feature(pdf, feat, logo_path, feat_num, total_feats, screenshot_path=
     _body_text(pdf, feat["security"][:400] + ("..." if len(feat["security"]) > 400 else ""))
 
     _alert(pdf, "info",
-           f"Support · adam.beloucif@psysudparis.fr  ·  "
-           f"https://github.com/Adam-Blf/sovereign_os_dim/issues")
+           "Support · adam.beloucif@psysudparis.fr  ·  "
+           "https://github.com/Adam-Blf/sovereign_os_dim/issues")
 
 
 # ══════════════════════════════════════════════════════════════════════════════

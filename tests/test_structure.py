@@ -3,10 +3,8 @@
 # cycles parent↔enfant, lignes vides, colonnes manquantes, fichier absent.
 
 import csv
-import os
 from pathlib import Path
 
-import pytest
 
 from backend.structure import parse_structure
 
