@@ -28,7 +28,7 @@ import glob
 import re
 import csv
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Optional, Callable
 
@@ -583,7 +583,6 @@ class DataProcessor:
             return spec
 
         # Calcul de la longueur dominante (mode)
-        from collections import Counter
         dominant_len = Counter(lengths).most_common(1)[0][0]
 
         # Si la longueur dominante correspond au standard → on garde
