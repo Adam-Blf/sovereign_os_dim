@@ -653,3 +653,58 @@ class TestCsvSafe:
             assert src_field.startswith("'"), (
                 f"Expected ' prefix for formula-trigger filename, got: {src_field!r}"
             )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TEST 13 — INSPECT FILE
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestInspectFile:
+    """
+    Vérifie que inspect_file utilise la spec variant-aware, comme process_files.
+
+    Sans le fix, un fichier RPS 2021 (142 chars) est inspecté avec la spec
+    standard (154 chars), ce qui génère de fausses annotations "Paddée 142→154"
+    sur chaque ligne valide.
+    """
+
+    def test_standard_file_no_false_repair(self, processor, sample_rps_file):
+        """Fichier standard (154 chars) : aucune annotation de repair sur les lignes OK."""
+        result = processor.inspect_file(sample_rps_file)
+        assert "error" not in result
+        ok_lines = [l for l in result["lines"] if l["status"] == "OK"]
+        assert len(ok_lines) > 0
+        for line in ok_lines:
+            assert line["repair"] is None, f"False repair on standard line: {line['repair']!r}"
+
+    def test_variant_2021_no_false_repair(self, processor, sample_rps_2021_variant):
+        """
+        Fichier variante RPS 2021 (142 chars) : inspect_file doit utiliser la
+        spec variante et non la spec standard, donc aucune fausse annotation
+        "Paddée" sur les lignes de longueur correcte pour ce format.
+        """
+        result = processor.inspect_file(sample_rps_2021_variant)
+        assert "error" not in result
+        ok_lines = [l for l in result["lines"] if l["status"] == "OK"]
+        assert len(ok_lines) > 0
+        for line in ok_lines:
+            assert line["repair"] is None, (
+                f"inspect_file used wrong spec for 2021 variant: repair={line['repair']!r}"
+            )
+
+    def test_inspect_extracts_correct_ipp_ddn(self, processor, sample_rps_file):
+        """Les IPP et DDN extraits par inspect_file sont corrects."""
+        result = processor.inspect_file(sample_rps_file)
+        ok_lines = [l for l in result["lines"] if l["status"] == "OK"]
+        ipps = {l["ipp"] for l in ok_lines}
+        ddns = {l["ddn"] for l in ok_lines}
+        assert "12345" in ipps
+        assert "19850315" in ddns
+
+    def test_inspect_unknown_format_returns_error(self, processor, temp_dir):
+        """Un fichier de format inconnu retourne une erreur explicite."""
+        unknown = os.path.join(temp_dir, "unknown_data.txt")
+        with open(unknown, "w", encoding="latin-1") as f:
+            f.write("X" * 100 + "\n")
+        result = processor.inspect_file(unknown)
+        assert "error" in result

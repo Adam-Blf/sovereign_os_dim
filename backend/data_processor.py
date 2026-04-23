@@ -972,7 +972,7 @@ class DataProcessor:
         if not fmt_key or fmt_key not in self.matrix:
             return {"error": f"Format inconnu : {os.path.basename(filepath)}"}
 
-        spec = self.matrix[fmt_key]
+        spec = self._detect_format_variant(filepath, fmt_key)
         i0, i1 = spec["ipp"]
         d0, d1 = spec["ddn"]
         exp_len = spec["length"]
