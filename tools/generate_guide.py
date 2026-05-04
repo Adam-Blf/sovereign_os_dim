@@ -104,19 +104,19 @@ def _register_fonts(pdf):
     mono = _pick_font_set(_MONO_CANDIDATES)
     unicode_ok = bool(sans and mono)
     if sans:
-        pdf.add_font(SANS, "",   sans[0], uni=True)
-        pdf.add_font(SANS, "B",  sans[1], uni=True)
-        pdf.add_font(SANS, "I",  sans[2], uni=True)
-        pdf.add_font(SANS, "BI", sans[3], uni=True)
+        pdf.add_font(SANS, "",   sans[0])
+        pdf.add_font(SANS, "B",  sans[1])
+        pdf.add_font(SANS, "I",  sans[2])
+        pdf.add_font(SANS, "BI", sans[3])
     else:  # pragma: no cover · fallback rare
         # Alias propre · on garde le nom "GuideSans" mais set_font tombera
         # sur Helvetica core via le mecanisme de FPDF.
         globals()["SANS"] = "Helvetica"
     if mono:
-        pdf.add_font(MONO, "",   mono[0], uni=True)
-        pdf.add_font(MONO, "B",  mono[1], uni=True)
-        pdf.add_font(MONO, "I",  mono[2], uni=True)
-        pdf.add_font(MONO, "BI", mono[3], uni=True)
+        pdf.add_font(MONO, "",   mono[0])
+        pdf.add_font(MONO, "B",  mono[1])
+        pdf.add_font(MONO, "I",  mono[2])
+        pdf.add_font(MONO, "BI", mono[3])
     else:  # pragma: no cover
         globals()["MONO"] = "Courier"
     return unicode_ok
@@ -136,19 +136,49 @@ FEATURE_SCREENSHOTS = {
     9: "08_tuto.png",                # Administration / Tutoriel
 }
 
-# Palette
-GH_NAVY = (0, 0, 145)
-GH_TEAL = (0, 137, 123)
-GH_ERR = (225, 29, 72)
-GH_OK = (16, 185, 129)
-GH_WARN = (245, 158, 11)
-SLATE_900 = (15, 23, 42)
-SLATE_700 = (51, 65, 85)
-SLATE_500 = (100, 116, 139)
-SLATE_400 = (148, 163, 184)
-SLATE_200 = (226, 232, 240)
-SLATE_100 = (241, 245, 249)
-SLATE_50 = (248, 250, 252)
+# ══════════════════════════════════════════════════════════════════════════════
+# DESIGN SYSTEM · palette + echelle typographique unique
+# ══════════════════════════════════════════════════════════════════════════════
+# Une seule source de verite pour les couleurs et la typo. Toutes les
+# fonctions de rendu lisent ces constantes · changer la palette ici se
+# repercute sur l'integralite du PDF.
+#
+# Palette · charte Groupe Hospitalier Paul Guiraud
+#   - GH_NAVY  · couleur Republique Francaise (titres, en-tetes)
+#   - GH_TEAL  · accent secondaire (filets, KPI, succes operationnel)
+#   - GH_GOLD  · accent tertiaire (mise en valeur metier · gain de temps)
+# Niveaux SLATE · echelle de gris pour le corps de texte (Tailwind slate)
+# ══════════════════════════════════════════════════════════════════════════════
+GH_NAVY = (0, 0, 145)        # #000091 · titres, headers, accents primaires
+GH_TEAL = (0, 137, 123)      # #00897B · filets, KPI, accent secondaire
+GH_GOLD = (212, 164, 55)     # #D4A437 · mise en valeur metier, ROI
+GH_ERR  = (225, 29, 72)      # #E11D48 · erreurs, blocages reglementaires
+GH_OK   = (16, 185, 129)     # #10B981 · succes, conformite RGPD
+GH_WARN = (245, 158, 11)     # #F59E0B · warnings, points d'attention
+SLATE_900 = (15, 23, 42)     # texte principal sombre
+SLATE_700 = (51, 65, 85)     # corps de texte
+SLATE_500 = (100, 116, 139)  # texte secondaire, captions
+SLATE_400 = (148, 163, 184)  # bordures actives, footers
+SLATE_200 = (226, 232, 240)  # bordures, separateurs
+SLATE_100 = (241, 245, 249)  # fonds clairs neutres
+SLATE_50  = (248, 250, 252)  # fond le plus clair (cards)
+WHITE     = (255, 255, 255)
+
+# Echelle typographique · 7 niveaux fixes, jamais de tailles ad-hoc
+TYPE = {
+    "display": 28,   # cover seulement
+    "h1":      18,   # titre de feature
+    "h2":      14,   # titres de page (PAGE 02 / 03)
+    "h3":      11,   # sous-titres ("A quoi ca sert", "Workflow", ...)
+    "body":    10,   # corps de texte standard
+    "small":   8.5,  # legendes, captions
+    "caption": 7,    # meta dans les schemas, footers internes
+}
+
+# Espacements verticaux standards (en mm)
+SPACE = {
+    "xs": 1.5, "sm": 3, "md": 5, "lg": 8, "xl": 12,
+}
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1840,78 +1870,123 @@ FEATURES = [
 
 
 def _alert_style(kind: str):
+    """Couleurs des alertes · cohérentes avec la palette frontend."""
     palette = {
-        "info": ((239, 246, 255), (29, 78, 216)),
-        "ok":   ((240, 253, 244), (21, 128, 61)),
-        "warn": ((255, 251, 235), (180, 83, 9)),
-        "err":  ((254, 242, 242), (185, 28, 28)),
+        "info": ((239, 246, 255), (29, 78, 216)),   # bleu Tailwind 50/700
+        "ok":   ((240, 253, 244), (21, 128, 61)),   # vert  Tailwind 50/700
+        "warn": ((255, 251, 235), (180, 83, 9)),    # ambre Tailwind 50/700
+        "err":  ((254, 242, 242), (185, 28, 28)),   # rouge Tailwind 50/700
+        "metier": ((255, 251, 235), (146, 100, 8)),  # gold · gain métier
     }
     return palette.get(kind, palette["info"])
 
 
 def _page_header(pdf, logo_path, feat_title, category, section_idx, total_sections):
-    """Barre d'entete sur chaque page interieure · logo + titre + section."""
-    # Logo a gauche
+    """En-tête sur chaque page intérieure · logo + titre + n° de section."""
     if os.path.exists(logo_path):
         try:
             pdf.image(logo_path, x=10, y=8, h=12)
         except Exception:
             pass  # pragma: no cover
-    # Titre au milieu
     pdf.set_xy(28, 10)
-    pdf.set_font(SANS, "B", 10)
+    pdf.set_font(SANS, "B", TYPE["body"])
     pdf.set_text_color(*GH_NAVY)
     pdf.cell(120, 5, feat_title[:60], new_x="RIGHT", new_y="TOP")
-    # Meta a droite
     pdf.set_xy(28, 15)
-    pdf.set_font(SANS, "", 7)
+    pdf.set_font(SANS, "", TYPE["caption"])
     pdf.set_text_color(*SLATE_500)
     pdf.cell(120, 4, f"{category} · Section {section_idx:02d}/{total_sections}",
              new_x="RIGHT", new_y="TOP")
-    # Ligne de separation
     pdf.set_draw_color(*SLATE_200)
     pdf.line(10, 22, 200, 22)
     pdf.set_y(28)
 
 
 def _page_title(pdf, number, label):
-    """Titre de page · 'PAGE 3/20 · Pourquoi cette feature'."""
-    pdf.set_font(SANS, "B", 9)
+    """Titre de page interne · numéro + libellé + filet teal."""
+    pdf.set_font(SANS, "B", TYPE["caption"] + 1)
     pdf.set_text_color(*GH_TEAL)
     pdf.cell(0, 4, f"PAGE {number:02d} / 20", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font(SANS, "B", 16)
+    pdf.set_font(SANS, "B", TYPE["h2"])
     pdf.set_text_color(*GH_NAVY)
     pdf.cell(0, 9, label, new_x="LMARGIN", new_y="NEXT")
     pdf.set_draw_color(*GH_TEAL)
     pdf.set_line_width(0.6)
     pdf.line(pdf.get_x(), pdf.get_y(), pdf.get_x() + 25, pdf.get_y())
-    pdf.ln(6)
+    pdf.ln(SPACE["md"])
 
 
 def _body_text(pdf, text):
-    pdf.set_font(SANS, "", 10.5)
+    """Paragraphe standard · slate-700 sur fond blanc."""
+    pdf.set_font(SANS, "", TYPE["body"])
     pdf.set_text_color(*SLATE_700)
-    pdf.multi_cell(0, 6, text, new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(2)
+    pdf.multi_cell(0, 5.6, text, new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(SPACE["xs"])
 
 
 def _subheading(pdf, text):
-    pdf.ln(1)
-    pdf.set_font(SANS, "B", 11.5)
-    pdf.set_text_color(*SLATE_900)
+    """Sous-titre · navy bold, accent vertical teal."""
+    pdf.ln(SPACE["xs"])
+    x0, y0 = pdf.get_x(), pdf.get_y()
+    pdf.set_fill_color(*GH_TEAL)
+    pdf.rect(x0, y0 + 1, 1.4, 5.5, "F")
+    pdf.set_xy(x0 + 3.5, y0)
+    pdf.set_font(SANS, "B", TYPE["h3"])
+    pdf.set_text_color(*GH_NAVY)
     pdf.cell(0, 7, text, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(0.5)
 
 
 def _alert(pdf, kind, text):
+    """Bandeau alerte coloré · info / ok / warn / err / metier."""
     bg, fg = _alert_style(kind)
     pdf.set_fill_color(*bg)
     pdf.set_text_color(*fg)
-    pdf.set_font(SANS, "B", 9.5)
+    pdf.set_font(SANS, "B", TYPE["small"])
     pdf.cell(4, 5, "", new_x="RIGHT", new_y="TOP", fill=True)
-    pdf.set_font(SANS, "", 10)
+    pdf.set_font(SANS, "", TYPE["body"])
     pdf.multi_cell(0, 5.5, " " + text, fill=True, new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(2)
+    pdf.ln(SPACE["xs"])
+
+
+def _kpi_strip(pdf, kpis):
+    """
+    Bandeau de KPI métier · liste de tuples (label, value, unit).
+    Usage · _kpi_strip(pdf, [("Temps gagné", "8 h", "/ mois"), ...])
+    """
+    if not kpis:
+        return
+    x0 = pdf.l_margin
+    y0 = pdf.get_y()
+    avail_w = pdf.w - 2 * pdf.l_margin
+    n = len(kpis)
+    card_w = (avail_w - (n - 1) * 3) / n
+    card_h = 18
+    for i, (label, value, unit) in enumerate(kpis):
+        cx = x0 + i * (card_w + 3)
+        # Card background
+        pdf.set_fill_color(*SLATE_50)
+        pdf.set_draw_color(*SLATE_200)
+        pdf.rect(cx, y0, card_w, card_h, "FD")
+        # Filet vertical gold = ROI métier
+        pdf.set_fill_color(*GH_GOLD)
+        pdf.rect(cx, y0, 1.4, card_h, "F")
+        # Label
+        pdf.set_xy(cx + 4, y0 + 2)
+        pdf.set_font(SANS, "", TYPE["caption"])
+        pdf.set_text_color(*SLATE_500)
+        pdf.cell(card_w - 6, 3.5, label.upper())
+        # Valeur
+        pdf.set_xy(cx + 4, y0 + 6)
+        pdf.set_font(SANS, "B", TYPE["h2"])
+        pdf.set_text_color(*GH_NAVY)
+        pdf.cell(card_w - 6, 7, str(value))
+        # Unite
+        pdf.set_xy(cx + 4, y0 + 13)
+        pdf.set_font(SANS, "I", TYPE["caption"])
+        pdf.set_text_color(*SLATE_500)
+        pdf.cell(card_w - 6, 3, unit)
+    pdf.set_y(y0 + card_h + SPACE["sm"])
 
 
 # ══════════════════════════════════════════════════════════════════════════════
