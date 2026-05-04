@@ -1,0 +1,28 @@
+{
+  "trained_at": "2026-05-04T10:42:11.281661",
+  "samples": 50000,
+  "seed": 42,
+  "psy_share": 0.79934,
+  "models": [
+    {
+      "model": "format_detector",
+      "accuracy": 0.9886,
+      "f1_macro": 0.9121831739342173,
+      "n_classes": 37,
+      "train_seconds": 9.634795665740967
+    },
+    {
+      "model": "collision_risk",
+      "auc": 0.9999999999999999,
+      "accuracy": 1.0,
+      "f1": 1.0,
+      "train_seconds": 0.21567869186401367
+    },
+    {
+      "model": "ddn_validity",
+      "auc": 0.8748498509242697,
+      "accuracy": 0.9889,
+      "train_seconds": 0.18997740745544434
+    }
+  ]
+}
