@@ -32,6 +32,17 @@ openpyxl>=3.1.0
 # fpdf2 (fork moderne de PyFPDF) — utilisé par tools/generate_manual.py
 fpdf2>=2.8.0
 
+# ─── Module ML (XGBoost stack, V36+) ──────────────────────────────────────
+# Trois modèles entraînés sur dataset synthétique ATIH 2000-2026 ·
+# format_detector (multi-classe), collision_risk + ddn_validity (binaires).
+# Voir backend/ml/ pour le pipeline d'entraînement et l'inférence.
+xgboost>=3.0.0
+lightgbm>=4.5.0
+scikit-learn>=1.6.0
+pandas>=2.2.0
+numpy>=1.26.0
+pyarrow>=18.0.0  # parquet · cache du dataset synthétique
+
 # ─── Dev Dependencies (tests) ─────────────────────────────────────────────
 pytest>=8.3.4
 pytest-cov>=6.0.0
