@@ -1,0 +1,210 @@
+/* =================================================================
+   SOVEREIGN OS DIM · Design Tokens
+   ----------------------------------------------------------------
+   Source unique de vérité pour les couleurs, l'échelle typo, les
+   espacements, les rayons et les ombres. Toutes les vues consomment
+   ces variables · pour changer la charte, modifier ICI uniquement.
+
+   Cohérent avec le générateur PDF (tools/generate_guide.py) ·
+   palette identique, échelle typo identique.
+   ================================================================= */
+
+:root {
+  /* ── Palette · charte Groupe Hospitalier Paul Guiraud ─────────── */
+  --gh-navy:      #000091;   /* République Française · titres, accents primaires */
+  --gh-navy-50:   #EEF2FF;
+  --gh-navy-100:  #E0E7FF;
+  --gh-navy-700:  #1E3A8A;
+  --gh-teal:      #00897B;   /* Accent secondaire · KPI, succès opérationnel */
+  --gh-teal-50:   #ECFDF5;
+  --gh-gold:      #D4A437;   /* Mise en valeur métier · ROI, gains DIM */
+  --gh-error:     #E11D48;   /* Erreur, blocage réglementaire */
+  --gh-success:   #10B981;   /* Conformité, validation */
+  --gh-warning:   #F59E0B;   /* Point d'attention */
+
+  /* ── Niveaux SLATE · échelle de gris (alignée Tailwind slate) ── */
+  --slate-50:     #F8FAFC;
+  --slate-100:    #F1F5F9;
+  --slate-200:    #E2E8F0;
+  --slate-300:    #CBD5E1;
+  --slate-400:    #94A3B8;
+  --slate-500:    #64748B;
+  --slate-700:    #334155;
+  --slate-800:    #1E293B;
+  --slate-900:    #0F172A;
+  --terminal:     #020617;
+
+  /* ── Typographie · 7 niveaux fixes, jamais de tailles ad-hoc ── */
+  --font-sans:    "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", "Consolas", monospace;
+  --text-display: 2.5rem;    /* 40px · titres de page principaux */
+  --text-h1:      1.875rem;  /* 30px · titres de section */
+  --text-h2:      1.5rem;    /* 24px · sous-titres */
+  --text-h3:      1.125rem;  /* 18px · titres de carte */
+  --text-body:    0.875rem;  /* 14px · corps de texte */
+  --text-small:   0.75rem;   /* 12px · captions, légendes */
+  --text-caption: 0.6875rem; /* 11px · meta, labels en majuscules */
+
+  /* ── Espacements · échelle 4px (alignée Tailwind) ────────────── */
+  --space-1:  0.25rem;   /* 4px */
+  --space-2:  0.5rem;    /* 8px */
+  --space-3:  0.75rem;   /* 12px */
+  --space-4:  1rem;      /* 16px */
+  --space-6:  1.5rem;    /* 24px */
+  --space-8:  2rem;      /* 32px */
+  --space-12: 3rem;      /* 48px */
+  --space-16: 4rem;      /* 64px */
+
+  /* ── Rayons · 4 niveaux uniquement ────────────────────────────── */
+  --radius-sm:  0.5rem;     /* 8px · badges, pills, kbd */
+  --radius-md:  0.75rem;    /* 12px · boutons, inputs */
+  --radius-lg:  1rem;       /* 16px · cards */
+  --radius-xl:  1.5rem;     /* 24px · modales, panneaux principaux */
+  --radius-full: 9999px;
+
+  /* ── Ombres · 3 niveaux uniquement ────────────────────────────── */
+  --shadow-sm:  0 1px 2px 0 rgba(0, 0, 145, 0.04);
+  --shadow-md:  0 4px 12px -2px rgba(0, 0, 145, 0.06);
+  --shadow-lg:  0 12px 32px -8px rgba(0, 0, 145, 0.10);
+
+  /* ── Transitions standards ────────────────────────────────────── */
+  --t-fast:  150ms cubic-bezier(0.22, 1, 0.36, 1);
+  --t-base:  250ms cubic-bezier(0.22, 1, 0.36, 1);
+  --t-slow:  400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Dark mode · réécriture des variables sémantiques ─────────── */
+.dark {
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 32px -8px rgba(0, 0, 0, 0.5);
+}
+
+/* =================================================================
+   COMPOSANTS PARTAGÉS · cohérence visuelle inter-vues
+   ================================================================= */
+
+/* ── Eyebrow · petit label en majuscules au-dessus des titres ── */
+.eyebrow {
+  font-size: var(--text-caption);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--gh-teal);
+}
+
+/* ── KPI card · uniformisée pour Dashboard, Modo, Structure ──── */
+.kpi-card {
+  background: white;
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+  box-shadow: var(--shadow-sm);
+  transition: var(--t-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--gh-teal);
+  opacity: 0;
+  transition: opacity var(--t-base);
+}
+
+.kpi-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.kpi-card:hover::before {
+  opacity: 1;
+}
+
+.dark .kpi-card {
+  background: var(--slate-800);
+  border-color: var(--slate-700);
+}
+
+.kpi-card .kpi-label {
+  font-size: var(--text-caption);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--slate-500);
+}
+
+.kpi-card .kpi-value {
+  font-size: var(--text-h1);
+  font-weight: 800;
+  color: var(--gh-navy);
+  line-height: 1.1;
+  margin-top: var(--space-2);
+  font-feature-settings: "tnum";
+}
+
+.dark .kpi-card .kpi-value {
+  color: #93C5FD;
+}
+
+.kpi-card .kpi-unit {
+  font-size: var(--text-small);
+  color: var(--slate-500);
+  margin-left: var(--space-2);
+}
+
+/* ── Bouton primaire ──────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--gh-navy);
+  color: white;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: var(--t-base);
+}
+
+.btn-primary:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* ── Section header standardisé (toutes les vues) ─────────────── */
+.section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--slate-200);
+  margin-bottom: var(--space-6);
+}
+
+.dark .section-header {
+  border-bottom-color: var(--slate-800);
+}
+
+.section-header h2 {
+  font-size: var(--text-h1);
+  font-weight: 800;
+  color: var(--gh-navy);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.dark .section-header h2 {
+  color: white;
+}
+
+.section-header .section-meta {
+  font-size: var(--text-small);
+  color: var(--slate-500);
+  font-weight: 600;
+}
