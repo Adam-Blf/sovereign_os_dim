@@ -3256,14 +3256,27 @@ def main() -> None:
     path = build_pdf(args.output)
     size_kb = os.path.getsize(path) // 1024
 
+    # Post-traitement · métadonnées + outline navigable (skill pdf-official).
+    # Import via le dossier `tools/` directement, sans dépendre du PYTHONPATH.
+    try:
+        sys.path.insert(0, HERE)
+        from enrich_guide_pdf import enrich  # noqa · resolve via sys.path
+        enrich(path, path)
+        size_kb = os.path.getsize(path) // 1024
+        enriched = "(enrichi · metadata + 16 bookmarks)"
+    except Exception as e:  # pragma: no cover
+        print(f"[WARN] Enrichissement PDF echoue · {e}", file=sys.stderr)
+        enriched = "(brut · enrichissement skip)"
+
     try:
         from pypdf import PdfReader
         pages = len(PdfReader(path).pages)
-        expected = len(FEATURES) * 3 + 4  # +cover, sommaire, intro, support
+        expected = len(FEATURES) * 3 + 5  # +cover, sommaire, intro, roadmap, support
         print(f"[OK] Guide genere · {path}")
-        print(f"      {pages} pages · {size_kb} Ko · attendu ~{expected} pages")
+        print(f"      {pages} pages · {size_kb} Ko · attendu ~{expected} pages "
+              f"· {enriched}")
     except Exception:
-        print(f"[OK] Guide genere · {path} · {size_kb} Ko")
+        print(f"[OK] Guide genere · {path} · {size_kb} Ko · {enriched}")
 
 
 if __name__ == "__main__":  # pragma: no cover
