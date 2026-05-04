@@ -34,6 +34,92 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 LOGO_PATH = os.path.join(ROOT, "frontend", "logo_gh.png")
 SCREENSHOT_DIR = os.path.join(ROOT, "docs", "screenshots")
+FONT_DIR = os.path.join(HERE, "fonts")  # polices bundlees (optionnel)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# POLICES UNICODE · accents et typographie hospitaliere
+# ══════════════════════════════════════════════════════════════════════════════
+# Sans police TTF Unicode, fpdf2 retombe sur Helvetica core (latin-1 only),
+# ce qui supprime tous les accents (Apercu vs Apercu, etc.). Ce resolveur
+# choisit la meilleure police disponible · Segoe UI sur Windows (poste DIM
+# cible), DejaVu Sans sur Linux/CI, fallback Helvetica core sinon.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Familles logiques utilisees partout dans le rendu. Resolues a build_pdf().
+SANS = "GuideSans"   # corps de texte, titres
+MONO = "GuideMono"   # snippets code, fichiers, IPP
+
+# Variantes recherchees · regular, bold, italic, bold-italic
+_SANS_CANDIDATES = (
+    # Windows · Segoe UI (excellente lisibilite a l'ecran et en print)
+    ("C:/Windows/Fonts/segoeui.ttf",  "C:/Windows/Fonts/segoeuib.ttf",
+     "C:/Windows/Fonts/segoeuii.ttf", "C:/Windows/Fonts/segoeuiz.ttf"),
+    # Linux Debian/Ubuntu · DejaVu (couvre tout l'ATIH + sigles ARS)
+    ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf",
+     "/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf"),
+    # Windows · Arial fallback
+    ("C:/Windows/Fonts/arial.ttf",   "C:/Windows/Fonts/arialbd.ttf",
+     "C:/Windows/Fonts/ariali.ttf",  "C:/Windows/Fonts/arialbi.ttf"),
+    # Police bundlee dans tools/fonts/ si presente
+    (os.path.join(FONT_DIR, "DejaVuSans.ttf"),
+     os.path.join(FONT_DIR, "DejaVuSans-Bold.ttf"),
+     os.path.join(FONT_DIR, "DejaVuSans-Oblique.ttf"),
+     os.path.join(FONT_DIR, "DejaVuSans-BoldOblique.ttf")),
+)
+
+_MONO_CANDIDATES = (
+    ("C:/Windows/Fonts/consola.ttf",  "C:/Windows/Fonts/consolab.ttf",
+     "C:/Windows/Fonts/consolai.ttf", "C:/Windows/Fonts/consolaz.ttf"),
+    ("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+     "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf",
+     "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Oblique.ttf",
+     "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-BoldOblique.ttf"),
+    ("C:/Windows/Fonts/cour.ttf",   "C:/Windows/Fonts/courbd.ttf",
+     "C:/Windows/Fonts/couri.ttf",  "C:/Windows/Fonts/courbi.ttf"),
+    (os.path.join(FONT_DIR, "DejaVuSansMono.ttf"),
+     os.path.join(FONT_DIR, "DejaVuSansMono-Bold.ttf"),
+     os.path.join(FONT_DIR, "DejaVuSansMono-Oblique.ttf"),
+     os.path.join(FONT_DIR, "DejaVuSansMono-BoldOblique.ttf")),
+)
+
+
+def _pick_font_set(candidates):
+    """Renvoie le 1er quadruplet (R, B, I, BI) totalement disponible, ou None."""
+    for tup in candidates:
+        if all(os.path.exists(p) for p in tup):
+            return tup
+    return None
+
+
+def _register_fonts(pdf):
+    """
+    Charge SANS et MONO sur l'instance PDF. Retourne True si Unicode actif.
+    Si aucune police TTF dispo, alias SANS->Helvetica et MONO->Courier (core,
+    sans accents) pour ne pas casser le build.
+    """
+    sans = _pick_font_set(_SANS_CANDIDATES)
+    mono = _pick_font_set(_MONO_CANDIDATES)
+    unicode_ok = bool(sans and mono)
+    if sans:
+        pdf.add_font(SANS, "",   sans[0], uni=True)
+        pdf.add_font(SANS, "B",  sans[1], uni=True)
+        pdf.add_font(SANS, "I",  sans[2], uni=True)
+        pdf.add_font(SANS, "BI", sans[3], uni=True)
+    else:  # pragma: no cover · fallback rare
+        # Alias propre · on garde le nom "GuideSans" mais set_font tombera
+        # sur Helvetica core via le mecanisme de FPDF.
+        globals()["SANS"] = "Helvetica"
+    if mono:
+        pdf.add_font(MONO, "",   mono[0], uni=True)
+        pdf.add_font(MONO, "B",  mono[1], uni=True)
+        pdf.add_font(MONO, "I",  mono[2], uni=True)
+        pdf.add_font(MONO, "BI", mono[3], uni=True)
+    else:  # pragma: no cover
+        globals()["MONO"] = "Courier"
+    return unicode_ok
 
 # Mapping feature -> screenshot (nom de fichier dans docs/screenshots/)
 # Si un screenshot est absent, fallback sur le mockup schematique.
@@ -1773,12 +1859,12 @@ def _page_header(pdf, logo_path, feat_title, category, section_idx, total_sectio
             pass  # pragma: no cover
     # Titre au milieu
     pdf.set_xy(28, 10)
-    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_font(SANS, "B", 10)
     pdf.set_text_color(*GH_NAVY)
     pdf.cell(120, 5, feat_title[:60], new_x="RIGHT", new_y="TOP")
     # Meta a droite
     pdf.set_xy(28, 15)
-    pdf.set_font("Helvetica", "", 7)
+    pdf.set_font(SANS, "", 7)
     pdf.set_text_color(*SLATE_500)
     pdf.cell(120, 4, f"{category} · Section {section_idx:02d}/{total_sections}",
              new_x="RIGHT", new_y="TOP")
@@ -1790,10 +1876,10 @@ def _page_header(pdf, logo_path, feat_title, category, section_idx, total_sectio
 
 def _page_title(pdf, number, label):
     """Titre de page · 'PAGE 3/20 · Pourquoi cette feature'."""
-    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_font(SANS, "B", 9)
     pdf.set_text_color(*GH_TEAL)
     pdf.cell(0, 4, f"PAGE {number:02d} / 20", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", "B", 16)
+    pdf.set_font(SANS, "B", 16)
     pdf.set_text_color(*GH_NAVY)
     pdf.cell(0, 9, label, new_x="LMARGIN", new_y="NEXT")
     pdf.set_draw_color(*GH_TEAL)
@@ -1803,7 +1889,7 @@ def _page_title(pdf, number, label):
 
 
 def _body_text(pdf, text):
-    pdf.set_font("Helvetica", "", 10.5)
+    pdf.set_font(SANS, "", 10.5)
     pdf.set_text_color(*SLATE_700)
     pdf.multi_cell(0, 6, text, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(2)
@@ -1811,7 +1897,7 @@ def _body_text(pdf, text):
 
 def _subheading(pdf, text):
     pdf.ln(1)
-    pdf.set_font("Helvetica", "B", 11.5)
+    pdf.set_font(SANS, "B", 11.5)
     pdf.set_text_color(*SLATE_900)
     pdf.cell(0, 7, text, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(0.5)
@@ -1821,9 +1907,9 @@ def _alert(pdf, kind, text):
     bg, fg = _alert_style(kind)
     pdf.set_fill_color(*bg)
     pdf.set_text_color(*fg)
-    pdf.set_font("Helvetica", "B", 9.5)
+    pdf.set_font(SANS, "B", 9.5)
     pdf.cell(4, 5, "", new_x="RIGHT", new_y="TOP", fill=True)
-    pdf.set_font("Helvetica", "", 10)
+    pdf.set_font(SANS, "", 10)
     pdf.multi_cell(0, 5.5, " " + text, fill=True, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(2)
 
@@ -1865,7 +1951,7 @@ def _screenshot_box(pdf, png_path, caption=None, max_w=150):
     pdf.rect(x0, y0, max_w, h)
     pdf.set_y(y0 + h + 2)
     if caption:
-        pdf.set_font("Helvetica", "I", 8)
+        pdf.set_font(SANS, "I", 8)
         pdf.set_text_color(*SLATE_500)
         pdf.multi_cell(0, 4, "Capture d'ecran · " + caption, align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(3)
@@ -1888,11 +1974,11 @@ def _ui_mockup(pdf, highlight_zone=None):
     header_h = 10
     pdf.set_fill_color(*GH_NAVY)
     pdf.rect(x0, y0, w, header_h, "F")
-    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_font(SANS, "B", 8)
     pdf.set_text_color(255, 255, 255)
     pdf.set_xy(x0 + 3, y0 + 3)
     pdf.cell(80, 4, "SOVEREIGN OS DIM V35.0")
-    pdf.set_font("Helvetica", "", 7)
+    pdf.set_font(SANS, "", 7)
     pdf.set_xy(x0 + w - 55, y0 + 3)
     pdf.cell(50, 4, "[Dark mode]  [Reset MPI]", align="R")
     # Sidebar
@@ -1909,7 +1995,7 @@ def _ui_mockup(pdf, highlight_zone=None):
         ("Ctrl+6", "Structure"),
         ("Ctrl+7", "Tutoriel"),
     ]
-    pdf.set_font("Helvetica", "", 6.5)
+    pdf.set_font(SANS, "", 6.5)
     for i, (key, label) in enumerate(navs):
         y = y0 + header_h + 4 + i * 10
         if highlight_zone == "sidebar":
@@ -1919,9 +2005,9 @@ def _ui_mockup(pdf, highlight_zone=None):
         pdf.set_xy(x0 + 3, y)
         pdf.cell(26, 4, key)
         pdf.set_xy(x0 + 3, y + 4)
-        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_font(SANS, "B", 7)
         pdf.cell(26, 4, label)
-        pdf.set_font("Helvetica", "", 6.5)
+        pdf.set_font(SANS, "", 6.5)
     # Zone contenu
     content_x = x0 + sidebar_w + 2
     content_y = y0 + header_h + 2
@@ -1939,11 +2025,11 @@ def _ui_mockup(pdf, highlight_zone=None):
         pdf.rect(cx, cy, card_w, 15, "F")
         pdf.set_draw_color(*SLATE_200)
         pdf.rect(cx, cy, card_w, 15)
-        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_font(SANS, "B", 7)
         pdf.set_text_color(*GH_NAVY)
         pdf.set_xy(cx + 2, cy + 2)
         pdf.cell(card_w - 4, 4, f"KPI {i+1}")
-        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_font(SANS, "B", 10)
         pdf.set_xy(cx + 2, cy + 6)
         pdf.cell(card_w - 4, 6, f"{(i+1)*127}")
     # Faux graphique
@@ -1962,13 +2048,13 @@ def _ui_mockup(pdf, highlight_zone=None):
         by = gy + gh - 4 - bh
         pdf.set_fill_color(*GH_TEAL)
         pdf.rect(bx, by, bar_w, bh, "F")
-    pdf.set_font("Helvetica", "", 6)
+    pdf.set_font(SANS, "", 6)
     pdf.set_text_color(*SLATE_400)
     pdf.set_xy(gx + 2, gy + 2)
     pdf.cell(gw - 4, 3, "Graphique illustratif")
     # Legende sous le mockup
     pdf.set_xy(x0, y0 + h + 2)
-    pdf.set_font("Helvetica", "I", 7.5)
+    pdf.set_font(SANS, "I", 7.5)
     pdf.set_text_color(*SLATE_500)
     pdf.cell(0, 4, "Schema · disposition generique de l'interface Sovereign OS DIM",
              new_x="LMARGIN", new_y="NEXT", align="C")
@@ -1988,11 +2074,11 @@ def _workflow_diagram(pdf, steps_labels=("Etape 1", "Etape 2", "Etape 3")):
         cx = start_x + i * (card_w + gap)
         pdf.set_fill_color(*colors[i])
         pdf.rect(cx, y0, card_w, card_h, "F")
-        pdf.set_font("Helvetica", "B", 9)
+        pdf.set_font(SANS, "B", 9)
         pdf.set_text_color(255, 255, 255)
         pdf.set_xy(cx + 2, y0 + 3)
         pdf.cell(card_w - 4, 5, f"ETAPE {i + 1}")
-        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_font(SANS, "B", 10)
         pdf.set_xy(cx + 2, y0 + 10)
         # Truncate label si trop long
         short = label[:32] + ("..." if len(label) > 32 else "")
@@ -2008,7 +2094,7 @@ def _workflow_diagram(pdf, steps_labels=("Etape 1", "Etape 2", "Etape 3")):
             pdf.line(ax + gap - 2, ay - 1.5, ax + gap, ay)
             pdf.line(ax + gap - 2, ay + 1.5, ax + gap, ay)
     pdf.set_xy(x0, y0 + card_h + 3)
-    pdf.set_font("Helvetica", "I", 7.5)
+    pdf.set_font(SANS, "I", 7.5)
     pdf.set_text_color(*SLATE_500)
     pdf.cell(0, 4, "Diagramme · progression du workflow en 3 etapes sequentielles",
              new_x="LMARGIN", new_y="NEXT", align="C")
@@ -2023,20 +2109,20 @@ def _integration_diagram(pdf, feature_name, consumers, producers):
     # Noeud central
     pdf.set_fill_color(*GH_NAVY)
     pdf.rect(center_x - 30, center_y - 10, 60, 20, "F")
-    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_font(SANS, "B", 9)
     pdf.set_text_color(255, 255, 255)
     pdf.set_xy(center_x - 28, center_y - 5)
     short_name = feature_name[:28]
     pdf.cell(56, 5, short_name, align="C")
-    pdf.set_font("Helvetica", "", 7)
+    pdf.set_font(SANS, "", 7)
     pdf.set_xy(center_x - 28, center_y + 1)
     pdf.cell(56, 4, "(feature courante)", align="C")
     # Consumers en haut (ce qu'on lit)
-    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_font(SANS, "B", 8)
     pdf.set_text_color(*GH_TEAL)
     pdf.set_xy(x0, y0)
     pdf.cell(0, 4, "En amont (sources) :", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", "", 7.5)
+    pdf.set_font(SANS, "", 7.5)
     pdf.set_text_color(*SLATE_700)
     for i, c in enumerate(consumers[:3]):
         cx = x0 + i * 62
@@ -2052,11 +2138,11 @@ def _integration_diagram(pdf, feature_name, consumers, producers):
         pdf.set_line_width(0.5)
         pdf.line(cx + 29, cy + 10, center_x, center_y - 10)
     # Producers en bas (ce qu'on fournit)
-    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_font(SANS, "B", 8)
     pdf.set_text_color(*GH_NAVY)
     pdf.set_xy(x0, center_y + 15)
     pdf.cell(0, 4, "En aval (consommateurs) :", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", "", 7.5)
+    pdf.set_font(SANS, "", 7.5)
     pdf.set_text_color(*SLATE_700)
     for i, p in enumerate(producers[:3]):
         cx = x0 + i * 62
@@ -2072,7 +2158,7 @@ def _integration_diagram(pdf, feature_name, consumers, producers):
         pdf.set_line_width(0.5)
         pdf.line(center_x, center_y + 10, cx + 29, cy)
     pdf.set_xy(x0, center_y + 38)
-    pdf.set_font("Helvetica", "I", 7.5)
+    pdf.set_font(SANS, "I", 7.5)
     pdf.set_text_color(*SLATE_500)
     pdf.cell(0, 4, "Diagramme d'integration · flux de donnees entre modules",
              new_x="LMARGIN", new_y="NEXT", align="C")
@@ -2093,7 +2179,7 @@ def _perf_chart(pdf, metrics):
     for i, (label, val) in enumerate(metrics[:5]):
         by = y0 + 4 + i * 8
         # Label
-        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_font(SANS, "B", 8)
         pdf.set_text_color(*SLATE_700)
         pdf.set_xy(x0 + 3, by)
         pdf.cell(70, 5, label[:40])
@@ -2103,12 +2189,12 @@ def _perf_chart(pdf, metrics):
         pdf.set_fill_color(*color)
         pdf.rect(x0 + 75, by, bar_w, 5, "F")
         # Valeur
-        pdf.set_font("Helvetica", "", 7.5)
+        pdf.set_font(SANS, "", 7.5)
         pdf.set_text_color(*SLATE_700)
         pdf.set_xy(x0 + 75 + bar_w + 2, by)
         pdf.cell(30, 5, f"{val} ms" if val < 1000 else f"{val / 1000:.1f} s")
     pdf.set_xy(x0, y0 + h + 2)
-    pdf.set_font("Helvetica", "I", 7.5)
+    pdf.set_font(SANS, "I", 7.5)
     pdf.set_text_color(*SLATE_500)
     pdf.cell(0, 4, "Graphique · performances typiques sur poste standard",
              new_x="LMARGIN", new_y="NEXT", align="C")
@@ -2130,7 +2216,7 @@ def _feature_schema(pdf, feat_num):
     pdf.rect(x0, y0, w, h)
     pdf.set_fill_color(*GH_NAVY)
     pdf.rect(x0, y0, w, 7, "F")
-    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_font(SANS, "B", 8)
     pdf.set_text_color(255, 255, 255)
     pdf.set_xy(x0 + 3, y0 + 1.5)
     titles = {
@@ -2151,12 +2237,12 @@ def _feature_schema(pdf, feat_num):
             pdf.rect(kx, cy, cw / 4 - 1, 18, "F")
             pdf.set_draw_color(*SLATE_200)
             pdf.rect(kx, cy, cw / 4 - 1, 18)
-            pdf.set_font("Helvetica", "", 6)
+            pdf.set_font(SANS, "", 6)
             pdf.set_text_color(*SLATE_500)
             pdf.set_xy(kx + 2, cy + 2)
             labels = ["Fichiers", "IPP uniques", "Collisions", "Formats"]
             pdf.cell(cw / 4 - 4, 3, labels[i])
-            pdf.set_font("Helvetica", "B", 12)
+            pdf.set_font(SANS, "B", 12)
             pdf.set_text_color(*GH_NAVY)
             pdf.set_xy(kx + 2, cy + 6)
             values = ["7", "4821", "147", "3"]
@@ -2176,7 +2262,7 @@ def _feature_schema(pdf, feat_num):
             pdf.set_fill_color(*color)
             pdf.circle(center[0] + radius * math.cos(rad) * 0.6,
                        center[1] + radius * math.sin(rad) * 0.6, 1.5, "F")
-        pdf.set_font("Helvetica", "", 7)
+        pdf.set_font(SANS, "", 7)
         pdf.set_text_color(*SLATE_500)
         pdf.set_xy(cx + 55, cy + 28)
         pdf.cell(100, 4, "Repartition par format PMSI")
@@ -2185,7 +2271,7 @@ def _feature_schema(pdf, feat_num):
         # Modo Files · liste de fichiers
         pdf.set_fill_color(*GH_NAVY)
         pdf.rect(cx, cy, cw, 6, "F")
-        pdf.set_font("Helvetica", "B", 6.5)
+        pdf.set_font(SANS, "B", 6.5)
         pdf.set_text_color(255, 255, 255)
         pdf.set_xy(cx + 2, cy + 1)
         pdf.cell(40, 4, "NOM")
@@ -2205,21 +2291,21 @@ def _feature_schema(pdf, feat_num):
             if i % 2 == 0:
                 pdf.set_fill_color(*SLATE_50)
                 pdf.rect(cx, row_y, cw, 8, "F")
-            pdf.set_font("Courier", "", 6.5)
+            pdf.set_font(MONO, "", 6.5)
             pdf.set_text_color(*SLATE_700)
             pdf.set_xy(cx + 2, row_y + 2)
             pdf.cell(40, 4, f[0][:24])
-            pdf.set_font("Helvetica", "B", 6.5)
+            pdf.set_font(SANS, "B", 6.5)
             pdf.set_text_color(*GH_TEAL)
             pdf.cell(25, 4, f[1])
-            pdf.set_font("Courier", "", 6.5)
+            pdf.set_font(MONO, "", 6.5)
             pdf.set_text_color(*SLATE_700)
             pdf.cell(25, 4, f[2])
             pdf.cell(25, 4, f[3])
 
     elif feat_num == 3:
         # Identitovigilance · paires de collisions
-        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_font(SANS, "B", 7)
         pdf.set_text_color(*GH_ERR)
         pdf.set_xy(cx + 2, cy)
         pdf.cell(0, 4, "3 collisions detectees")
@@ -2235,15 +2321,15 @@ def _feature_schema(pdf, feat_num):
             pdf.set_draw_color(*GH_ERR)
             pdf.set_line_width(0.3)
             pdf.rect(cx, row_y, cw, 14)
-            pdf.set_font("Courier", "B", 8)
+            pdf.set_font(MONO, "B", 8)
             pdf.set_text_color(*GH_ERR)
             pdf.set_xy(cx + 3, row_y + 2)
             pdf.cell(30, 4, c[0])
-            pdf.set_font("Helvetica", "B", 7)
+            pdf.set_font(SANS, "B", 7)
             pdf.set_text_color(*SLATE_700)
             pdf.cell(15, 4, c[1] + " DDN")
             pdf.set_xy(cx + 3, row_y + 7)
-            pdf.set_font("Courier", "", 6.5)
+            pdf.set_font(MONO, "", 6.5)
             pdf.set_text_color(*SLATE_500)
             pdf.cell(0, 4, c[2])
 
@@ -2259,12 +2345,12 @@ def _feature_schema(pdf, feat_num):
         for bx, by, bw, bh, color, label, sublabel in boxes:
             pdf.set_fill_color(*color)
             pdf.rect(bx, by, bw, bh, "F")
-            pdf.set_font("Helvetica", "B", 8)
+            pdf.set_font(SANS, "B", 8)
             fg = (255, 255, 255) if color != SLATE_50 else SLATE_900
             pdf.set_text_color(*fg)
             pdf.set_xy(bx + 2, by + 3)
             pdf.cell(bw - 4, 4, label, align="C")
-            pdf.set_font("Helvetica", "", 6)
+            pdf.set_font(SANS, "", 6)
             pdf.set_xy(bx + 2, by + 8)
             pdf.cell(bw - 4, 3, sublabel, align="C")
         # Fleches
@@ -2279,7 +2365,7 @@ def _feature_schema(pdf, feat_num):
         # Inspector + Preflight · terminal decomposition
         pdf.set_fill_color(15, 23, 42)
         pdf.rect(cx, cy, cw, ch, "F")
-        pdf.set_font("Courier", "", 6.5)
+        pdf.set_font(MONO, "", 6.5)
         pdf.set_text_color(16, 185, 129)  # green
         pdf.set_xy(cx + 2, cy + 2)
         pdf.cell(0, 4, "$ inspect RPS_202407.txt --line 2341")
@@ -2318,7 +2404,7 @@ def _feature_schema(pdf, feat_num):
                 pdf.rect(gx, gy, chart_w, chart_h, "F")
                 pdf.set_draw_color(*SLATE_200)
                 pdf.rect(gx, gy, chart_w, chart_h)
-                pdf.set_font("Helvetica", "B", 6.5)
+                pdf.set_font(SANS, "B", 6.5)
                 pdf.set_text_color(*GH_NAVY)
                 pdf.set_xy(gx + 2, gy + 2)
                 labels_ch = [["File active", "Secteurs ARS"], ["Top 10 UM", "Collisions"]]
@@ -2376,7 +2462,7 @@ def _feature_schema(pdf, feat_num):
             pdf.set_draw_color(*SLATE_400)
             pdf.set_line_width(0.2)
             pdf.rect(nx, ny, nw, nh)
-            pdf.set_font("Helvetica", "B", 6)
+            pdf.set_font(SANS, "B", 6)
             fg = (255, 255, 255) if color in (GH_NAVY, GH_TEAL, (249, 115, 22)) else SLATE_900
             pdf.set_text_color(*fg)
             pdf.set_xy(nx + 1, ny + 1.5)
@@ -2397,11 +2483,11 @@ def _feature_schema(pdf, feat_num):
         pdf.set_dash_pattern(dash=2, gap=2)
         pdf.rect(cx + 5, cy + 3, cw - 10, 20)
         pdf.set_dash_pattern()
-        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_font(SANS, "B", 8)
         pdf.set_text_color(*GH_TEAL)
         pdf.set_xy(cx + 5, cy + 10)
         pdf.cell(cw - 10, 4, "GLISSEZ VOS FICHIERS RPS / RAA ICI", align="C")
-        pdf.set_font("Helvetica", "", 6.5)
+        pdf.set_font(SANS, "", 6.5)
         pdf.set_text_color(*SLATE_500)
         pdf.set_xy(cx + 5, cy + 15)
         pdf.cell(cw - 10, 3, "7 fichiers · 50 802 lignes · periode 2024 · 3 mois", align="C")
@@ -2410,12 +2496,12 @@ def _feature_schema(pdf, feat_num):
         pdf.rect(cx + 5, cy + 28, (cw - 10) * 0.83, 4, "F")
         pdf.set_fill_color(*SLATE_200)
         pdf.rect(cx + 5 + (cw - 10) * 0.83, cy + 28, (cw - 10) * 0.17, 4, "F")
-        pdf.set_font("Helvetica", "", 6.5)
+        pdf.set_font(SANS, "", 6.5)
         pdf.set_text_color(*GH_OK)
         pdf.set_xy(cx + 5, cy + 33)
         pdf.cell(0, 3, "Couverture · 83 %  (5 UM sur 6 actives)")
         # UM inactives
-        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_font(SANS, "B", 7)
         pdf.set_text_color(*GH_ERR)
         pdf.set_xy(cx + 5, cy + 40)
         pdf.cell(0, 3, "UM sans activite · 1")
@@ -2423,11 +2509,11 @@ def _feature_schema(pdf, feat_num):
             by = cy + 45 + i * 8
             pdf.set_fill_color(255, 245, 248)
             pdf.rect(cx + 5, by, cw - 10, 6, "F")
-            pdf.set_font("Courier", "B", 7)
+            pdf.set_font(MONO, "B", 7)
             pdf.set_text_color(*GH_ERR)
             pdf.set_xy(cx + 8, by + 1)
             pdf.cell(20, 4, code)
-            pdf.set_font("Helvetica", "", 6.5)
+            pdf.set_font(SANS, "", 6.5)
             pdf.set_text_color(*SLATE_700)
             pdf.cell(0, 4, label)
 
@@ -2435,7 +2521,7 @@ def _feature_schema(pdf, feat_num):
         # Import CSV · tableau preview
         pdf.set_fill_color(*GH_NAVY)
         pdf.rect(cx, cy, cw, 6, "F")
-        pdf.set_font("Helvetica", "B", 6.5)
+        pdf.set_font(SANS, "B", 6.5)
         pdf.set_text_color(255, 255, 255)
         pdf.set_xy(cx + 2, cy + 1)
         pdf.cell(35, 4, "IPP")
@@ -2456,16 +2542,16 @@ def _feature_schema(pdf, feat_num):
             if i % 2 == 0:
                 pdf.set_fill_color(*SLATE_50)
                 pdf.rect(cx, row_y, cw, 7, "F")
-            pdf.set_font("Courier", "", 6.5)
+            pdf.set_font(MONO, "", 6.5)
             pdf.set_text_color(*SLATE_700)
             pdf.set_xy(cx + 2, row_y + 1.5)
             pdf.cell(35, 4, r[0])
             pdf.cell(30, 4, r[1])
             pdf.cell(20, 4, r[2])
-            pdf.set_font("Helvetica", "B", 6.5)
+            pdf.set_font(SANS, "B", 6.5)
             pdf.set_text_color(*GH_TEAL)
             pdf.cell(30, 4, r[3])
-            pdf.set_font("Courier", "", 6.5)
+            pdf.set_font(MONO, "", 6.5)
             pdf.set_text_color(*SLATE_700)
             pdf.cell(25, 4, r[4])
 
@@ -2496,18 +2582,18 @@ def _feature_schema(pdf, feat_num):
             pdf.rect(rx + 2, ry, 22, 8, "F")
             pdf.set_draw_color(*SLATE_400)
             pdf.rect(rx + 2, ry, 22, 8)
-            pdf.set_font("Courier", "B", 7)
+            pdf.set_font(MONO, "B", 7)
             pdf.set_text_color(*GH_NAVY)
             pdf.set_xy(rx + 3, ry + 2)
             pdf.cell(20, 4, k, align="C")
-            pdf.set_font("Helvetica", "", 7)
+            pdf.set_font(SANS, "", 7)
             pdf.set_text_color(*SLATE_700)
             pdf.set_xy(rx + 26, ry + 2)
             pdf.cell(cw / cols - 30, 4, label)
 
     # Legende sous le schema
     pdf.set_xy(x0, y0 + h + 2)
-    pdf.set_font("Helvetica", "I", 7.5)
+    pdf.set_font(SANS, "I", 7.5)
     pdf.set_text_color(*SLATE_500)
     pdf.cell(0, 4, "Schema · representation vectorielle de la vue (rendu pixel-perfect dans l'application)",
              new_x="LMARGIN", new_y="NEXT", align="C")
@@ -2522,7 +2608,7 @@ def _section_banner(pdf, text, color=None):
     pdf.set_fill_color(*color)
     pdf.rect(x0, y0, 3, 7, "F")
     pdf.set_xy(x0 + 5, y0)
-    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_font(SANS, "B", 10)
     pdf.set_text_color(*GH_NAVY)
     pdf.cell(0, 7, text, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(1)
@@ -2537,14 +2623,14 @@ def render_feature(pdf, feat, logo_path, feat_num, total_feats, screenshot_path=
     pdf.add_page()
     _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
     # Titre de feature
-    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_font(SANS, "B", 9)
     pdf.set_text_color(*GH_TEAL)
     pdf.cell(0, 4, f"FEATURE {feat_num:02d} / {total_feats}  ·  {cat.upper()}",
              new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", "B", 18)
+    pdf.set_font(SANS, "B", 18)
     pdf.set_text_color(*GH_NAVY)
     pdf.cell(0, 9, ft, new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", "I", 10)
+    pdf.set_font(SANS, "I", 10)
     pdf.set_text_color(*SLATE_500)
     pdf.multi_cell(0, 5.5, feat["tagline"], new_x="LMARGIN", new_y="NEXT")
     pdf.set_draw_color(*GH_TEAL)
@@ -2573,7 +2659,7 @@ def render_feature(pdf, feat, logo_path, feat_num, total_feats, screenshot_path=
     # Workflow 3 etapes fusionnes
     _subheading(pdf, "Workflow en 3 etapes")
     for i, key in enumerate(("workflow_1", "workflow_2", "workflow_3"), start=1):
-        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_font(SANS, "B", 10)
         pdf.set_text_color(*GH_TEAL)
         pdf.cell(0, 5, f"Etape {i}", new_x="LMARGIN", new_y="NEXT")
         _body_text(pdf, feat[key])
@@ -2591,10 +2677,10 @@ def render_feature(pdf, feat, logo_path, feat_num, total_feats, screenshot_path=
 
     _subheading(pdf, "Questions frequentes")
     for q, a in feat["faq"][:3]:
-        pdf.set_font("Helvetica", "B", 9.5)
+        pdf.set_font(SANS, "B", 9.5)
         pdf.set_text_color(*SLATE_900)
         pdf.multi_cell(0, 5.5, "Q · " + q, new_x="LMARGIN", new_y="NEXT")
-        pdf.set_font("Helvetica", "", 9.5)
+        pdf.set_font(SANS, "", 9.5)
         pdf.set_text_color(*SLATE_700)
         pdf.multi_cell(0, 5.5, "R · " + a, new_x="LMARGIN", new_y="NEXT")
         pdf.ln(1)
@@ -2621,7 +2707,7 @@ def build_pdf(output_path: str) -> str:
     class Guide(FPDF):
         def footer(self):
             self.set_y(-15)
-            self.set_font("Helvetica", "I", 8)
+            self.set_font(SANS, "I", 8)
             self.set_text_color(*SLATE_400)
             self.cell(
                 0, 8,
@@ -2634,6 +2720,13 @@ def build_pdf(output_path: str) -> str:
     pdf.set_auto_page_break(auto=True, margin=22)
     pdf.alias_nb_pages()
 
+    # Polices Unicode (accents, sigles ATIH/ARS, signes typographiques)
+    unicode_ok = _register_fonts(pdf)
+    if not unicode_ok:  # pragma: no cover
+        print("[WARN] Police TTF Unicode introuvable · accents desactives. "
+              "Installer DejaVu (Linux · apt install fonts-dejavu) ou copier "
+              "les TTF dans tools/fonts/ pour reactiver.", file=sys.stderr)
+
     total_feats = len(FEATURES)
 
     # ══════ PAGE DE GARDE ══════
@@ -2644,10 +2737,10 @@ def build_pdf(output_path: str) -> str:
         except Exception:
             pass  # pragma: no cover
     pdf.set_y(95)
-    pdf.set_font("Helvetica", "B", 32)
+    pdf.set_font(SANS, "B", 32)
     pdf.set_text_color(*GH_NAVY)
     pdf.cell(0, 14, "SOVEREIGN OS DIM", new_x="LMARGIN", new_y="NEXT", align="C")
-    pdf.set_font("Helvetica", "", 18)
+    pdf.set_font(SANS, "", 18)
     pdf.set_text_color(*SLATE_700)
     pdf.cell(0, 10, "Guide complet d'utilisation", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(8)
@@ -2655,21 +2748,21 @@ def build_pdf(output_path: str) -> str:
     pdf.set_line_width(1.0)
     pdf.line(60, pdf.get_y(), 150, pdf.get_y())
     pdf.ln(8)
-    pdf.set_font("Helvetica", "", 12)
+    pdf.set_font(SANS, "", 12)
     pdf.set_text_color(*SLATE_500)
     pdf.cell(0, 7, f"Version 35.0  ·  {total_feats} fonctionnalites  ·  guide compact",
              new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.cell(0, 7, "Station DIM GHT Sud Paris",
              new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(25)
-    pdf.set_font("Helvetica", "I", 10)
+    pdf.set_font(SANS, "I", 10)
     pdf.set_text_color(*SLATE_400)
     pdf.cell(0, 5, f"Genere le {date.today().strftime('%d / %m / %Y')}",
              new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.cell(0, 5, "Adam Beloucif  ·  adam.beloucif@psysudparis.fr",
              new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(15)
-    pdf.set_font("Helvetica", "", 9)
+    pdf.set_font(SANS, "", 9)
     pdf.set_text_color(*SLATE_500)
     pdf.multi_cell(
         0, 5,
@@ -2683,23 +2776,23 @@ def build_pdf(output_path: str) -> str:
 
     # ══════ SOMMAIRE ══════
     pdf.add_page()
-    pdf.set_font("Helvetica", "B", 22)
+    pdf.set_font(SANS, "B", 22)
     pdf.set_text_color(*GH_NAVY)
     pdf.cell(0, 12, "Sommaire", new_x="LMARGIN", new_y="NEXT")
     pdf.set_draw_color(*GH_TEAL)
     pdf.set_line_width(0.6)
     pdf.line(pdf.get_x(), pdf.get_y(), pdf.get_x() + 30, pdf.get_y())
     pdf.ln(8)
-    pdf.set_font("Helvetica", "", 11)
+    pdf.set_font(SANS, "", 11)
     pdf.set_text_color(*SLATE_700)
     for i, feat in enumerate(FEATURES, start=1):
-        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_font(SANS, "B", 10)
         pdf.set_text_color(*GH_TEAL)
         pdf.cell(14, 7, f"{i:>2}.", new_x="RIGHT", new_y="TOP")
-        pdf.set_font("Helvetica", "B", 11)
+        pdf.set_font(SANS, "B", 11)
         pdf.set_text_color(*GH_NAVY)
         pdf.cell(0, 7, feat["title"], new_x="LMARGIN", new_y="NEXT")
-        pdf.set_font("Helvetica", "I", 9)
+        pdf.set_font(SANS, "I", 9)
         pdf.set_text_color(*SLATE_500)
         pdf.set_x(pdf.l_margin + 14)
         pdf.cell(0, 5, feat["tagline"], new_x="LMARGIN", new_y="NEXT")
