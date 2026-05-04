@@ -36,15 +36,24 @@
         }
     </script>
 
+    <link rel="stylesheet" href="css/design-tokens.css">
     <link rel="stylesheet" href="css/style.css">
 
     <style>
+        /* Reset typographique de base · le reste vit dans design-tokens.css */
         body {
-            background-color: #F8FAFC;
-            color: #0F172A;
+            background-color: var(--slate-50);
+            color: var(--slate-900);
             overflow: hidden;
-            font-size: 13.5px;
-            letter-spacing: -0.01em;
+            font-family: var(--font-sans);
+            font-size: var(--text-body);
+            letter-spacing: -0.005em;
+            font-feature-settings: "ss01", "cv11";
+        }
+
+        .dark body {
+            background-color: var(--slate-900);
+            color: var(--slate-100);
         }
     </style>
 </head>
@@ -52,174 +61,176 @@
 <body
     class="flex h-screen w-screen font-sans select-none overflow-hidden bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-500">
 
-    <!-- SYSTÈME DE BOOT -->
+    <!-- BOOT SCREEN · épuré, identité Sovereign OS DIM unifiée -->
     <div id="boot-overlay"
-        class="fixed inset-0 z-[9999] bg-gh-terminal flex flex-col items-center justify-center text-white transition-all duration-1000">
-        <div
-            class="text-center w-full max-w-2xl px-8 py-10 relative z-10 animate-fade-in flex flex-col items-center justify-center transform scale-75 sm:scale-90 md:scale-100 origin-center transition-transform">
-            <div id="boot-logo-box" class="relative inline-block mb-10">
-                <div
-                    class="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 bg-white rounded-[3rem] sm:rounded-[4rem] md:rounded-[5rem] flex items-center justify-center shadow-4xl rotate-3 overflow-hidden border-4 border-gh-teal/20">
-                    <i data-lucide="shield-check" class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-gh-navy"></i>
+        class="fixed inset-0 z-[9999] bg-gh-terminal flex flex-col items-center justify-center text-white transition-all duration-700">
+        <div class="text-center w-full max-w-xl px-8 relative z-10 animate-fade-in flex flex-col items-center">
+            <div id="boot-logo-box" class="relative inline-block mb-8">
+                <div class="w-28 h-28 bg-white rounded-3xl flex items-center justify-center shadow-2xl overflow-hidden border border-white/10">
+                    <i data-lucide="shield-check" class="w-14 h-14 text-gh-navy"></i>
                     <div class="scanner-bar"></div>
                 </div>
-                <div
-                    class="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 w-12 h-12 sm:w-16 sm:h-16 bg-gh-success rounded-full border-4 sm:border-8 border-gh-terminal flex items-center justify-center shadow-2xl animate-bounce">
-                    <i data-lucide="zap" class="w-6 h-6 sm:w-8 sm:h-8 text-white"></i>
+                <div class="absolute -bottom-2 -right-2 w-9 h-9 bg-gh-success rounded-full border-4 border-gh-terminal flex items-center justify-center shadow-lg">
+                    <i data-lucide="zap" class="w-4 h-4 text-white"></i>
                 </div>
             </div>
-            <h1 class="text-6xl sm:text-7xl md:text-8xl font-black tracking-tighter uppercase mb-4 leading-none italic">
-                SENTINEL</h1>
-            <p
-                class="text-blue-300 font-mono text-[9px] sm:text-[10px] md:text-[12px] tracking-[0.3em] sm:tracking-[0.6em] opacity-60 uppercase mb-12 sm:mb-20 italic">
-                Enterprise Sovereign Station - GHT Sud Paris</p>
 
-            <div class="w-full h-1 sm:h-2 bg-white/5 rounded-full overflow-hidden mb-8 sm:mb-12 shadow-inner">
-                <div class="h-full bg-gh-teal w-0 shadow-[0_0_40px_#10B981]" id="boot-progress-bar"></div>
+            <p class="eyebrow text-gh-teal/80 mb-3">Station DIM · GHT Sud Paris</p>
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-2 leading-tight">
+                Sovereign OS DIM
+            </h1>
+            <p class="text-blue-200/60 text-sm font-medium mb-12 max-w-sm">
+                Traitement local des fichiers ATIH · 100&nbsp;% offline · RGPD-safe
+            </p>
+
+            <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden mb-6">
+                <div class="h-full bg-gh-teal w-0 shadow-[0_0_30px_#10B981]" id="boot-progress-bar"></div>
             </div>
 
             <div id="boot-status-text"
-                class="font-mono text-[8px] sm:text-[10px] text-blue-200/50 uppercase tracking-[0.3em] sm:tracking-[0.5em] h-8 italic">
-                Synchronisation du
-                moteur de réconciliation MPI...</div>
+                class="font-mono text-[10px] text-blue-200/50 uppercase tracking-[0.25em] h-6">
+                Synchronisation du moteur de réconciliation MPI&nbsp;…
+            </div>
 
             <button id="btn-ignite"
-                class="hidden w-full py-6 sm:py-8 bg-gh-teal text-white rounded-[2rem] sm:rounded-[3rem] font-black uppercase text-xs sm:text-sm tracking-[0.2em] sm:tracking-[0.3em] shadow-4xl hover:bg-teal-600 transition-all active:scale-95 mt-6 sm:mt-10">Accéder
-                au Hub de Production</button>
+                class="hidden w-full py-4 mt-8 bg-gh-teal text-white rounded-xl font-bold uppercase text-sm tracking-wider shadow-lg hover:bg-teal-600 transition-all active:scale-[0.98]">
+                Accéder au poste DIM
+            </button>
         </div>
     </div>
 
     <!-- UI ROOT -->
     <div id="app-root" class="hidden flex h-full w-full opacity-0 transition-opacity duration-1000 relative z-10">
 
-        <!-- SIDEBAR -->
-        <aside
-            class="w-80 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50 shadow-2xl no-print transition-colors duration-500">
-            <div class="p-10 border-b border-slate-100 dark:border-slate-800 flex items-center gap-6">
-                <div
-                    class="w-16 shrink-0 shadow-2xl bg-gh-navy rounded-3xl p-4 text-white transform hover:rotate-12 transition-transform shadow-gh-navy/30">
+        <!-- SIDEBAR · navigation principale, identité Sovereign OS DIM -->
+        <aside class="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50 shadow-md no-print transition-colors duration-300">
+            <!-- Brand -->
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                <div class="w-12 h-12 shrink-0 bg-gh-navy rounded-xl p-3 text-white shadow-md">
                     <i data-lucide="fingerprint" class="w-full h-full"></i>
                 </div>
-                <div class="leading-none">
-                    <p
-                        class="font-black text-gh-navy dark:text-blue-400 text-2xl tracking-tighter uppercase italic leading-none">
-                        SENTINEL
+                <div>
+                    <p class="font-extrabold text-gh-navy dark:text-blue-400 text-lg tracking-tight leading-tight">
+                        Sovereign OS DIM
                     </p>
-                    <p class="text-[10px] font-bold text-gh-teal uppercase tracking-widest mt-2 leading-none italic">
-                        Sovereign OS DIM</p>
+                    <p class="text-[11px] font-semibold text-gh-teal uppercase tracking-wider mt-0.5">
+                        GHT Sud Paris
+                    </p>
                 </div>
             </div>
 
-            <nav class="flex-1 py-12 space-y-2 overflow-y-auto custom-scroll leading-none">
-                <div
-                    class="px-10 py-2 text-[10px] font-black text-slate-300 dark:text-slate-500 uppercase tracking-[0.4em] mb-6">
+            <!-- Navigation -->
+            <nav class="flex-1 py-6 space-y-1 overflow-y-auto custom-scroll">
+                <div class="px-6 pt-2 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
                     Contrôle
                 </div>
                 <button id="nav-dashboard"
-                    class="nav-item w-full text-left px-10 py-6 flex items-center gap-6 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="layout-grid" class="w-6 h-6 text-gh-navy dark:text-blue-400"></i> <span
-                        class="font-black tracking-tighter text-lg leading-none uppercase italic">Dashboard</span>
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="layout-grid" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <span class="font-semibold text-sm">Dashboard</span>
                 </button>
 
-                <div
-                    class="px-10 py-2 text-[10px] font-black text-slate-300 dark:text-slate-500 uppercase tracking-[0.4em] mt-12 mb-6 italic leading-none">
-                    Gestion Batch</div>
+                <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
+                    Gestion Batch
+                </div>
                 <button id="nav-modo"
-                    class="nav-item w-full text-left px-10 py-6 flex items-center gap-6 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="folders" class="w-6 h-6 text-gh-navy dark:text-blue-400"></i> <span
-                        class="font-black tracking-tighter text-lg leading-none uppercase italic">Modo Files</span>
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="folders" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <span class="font-semibold text-sm">Modo Files</span>
                     <span id="badge-files-total"
-                        class="hidden absolute right-10 bg-gh-navy text-white text-[10px] px-3 py-1 rounded-full font-black shadow-xl">0</span>
+                        class="hidden absolute right-6 bg-gh-navy text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
                 </button>
                 <button id="nav-idv"
-                    class="nav-item w-full text-left px-10 py-6 flex items-center gap-6 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="users-2" class="w-6 h-6 text-gh-warning"></i> <span
-                        class="font-black tracking-tighter text-lg leading-none uppercase italic">Identitovigilance</span>
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="users-2" class="w-5 h-5 text-gh-warning"></i>
+                    <span class="font-semibold text-sm">Identitovigilance</span>
                     <span id="badge-idv-conflict"
-                        class="hidden absolute right-10 bg-gh-error text-white text-[9px] px-3 py-1 rounded-full font-black shadow-xl animate-pulse">0</span>
+                        class="hidden absolute right-6 bg-gh-error text-white text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">0</span>
                 </button>
 
-                <div
-                    class="px-10 py-2 text-[10px] font-black text-slate-300 dark:text-slate-500 uppercase tracking-[0.4em] mt-12 mb-6 italic leading-none">
-                    Exports Expert</div>
+                <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
+                    Exports
+                </div>
                 <button id="nav-pilot"
-                    class="nav-item w-full text-left px-10 py-6 flex items-center gap-6 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="file-down" class="w-6 h-6 text-gh-teal"></i> <span
-                        class="font-black tracking-tighter text-lg leading-none uppercase italic">PMSI Pilot CSV</span>
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="file-down" class="w-5 h-5 text-gh-teal"></i>
+                    <span class="font-semibold text-sm">PMSI Pilot CSV</span>
                 </button>
                 <button id="nav-csv"
-                    class="nav-item w-full text-left px-10 py-6 flex items-center gap-6 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="table-2" class="w-6 h-6 text-gh-success"></i> <span
-                        class="font-black tracking-tighter text-lg leading-none uppercase italic">Import CSV</span>
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="table-2" class="w-5 h-5 text-gh-success"></i>
+                    <span class="font-semibold text-sm">Import CSV</span>
                 </button>
                 <button id="nav-structure"
-                    class="nav-item w-full text-left px-10 py-6 flex items-center gap-6 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="git-branch" class="w-6 h-6 text-gh-navy dark:text-blue-400"></i> <span
-                        class="font-black tracking-tighter text-lg leading-none uppercase italic">Structure</span>
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="git-branch" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <span class="font-semibold text-sm">Structure</span>
                 </button>
 
-                <div
-                    class="px-10 py-2 text-[10px] font-black text-slate-300 dark:text-slate-500 uppercase tracking-[0.4em] mt-12 mb-6 italic leading-none">
-                    Aide</div>
+                <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
+                    Aide
+                </div>
                 <button id="nav-tuto"
-                    class="nav-item w-full text-left px-10 py-6 flex items-center gap-6 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="book-open" class="w-6 h-6 text-gh-navy dark:text-blue-400"></i> <span
-                        class="font-black tracking-tighter text-lg leading-none uppercase italic">Tutoriel</span>
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="book-open" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <span class="font-semibold text-sm">Tutoriel</span>
                 </button>
-
             </nav>
 
-            <div class="p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                <div
-                    class="flex items-center gap-6 bg-white dark:bg-slate-800 p-5 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-xl leading-none italic transition-colors duration-500">
-                    <div
-                        class="w-14 h-14 rounded-2xl bg-gh-navy text-white flex items-center justify-center font-black shadow-2xl rotate-3 leading-none">
-                        DIM</div>
-                    <div class="overflow-hidden leading-none">
-                        <p
-                            class="text-sm font-black text-gh-navy dark:text-white truncate uppercase leading-none italic">
+            <!-- Footer · profil opérateur -->
+            <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="w-10 h-10 rounded-lg bg-gh-navy text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                        DIM
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-bold text-gh-navy dark:text-white truncate">
                             Opérateur DIM
                         </p>
-                        <p
-                            class="text-[10px] font-bold text-gh-success uppercase tracking-widest mt-3 flex items-center gap-2 italic leading-none">
-                            <span class="w-1.5 h-1.5 rounded-full bg-gh-success animate-ping"></span> Live Station
+                        <p class="text-[10px] font-semibold text-gh-success uppercase tracking-wider mt-0.5 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-gh-success animate-ping"></span>
+                            Station active
                         </p>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <!-- MAIN VIEW AREA -->
-        <main
-            class="flex-1 flex flex-col min-w-0 bg-[#F1F5F9]/60 dark:bg-[#0B1120] relative overflow-hidden transition-colors duration-500">
-            <header
-                class="h-32 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-16 shrink-0 no-print leading-none transition-colors duration-500">
-                <div class="leading-none">
+        <!-- MAIN · zone principale d'affichage des vues -->
+        <main class="flex-1 flex flex-col min-w-0 bg-slate-100/60 dark:bg-[#0B1120] relative overflow-hidden transition-colors duration-300">
+            <!-- Header · titre de vue + horloge + actions -->
+            <header class="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0 no-print transition-colors duration-300">
+                <div>
                     <h2 id="view-title-main"
-                        class="text-5xl font-black text-gh-navy dark:text-white tracking-tighter uppercase leading-none italic mb-2 transition-colors duration-500">
-                        Chargement...</h2>
+                        class="text-2xl font-extrabold text-gh-navy dark:text-white tracking-tight leading-tight transition-colors duration-300">
+                        Chargement&nbsp;…
+                    </h2>
                     <p id="view-subtitle-main"
-                        class="text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase mt-4 tracking-[0.6em] leading-none opacity-80 italic">
-                        GHT Sud Paris Station</p>
+                        class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase mt-1 tracking-[0.18em]">
+                        Station DIM · GHT Sud Paris
+                    </p>
                 </div>
-                <div class="flex items-center gap-12 leading-none">
-                    <div class="flex flex-col items-end leading-none">
+                <div class="flex items-center gap-6">
+                    <div class="flex flex-col items-end">
                         <span id="os-clock"
-                            class="text-4xl font-black text-gh-navy dark:text-blue-400 font-mono tracking-tighter italic leading-none transition-colors duration-500">00:00:00</span>
-                        <span
-                            class="text-[11px] font-bold text-gh-teal uppercase tracking-widest mt-4 leading-none italic tracking-[0.3em] font-black leading-none">Matrix
-                            Node Active</span>
+                            class="text-2xl font-bold text-gh-navy dark:text-blue-400 font-mono tracking-tight transition-colors duration-300">00:00:00</span>
+                        <span class="text-[10px] font-semibold text-gh-teal uppercase tracking-[0.2em] mt-0.5">
+                            Connecté
+                        </span>
                     </div>
                     <button id="btn-theme-toggle"
-                        class="p-6 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[2.5rem] text-slate-400 hover:text-gh-navy dark:hover:text-blue-400 transition-all transform active:scale-95 leading-none shadow-sm"><i
-                            id="icon-theme" data-lucide="moon" class="w-8 h-8"></i></button>
+                        class="p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 hover:text-gh-navy dark:hover:text-blue-400 transition active:scale-95">
+                        <i id="icon-theme" data-lucide="moon" class="w-5 h-5"></i>
+                    </button>
                     <button id="btn-reset"
-                        class="p-6 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[2.5rem] text-slate-300 dark:text-slate-500 hover:text-gh-error dark:hover:text-gh-error transition-all transform active:scale-95 leading-none shadow-sm"><i
-                            data-lucide="power" class="w-8 h-8"></i></button>
+                        class="p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 hover:text-gh-error transition active:scale-95">
+                        <i data-lucide="power" class="w-5 h-5"></i>
+                    </button>
                 </div>
             </header>
 
-            <div id="os-viewport" class="flex-1 overflow-auto p-16 custom-scroll relative bg-slate-50/50">
+            <!-- Viewport · vues injectées par app.js -->
+            <div id="os-viewport" class="flex-1 overflow-auto p-8 custom-scroll relative bg-slate-50/50 dark:bg-transparent">
                 <!-- Vues injectées dynamiquement par app.js -->
             </div>
         </main>
