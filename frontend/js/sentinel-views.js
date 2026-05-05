@@ -63,14 +63,41 @@
   //                 MÉTIER DIM
   // ════════════════════════════════════════════════════════════════════════
 
-  function renderArs() {
-    const lots = [
-      { lot: "RPS_2025T3.txt",      score: 92, risk: "low",    issues: 0 },
-      { lot: "EDGAR_2025T3.txt",    score: 78, risk: "medium", issues: 4 },
-      { lot: "RAA_2025T3.txt",      score: 64, risk: "medium", issues: 7 },
-      { lot: "VID-HOSP_2025T3.txt", score: 41, risk: "high",   issues: 12 },
-      { lot: "RPSA_2025T3.txt",     score: 88, risk: "low",    issues: 1 },
-    ];
+  async function renderArs() {
+    // Liste des lots à scorer · 5 lots ATIH typiques
+    const lotsBase = ["RPS_2025T3.txt", "EDGAR_2025T3.txt", "RAA_2025T3.txt",
+                      "VID-HOSP_2025T3.txt", "RPSA_2025T3.txt"];
+    const FASTAPI = window.SOVEREIGN_API_BASE || "http://127.0.0.1:8766";
+    const apiToken = window.SOVEREIGN_API_TOKEN;
+    const lots = [];
+    let live = false;
+    for (const ln of lotsBase) {
+      try {
+        const r = await fetch(FASTAPI + "/api/v2/ars/score-lot", {
+          method: "POST",
+          headers: Object.assign({ "Content-Type": "application/json" },
+            apiToken ? { Authorization: "Bearer " + apiToken } : {}),
+          body: JSON.stringify({
+            lot_name: ln,
+            sample_lines: [],  // sample vide → fallback ML neutral score
+          }),
+        });
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        const j = await r.json();
+        lots.push({ lot: ln, score: j.score, risk: j.risk, issues: j.issues_count });
+        live = true;
+      } catch (e) {
+        // Fallback mock par lot
+        const fallback = {
+          "RPS_2025T3.txt":      { score: 92, risk: "low",    issues: 0 },
+          "EDGAR_2025T3.txt":    { score: 78, risk: "medium", issues: 4 },
+          "RAA_2025T3.txt":      { score: 64, risk: "medium", issues: 7 },
+          "VID-HOSP_2025T3.txt": { score: 41, risk: "high",   issues: 12 },
+          "RPSA_2025T3.txt":     { score: 88, risk: "low",    issues: 1 },
+        }[ln];
+        lots.push(Object.assign({ lot: ln }, fallback));
+      }
+    }
     const colorOf = r => r === "high" ? ERROR : r === "medium" ? WARNING : SUCCESS;
     const labelOf = r => r === "high" ? "Risque élevé" : r === "medium" ? "À surveiller" : "Faible risque";
 

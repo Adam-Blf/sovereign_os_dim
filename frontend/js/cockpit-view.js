@@ -82,26 +82,54 @@
       </div>`;
   }
 
+  /** Tente de récupérer les vraies données depuis FastAPI v2, fallback mock. */
+  async function fetchData() {
+    const FASTAPI_BASE = window.SOVEREIGN_API_BASE || "http://127.0.0.1:8766";
+    try {
+      const r = await fetch(FASTAPI_BASE + "/api/v2/cockpit", {
+        headers: window.SOVEREIGN_API_TOKEN
+          ? { Authorization: "Bearer " + window.SOVEREIGN_API_TOKEN } : {},
+      });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return { live: true, data: await r.json() };
+    } catch (e) {
+      // Fallback mock · si la FastAPI n'est pas démarrée, l'écran reste utile
+      return { live: false, data: null };
+    }
+  }
+
   /** Rend la vue Cockpit chef DIM dans le viewport principal. */
-  function render() {
+  async function render() {
     const vp = document.getElementById("os-viewport");
     if (!vp) return;
 
     const today = new Date();
     const monthLabel = today.toLocaleString("fr-FR", { month: "long", year: "numeric" });
 
-    // Donnees mockees · a remplacer par un appel /api/cockpit-stats
-    const months = [
-      { v: 68, l: "D24" }, { v: 72, l: "J" }, { v: 75, l: "F" }, { v: 71, l: "M" },
-      { v: 78, l: "A" },   { v: 82, l: "M" }, { v: 79, l: "J" }, { v: 85, l: "J" },
-      { v: 88, l: "A" },   { v: 91, l: "S" }, { v: 87, l: "O" }, { v: 94, l: "N" },
-    ];
-
-    const alerts = [
-      { sec: "Secteur 94G16", val: "+ 4,2 %", color: WARNING, lib: "Hospitalisations psy" },
-      { sec: "Secteur 94I02", val: "− 2,8 %", color: ERROR,   lib: "File active pédopsy" },
-      { sec: "Secteur 94G09", val: "+ 2,3 %", color: WARNING, lib: "Actes ambulatoires" },
-    ];
+    const { live, data } = await fetchData();
+    const labels = ["D24", "J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N"];
+    let months, alerts;
+    if (live && data) {
+      months = data.file_active_history.map((v, i) => ({ v, l: labels[i] }));
+      alerts = data.sector_alerts.map(a => ({
+        sec: "Secteur " + a.sector,
+        val: (a.delta_pct >= 0 ? "+ " : "− ") + Math.abs(a.delta_pct).toFixed(1) + " %",
+        color: Math.abs(a.delta_pct) > 3 ? (a.delta_pct < 0 ? ERROR : WARNING)
+                                          : WARNING,
+        lib: a.label,
+      }));
+    } else {
+      months = [
+        { v: 68, l: "D24" }, { v: 72, l: "J" }, { v: 75, l: "F" }, { v: 71, l: "M" },
+        { v: 78, l: "A" },   { v: 82, l: "M" }, { v: 79, l: "J" }, { v: 85, l: "J" },
+        { v: 88, l: "A" },   { v: 91, l: "S" }, { v: 87, l: "O" }, { v: 94, l: "N" },
+      ];
+      alerts = [
+        { sec: "Secteur 94G16", val: "+ 4,2 %", color: WARNING, lib: "Hospitalisations psy" },
+        { sec: "Secteur 94I02", val: "− 2,8 %", color: ERROR,   lib: "File active pédopsy" },
+        { sec: "Secteur 94G09", val: "+ 2,3 %", color: WARNING, lib: "Actes ambulatoires" },
+      ];
+    }
 
     vp.innerHTML = `
       <div style="max-width:1440px;margin:0 auto;">
@@ -119,14 +147,25 @@
               MAJ il y a 8 min · auto-publication M+5
             </div>
           </div>
-          <button id="btn-cockpit-export"
-                  style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;
-                         background:${NAVY};color:white;font-weight:700;font-size:13px;
-                         border-radius:12px;border:none;cursor:pointer;
-                         box-shadow:0 1px 2px 0 rgba(0,0,145,.06);">
-            <i data-lucide="download" style="width:16px;height:16px;"></i>
-            Export PDF mensuel
-          </button>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+                border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.14em;
+                text-transform:uppercase;
+                background:${live ? "#ECFDF5" : slate[100]};
+                color:${live ? SUCCESS : slate[500]};">
+              <span style="width:6px;height:6px;border-radius:999px;
+                  background:${live ? SUCCESS : slate[400]};"></span>
+              ${live ? "API LIVE" : "DONNÉES MOCK"}
+            </span>
+            <button id="btn-cockpit-export"
+                    style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;
+                           background:${NAVY};color:white;font-weight:700;font-size:13px;
+                           border-radius:12px;border:none;cursor:pointer;
+                           box-shadow:0 1px 2px 0 rgba(0,0,145,.06);">
+              <i data-lucide="download" style="width:16px;height:16px;"></i>
+              Export PDF mensuel
+            </button>
+          </div>
         </div>
 
         <!-- 4 KPI cards -->

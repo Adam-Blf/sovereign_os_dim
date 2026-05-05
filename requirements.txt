@@ -32,6 +32,15 @@ openpyxl>=3.1.0
 # fpdf2 (fork moderne de PyFPDF) — utilisé par tools/generate_manual.py
 fpdf2>=2.8.0
 
+# ─── FastAPI v2 (V37+, port 8766) ─────────────────────────────────────────
+# API moderne typée Pydantic, doc Swagger auto sur /docs.
+# Cohabite avec le bridge Flask historique sur port 8765.
+# Lancement · uvicorn backend.fastapi_app:app --port 8766 --reload
+fastapi>=0.115.0
+uvicorn>=0.32.0
+pydantic>=2.9.0
+httpx>=0.27.0  # client async + tests TestClient
+
 # ─── Module ML (XGBoost stack, V36+) ──────────────────────────────────────
 # Trois modèles entraînés sur dataset synthétique ATIH 2000-2026 ·
 # format_detector (multi-classe), collision_risk + ddn_validity (binaires).
