@@ -35,6 +35,27 @@ import sys
 import threading
 import time
 
+# ── Force UTF-8 sur stdout/stderr · console Windows par défaut = cp1252 et
+#    casse sur les caractères Unicode (box-drawing, accents, médiopoint).
+#    On reconfigure AVANT le premier print pour ne pas exploser.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):  # pragma: no cover · stream null sous .exe
+        pass
+
+
+def _safe_print(*args, **kwargs):
+    """Print insensible à l'encodage cp1252 et au stdout=None (PyInstaller --windowed)."""
+    try:
+        print(*args, **kwargs)
+    except (UnicodeEncodeError, OSError, AttributeError):
+        try:
+            msg = " ".join(str(a) for a in args)
+            sys.stdout.write(msg.encode("ascii", "replace").decode("ascii") + "\n")
+        except Exception:
+            pass  # mode --windowed avec stdout=None · on abandonne silencieusement
+
 
 def _check_dependencies():
     """
@@ -61,12 +82,15 @@ def _check_dependencies():
     # mais on n'en fait pas un blocage · l'app marche en mode mock sinon.
 
     if errors:
-        print("╔══════════════════════════════════════════════════════════╗")
-        print("║   [ERR] DÉPENDANCES MANQUANTES · Sovereign OS DIM          ║")
-        print("╚══════════════════════════════════════════════════════════╝\n")
+        _safe_print("=" * 60)
+        _safe_print("  [ERR] DEPENDANCES MANQUANTES - Sovereign OS DIM")
+        _safe_print("=" * 60)
+        _safe_print("")
         for e in errors:
-            print(f"  · {e}")
-        print("\n  Astuce · pip install -r requirements.txt\n")
+            _safe_print(f"  - {e}")
+        _safe_print("")
+        _safe_print("  Astuce: pip install -r requirements.txt")
+        _safe_print("")
         sys.exit(1)
 
 
@@ -96,7 +120,7 @@ def _is_port_free(port: int, host: str = "127.0.0.1") -> bool:
 def _start_flask_bridge(port: int = 8765) -> threading.Thread | None:
     """Démarre le bridge Flask en thread daemon · serveur silencieux en prod."""
     if not _is_port_free(port):
-        print(f"  · Bridge Flask · port {port} déjà occupé, skip")
+        _safe_print(f"  - Bridge Flask: port {port} deja occupe, skip")
         return None
 
     def _run():
@@ -108,18 +132,18 @@ def _start_flask_bridge(port: int = 8765) -> threading.Thread | None:
             logging.getLogger("werkzeug").setLevel(logging.WARNING)
             app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
         except Exception as e:  # pragma: no cover
-            print(f"  [ERR] Bridge Flask · {e}")
+            _safe_print(f"  [ERR] Bridge Flask: {e}")
 
     t = threading.Thread(target=_run, daemon=True, name="sovereign-flask-bridge")
     t.start()
-    print(f"  [OK] Bridge Flask · http://127.0.0.1:{port}")
+    _safe_print(f"  [OK] Bridge Flask: http://127.0.0.1:{port}")
     return t
 
 
 def _start_fastapi_v2(port: int = 8766) -> threading.Thread | None:
     """Démarre la FastAPI v2 (uvicorn) en thread daemon."""
     if not _is_port_free(port):
-        print(f"  · FastAPI v2 · port {port} déjà occupé, skip")
+        _safe_print(f"  - FastAPI v2: port {port} deja occupe, skip")
         return None
 
     def _run():
@@ -133,14 +157,13 @@ def _start_fastapi_v2(port: int = 8766) -> threading.Thread | None:
             server = uvicorn.Server(config)
             server.run()
         except ImportError as e:
-            print(f"  · FastAPI v2 · dépendance manquante ({e}) · "
-                  "skip (mode mock dans l'UI)")
+            _safe_print(f"  - FastAPI v2: dependance manquante ({e}), skip (mode mock UI)")
         except Exception as e:  # pragma: no cover
-            print(f"  [ERR] FastAPI v2 · {e}")
+            _safe_print(f"  [ERR] FastAPI v2: {e}")
 
     t = threading.Thread(target=_run, daemon=True, name="sovereign-fastapi-v2")
     t.start()
-    print(f"  [OK] FastAPI v2 · http://127.0.0.1:{port}/docs")
+    _safe_print(f"  [OK] FastAPI v2: http://127.0.0.1:{port}/docs")
     return t
 
 
@@ -170,18 +193,20 @@ def _wait_for_servers(timeout: float = 6.0) -> None:
 def main() -> None:
     _check_dependencies()
 
-    print("╔══════════════════════════════════════════════════════════╗")
-    print("║   Sovereign OS DIM V37.0 · GHT Psy Sud Paris             ║")
-    print("╚══════════════════════════════════════════════════════════╝")
-    print("\n[1/3] Démarrage des serveurs API ·")
+    _safe_print("=" * 60)
+    _safe_print("  Sovereign OS DIM V37.0 - GHT Psy Sud Paris")
+    _safe_print("=" * 60)
+    _safe_print("")
+    _safe_print("[1/3] Demarrage des serveurs API:")
     flask_thread = _start_flask_bridge(port=8765)
     fastapi_thread = _start_fastapi_v2(port=8766)
 
-    print("\n[2/3] Attente des serveurs (max 6 s) ·")
+    _safe_print("")
+    _safe_print("[2/3] Attente des serveurs (max 6 s):")
     _wait_for_servers(timeout=6.0)
-    print("       ->prêt")
-
-    print("\n[3/3] Lancement de la fenêtre pywebview ·")
+    _safe_print("       -> pret")
+    _safe_print("")
+    _safe_print("[3/3] Lancement de la fenetre pywebview:")
     import webview
     from backend.api import Api
 
@@ -189,11 +214,12 @@ def main() -> None:
     frontend = get_frontend_path()
     index_html = os.path.join(frontend, "index.html")
     if not os.path.isfile(index_html):
-        print(f"\n  [ERR] ERREUR · {index_html} introuvable.")
+        _safe_print("")
+        _safe_print(f"  [ERR] {index_html} introuvable.")
         sys.exit(1)
 
     webview.create_window(
-        title="Sovereign OS V37.0 | Station DIM · GHT Psy Sud Paris",
+        title="Sovereign OS V37.0 - Station DIM - GHT Psy Sud Paris",
         url=index_html,
         js_api=api,
         width=1440,
@@ -207,7 +233,8 @@ def main() -> None:
     # webview.start() bloque jusqu'à fermeture · les threads daemon
     # s'arrêtent automatiquement à ce moment-là.
     webview.start(debug=False)
-    print("\n  ->Fenêtre fermée · arrêt des serveurs (threads daemon).")
+    _safe_print("")
+    _safe_print("  -> Fenetre fermee, arret des serveurs (threads daemon).")
 
 
 if __name__ == "__main__":
