@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from functools import lru_cache
 from typing import Any
 
@@ -30,7 +31,28 @@ import numpy as np
 
 from .synthetic import _line_features, _mpi_features  # noqa · partage features
 
-MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
+
+def _resolve_models_dir() -> str:
+    """
+    Trouve le dossier des modèles ML, en mode dev ou bundle PyInstaller.
+    PyInstaller dépose les --add-data dans sys._MEIPASS au runtime.
+    """
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidate = os.path.join(here, "models")
+    if os.path.isdir(candidate):
+        return candidate
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        for c in (
+            os.path.join(meipass, "backend", "ml", "models"),
+            os.path.join(meipass, "models"),
+        ):
+            if os.path.isdir(c):
+                return c
+    return candidate  # fallback · le caller verra l'absence proprement
+
+
+MODELS_DIR = _resolve_models_dir()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
