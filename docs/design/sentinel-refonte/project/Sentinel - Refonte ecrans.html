@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<title>Sentinel · Refonte écrans</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  html, body { margin: 0; padding: 0; background: #f1f5f9; font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  button { font-family: inherit; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="screens/shared.jsx"></script>
+<script type="text/babel" src="screens/boot.jsx"></script>
+<script type="text/babel" src="screens/dashboard.jsx"></script>
+<script type="text/babel" src="screens/modo.jsx"></script>
+<script type="text/babel" src="screens/idv.jsx"></script>
+<script type="text/babel" src="screens/pilot.jsx"></script>
+<script type="text/babel" src="screens/other.jsx"></script>
+<script type="text/babel" src="screens/metier.jsx"></script>
+<script type="text/babel" src="screens/ml.jsx"></script>
+<script type="text/babel" src="screens/data.jsx"></script>
+<script type="text/babel" src="screens/ops.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const App = () => (
+    <DesignCanvas title="Sentinel · Refonte écrans" subtitle="Station DIM · GHT Sud Paris">
+
+      <DCSection id="entry" title="Entrée">
+        <DCArtboard id="boot" label="00 · Boot screen" width={1440} height={900}>
+          <ScreenBoot/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="control" title="Contrôle">
+        <DCArtboard id="dashboard" label="01 · Dashboard ops" width={1440} height={900}>
+          <ScreenDashboard/>
+        </DCArtboard>
+        <DCArtboard id="cockpit" label="02 · Cockpit chef DIM" width={1440} height={900}>
+          <ScreenCockpit/>
+        </DCArtboard>
+        <DCArtboard id="health" label="03 · Health monitor" width={1440} height={900}>
+          <ScreenHealth/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="metier" title="Métier DIM">
+        <DCArtboard id="ars" label="04 · Sentinel ARS · prédicteur DRUIDES" width={1440} height={900}>
+          <ScreenArsPredictor/>
+        </DCArtboard>
+        <DCArtboard id="cespa" label="05 · CeSPA / CATTG" width={1440} height={900}>
+          <ScreenCespa/>
+        </DCArtboard>
+        <DCArtboard id="diff" label="06 · Diff lots mensuels" width={1440} height={900}>
+          <ScreenDiff/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="ml" title="ML & IA local">
+        <DCArtboard id="cim" label="07 · CimSuggester · LLM Ollama" width={1440} height={900}>
+          <ScreenCimSuggester/>
+        </DCArtboard>
+        <DCArtboard id="lstm" label="08 · Prédicteur DMS · LSTM" width={1440} height={900}>
+          <ScreenLstm/>
+        </DCArtboard>
+        <DCArtboard id="cluster" label="09 · Clustering UMAP+HDBSCAN" width={1440} height={900}>
+          <ScreenClustering/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="data" title="Données & analytics">
+        <DCArtboard id="twin" label="10 · Hospital Twin · simulation" width={1440} height={900}>
+          <ScreenHospitalTwin/>
+        </DCArtboard>
+        <DCArtboard id="heatmap" label="11 · Heatmap géographique" width={1440} height={900}>
+          <ScreenHeatmap/>
+        </DCArtboard>
+        <DCArtboard id="pivot" label="12 · Tableaux croisés" width={1440} height={900}>
+          <ScreenPivot/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="batch" title="Gestion batch">
+        <DCArtboard id="modo" label="13 · Modo Files" width={1440} height={900}>
+          <ScreenModo/>
+        </DCArtboard>
+        <DCArtboard id="idv" label="14 · Identitovigilance" width={1440} height={900}>
+          <ScreenIdv/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="exports" title="Exports & données">
+        <DCArtboard id="pilot" label="15 · PMSI Pilot CSV" width={1440} height={900}>
+          <ScreenPilot/>
+        </DCArtboard>
+        <DCArtboard id="csv" label="16 · Import CSV" width={1440} height={900}>
+          <ScreenCsv/>
+        </DCArtboard>
+        <DCArtboard id="structure" label="17 · Structure" width={1440} height={900}>
+          <ScreenStructure/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="ops" title="Sécurité & opérations">
+        <DCArtboard id="rgpd" label="18 · RGPD command center" width={1440} height={900}>
+          <ScreenRgpd/>
+        </DCArtboard>
+        <DCArtboard id="audit" label="19 · Audit chain" width={1440} height={900}>
+          <ScreenAudit/>
+        </DCArtboard>
+        <DCArtboard id="workflow" label="20 · Workflows DIM" width={1440} height={900}>
+          <ScreenWorkflow/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="aide" title="Aide">
+        <DCArtboard id="tuto" label="21 · Tutoriel" width={1440} height={900}>
+          <ScreenTuto/>
+        </DCArtboard>
+      </DCSection>
+
+    </DesignCanvas>
+  );
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
