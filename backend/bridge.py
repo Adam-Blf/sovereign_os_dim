@@ -353,6 +353,8 @@ def create_app() -> Flask:
     def api_export():
         payload = request.get_json(silent=True) or {}
         output_dir = payload.get("output_dir")
+        if output_dir is not None and not isinstance(output_dir, str):
+            return jsonify(error="output_dir must be a string"), 400
         if not _current_files:
             return jsonify(error="Aucun fichier"), 400
         if not output_dir:
@@ -374,6 +376,8 @@ def create_app() -> Flask:
             return jsonify(error="path requis"), 400
         if os.path.splitext(filepath)[1].lower() not in _ATIH_EXTS:
             return jsonify(error="Extension non autorisée (.txt attendu)"), 400
+        if output_dir is not None and not isinstance(output_dir, str):
+            return jsonify(error="output_dir must be a string"), 400
         if not output_dir:
             if not _current_folders:
                 return jsonify(error="output_dir requis"), 400
