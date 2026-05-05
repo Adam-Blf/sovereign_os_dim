@@ -147,6 +147,7 @@
     // =========================================================================
     const VIEWS = {
         dashboard: { title: "Dashboard", sub: "Tableau de bord de production" },
+        cockpit: { title: "Cockpit chef DIM", sub: "Tableau de bord exécutif mensuel" },
         modo: { title: "Modo Files", sub: "Ingestion & traitement batch" },
         idv: { title: "Identitovigilance", sub: "Master Patient Index — Résolution des collisions" },
         pilot: { title: "PMSI Pilot CSV", sub: "Export des données réconciliées" },
@@ -179,6 +180,10 @@
         if (!vp) return;
         switch (view) {
             case "dashboard": renderDashboard(vp); break;
+            case "cockpit":
+                if (window.cockpitView) window.cockpitView.render();
+                else vp.innerHTML = "<p style='padding:40px;color:#64748B'>Cockpit module non chargé · vérifier l'inclusion de cockpit-view.js dans index.html</p>";
+                break;
             case "modo": renderModo(vp); break;
             case "idv": renderIdv(vp); break;
             case "pilot": renderPilot(vp); break;
@@ -2196,6 +2201,7 @@
                 case "5": e.preventDefault(); navigateTo("csv"); break;
                 case "6": e.preventDefault(); navigateTo("structure"); break;
                 case "7": e.preventDefault(); navigateTo("tuto"); break;
+                case "8": e.preventDefault(); navigateTo("cockpit"); break;
             }
         }
         // Escape closes modals
@@ -2214,7 +2220,7 @@
         if (_initialized) return;
         _initialized = true;
 
-        const navMap = { "nav-dashboard": "dashboard", "nav-modo": "modo", "nav-idv": "idv", "nav-pilot": "pilot", "nav-csv": "csv", "nav-structure": "structure", "nav-tuto": "tuto" };
+        const navMap = { "nav-dashboard": "dashboard", "nav-cockpit": "cockpit", "nav-modo": "modo", "nav-idv": "idv", "nav-pilot": "pilot", "nav-csv": "csv", "nav-structure": "structure", "nav-tuto": "tuto" };
         Object.entries(navMap).forEach(([id, v]) => {
             const el = $(id);
             if (el) el.addEventListener("click", () => navigateTo(v));
