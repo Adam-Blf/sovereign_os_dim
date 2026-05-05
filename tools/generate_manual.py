@@ -100,13 +100,19 @@ SECTIONS = [
                 "administrateur requis : l'executable contient Python et toutes "
                 "les dependances.",
             ),
-            ("h", "Poste developpeur ou code source"),
-            ("code", "python main.py"),
+            ("h", "Poste avec installation manuelle (DSI)"),
+            (
+                "p",
+                "Si l'executable portable n'est pas disponible, la DSI peut "
+                "lancer l'application depuis le code source. Contacter le "
+                "support pour la procedure d'installation complete.",
+            ),
             (
                 "p",
                 "La premiere execution derriere un proxy d'etablissement peut "
                 "declencher une alerte pare-feu : autoriser l'application en "
-                "reseau prive suffit (elle n'ecoute que sur 127.0.0.1).",
+                "reseau prive suffit. Elle ne communique qu'en local, "
+                "jamais avec internet.",
             ),
         ],
     ),
@@ -304,31 +310,32 @@ SECTIONS = [
         ],
     ),
     (
-        "Pour les administrateurs : bridge HTTP et PHP",
+        "Pour les administrateurs DSI : integration avec les systemes existants",
         [
             (
                 "p",
-                "Sovereign OS DIM peut aussi etre pilote depuis une "
-                "application PHP via un bridge HTTP. Cette section interesse "
-                "uniquement les equipes techniques de la DSI.",
+                "Sovereign OS DIM peut etre integre au systeme d'information "
+                "hospitalier existant (SIH) via un module de connexion "
+                "securise. Cette section concerne uniquement les equipes "
+                "techniques de la DSI - les TIM n'ont pas a s'en preoccuper.",
             ),
-            ("h", "Lancer le bridge"),
-            (
-                "code",
-                "SOVEREIGN_BRIDGE_TOKEN=secret python bridge.py --port 8765",
-            ),
-            ("h", "Cote PHP"),
-            (
-                "code",
-                "export SOVEREIGN_BRIDGE_URL=http://127.0.0.1:8765\n"
-                "export SOVEREIGN_BRIDGE_TOKEN=secret\n"
-                "php -S 127.0.0.1:8080 -t php",
-            ),
+            ("h", "Cas d'usage"),
             (
                 "p",
-                "Le detail des endpoints, l'authentification Bearer, les "
-                "regles CORS et les exemples de code PHP sont documentes dans "
-                "le README.md du depot (section Bridge PHP).",
+                "L'integration DSI permet a une application PHP existante "
+                "(portail intranet, outil de reporting) d'interroger "
+                "directement Sovereign OS DIM pour obtenir les donnees PMSI "
+                "traitees, sans que le TIM ait a exporter manuellement.",
+            ),
+            ("h", "Mise en oeuvre"),
+            (
+                "p",
+                "La configuration technique (URL, cle d'acces, parametres "
+                "reseau) est documentee dans la notice d'integration "
+                "disponible aupres du support : "
+                "adam.beloucif@psysudparis.fr. "
+                "La DSI ne doit pas modifier les fichiers de configuration "
+                "sans accord prealable avec l'editeur.",
             ),
         ],
     ),

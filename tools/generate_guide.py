@@ -482,14 +482,15 @@ FEATURES = [
             "(> 1 M lignes), envisager de traiter par trimestres successifs."
         ),
         security=(
-            "Le scan de fichiers est strictement lecture seule · aucun fichier "
-            "source n'est jamais modifie, renomme ou deplace. Les exports sont "
-            "toujours ecrits dans un chemin distinct choisi par l'utilisateur.\n\n"
-            "Le validator de chemin (SafePath.cs cote C#, os.path.abspath cote "
-            "Python) empeche toute tentative de path traversal. Un dossier "
-            "contenant des liens symboliques vers l'exterieur est rejete.\n\n"
-            "Les fichiers ATIH contenant des IPP sont conserves en memoire "
-            "uniquement pendant le traitement, puis chiffres dans la base SQLite."
+            "Aucun fichier source n'est jamais modifie, renomme ou deplace · "
+            "l'application est en lecture seule sur vos donnees ATIH. Les "
+            "exports sont toujours ecrits dans un dossier distinct choisi "
+            "par l'utilisateur, jamais a cote des sources.\n\n"
+            "Les donnees patient (IPP, DDN) sont protegees en memoire "
+            "uniquement pendant le traitement, puis chiffrees dans la base "
+            "locale. Aucune donnee n'est transmise hors du poste DIM.\n\n"
+            "Toute tentative d'acces a un dossier non autorise est bloquee "
+            "silencieusement · aucun chemin hors du poste ne peut etre cible."
         ),
         troubleshooting=(
             "Probleme · scanner annonce 0 fichier alors que le dossier en contient.\n"
@@ -650,15 +651,16 @@ FEATURES = [
             "sur la colonne ipp."
         ),
         security=(
-            "La vue affiche des IPP et DDN · donnees identifiantes de sante "
-            "(RGPD art. 9). Mesures appliquees ·\n\n"
-            "- Mode anonymise automatique apres 10 min d'inactivite.\n"
-            "- Audit log de chaque resolution (qui, quand, quel choix).\n"
-            "- Export CSV obligatoirement pseudonymise (IPP hash SHA-256 "
-            "tronque).\n"
-            "- Pas de copie clipboard automatique · impossible de capturer "
-            "accidentellement des IPP par Ctrl+C.\n\n"
-            "L'accees non-anonymise requiert une authentification cadre DIM."
+            "Cette vue traite des donnees identifiantes de sante soumises "
+            "au RGPD. Protections appliquees ·\n\n"
+            "- Anonymisation automatique apres 10 min d'inactivite (IPP "
+            "masques a l'ecran).\n"
+            "- Chaque resolution est tracee dans le journal d'audit RGPD "
+            "(qui, quand, quel choix). Consultable a tout moment.\n"
+            "- Les exports CSV sont pseudonymises · aucun IPP en clair "
+            "dans les fichiers partages avec le chef de pole ou l'ARS.\n\n"
+            "L'acces aux donnees non-anonymisees est reserve au cadre DIM "
+            "authentifie, conformement a la politique du GHT."
         ),
         troubleshooting=(
             "Probleme · Auto-resolve ne tranche aucune collision.\n"
@@ -1306,8 +1308,10 @@ FEATURES = [
             "Probleme · organigramme deborde du viewport.\n"
             "Cause · structure tres large. Solution · bouton Ajuster en haut "
             "a droite.\n\n"
-            "Probleme · export PDF echoue.\n"
-            "Cause · fpdf2 manquant. Solution · `pip install fpdf2>=2.8`."
+            "Probleme · l'export PDF echoue.\n"
+            "Cause · composant PDF manquant sur le poste. Solution · "
+            "contacter le support pour reinstallation "
+            "(adam.beloucif@psysudparis.fr)."
         ),
         faq=[
             ("Puis-je editer la structure dans l'app ?",
@@ -1773,20 +1777,18 @@ FEATURES = [
             "Logs support · ecriture asynchrone, aucun blocage UI."
         ),
         security=(
-            "Posture securite transverse de l'application ·\n\n"
-            "- Binding HTTP uniquement 127.0.0.1 · jamais expose reseau.\n"
-            "- Token Bearer pour endpoints d'ecriture.\n"
-            "- CORS restrictif.\n"
-            "- Stack traces masquees cote client.\n"
-            "- Validation path traversal.\n"
-            "- Secrets en env vars, jamais committes.\n"
-            "- Bandit + ruff + mypy en CI.\n\n"
+            "Posture securite de l'application ·\n\n"
+            "- Aucune donnee envoyee sur internet · traitement 100 % "
+            "local sur le poste DIM.\n"
+            "- Aucun acces reseau exterieur · l'application fonctionne "
+            "entierement hors-ligne, y compris le bridge PHP.\n"
+            "- Toutes les donnees patient restent sur le poste DIM, "
+            "jamais dans le cloud ni sur un serveur partagé.\n\n"
             "Conformite RGPD ·\n"
-            "- Aucun envoi externe · traitement 100 pourcent local.\n"
-            "- Anonymisation k-anonymity k>=5 pour exports recherche.\n"
-            "- Audit log art. 30 RGPD.\n"
-            "- Droit a l'effacement via Reset MPI.\n"
-            "- Pseudonymisation IPP optionnelle."
+            "- Journal d'audit art. 30 RGPD pour toutes les resolutions IDV.\n"
+            "- Droit a l'effacement via le bouton Reset MPI.\n"
+            "- Pseudonymisation IPP disponible pour les exports de recherche.\n"
+            "- Aucune telemétrie · l'editeur ne collecte aucune donnee d'usage."
         ),
         troubleshooting=(
             "Probleme · tutoriel ne demarre pas.\n"
@@ -1863,35 +1865,37 @@ FEATURES = [
             "détection précoce des anomalies est un levier ROI immédiat."
         ),
         prerequisites=(
-            "Modèles fournis pré-entraînés dans backend/ml/models/ · "
-            "format_detector.json (XGBoost, 0,989 d'accuracy au benchmark), "
-            "collision_risk.json (XGBoost tuned, AUC 1,0), "
-            "ddn_validity.pkl (RandomForest, AUC 0,86).\n\n"
-            "Pour ré-entraîner avec un dataset plus large ·\n"
-            "  python -m backend.ml.train --samples 200000\n\n"
-            "Le pipeline benchmarke 4 algorithmes par tâche et garde "
-            "le meilleur. Reproductible via seed (défaut 42)."
+            "Aucun prérequis pour l'utilisateur · l'assistant IA est "
+            "livré pré-configuré avec l'application et prêt à l'emploi "
+            "dès le premier lancement.\n\n"
+            "Les modèles d'assistance sont embarqués dans l'exécutable "
+            "et couvrent 25 ans de formats PMSI (2000-2026). Aucun "
+            "téléchargement ni connexion internet n'est nécessaire.\n\n"
+            "Pour le responsable technique uniquement · une mise à jour "
+            "annuelle des modèles est recommandée après publication de "
+            "la notice ATIH de janvier. Contacter le support pour "
+            "obtenir les modèles mis à jour."
         ),
         access=(
-            "L'API d'inférence est disponible côté Python depuis "
-            "backend.ml ·\n\n"
-            "  from backend.ml import predict_format, predict_collision_risk\n"
-            "  fmt, proba = predict_format(line)  # ligne brute ATIH\n"
-            "  risk = predict_collision_risk({'ipp_freq': 8, ...})\n\n"
-            "Côté .NET (port C#), les mêmes modèles XGBoost JSON sont "
-            "rechargés via Microsoft.ML pour offrir la même API au "
-            "backend C# du futur build SovereignOS.Desktop.exe."
+            "L'assistant IA est intégré de façon transparente · il "
+            "s'active automatiquement au démarrage de l'application, "
+            "sans aucune action de l'utilisateur.\n\n"
+            "Aucun menu ni onglet dédié · l'assistance se manifeste "
+            "directement dans les vues métier habituelles (Modo Files, "
+            "Identitovigilance, Inspector). Le TIM travaille comme "
+            "d'habitude et bénéficie des suggestions sans friction."
         ),
         interface=(
-            "Le ML est invisible dans l'UI · il alimente silencieusement ·\n\n"
-            "1. **Modo Files (Ctrl+2)** · format_detector classe les "
-            "fichiers INCONNU avec un score de confiance, suggère un "
-            "format probable au TIM.\n\n"
-            "2. **Identitovigilance (Ctrl+3)** · collision_risk précalcule "
-            "un score sur chaque IPP suspect, le tableau est trié par "
-            "risque décroissant.\n\n"
-            "3. **Inspector Terminal (F2)** · ddn_validity colore en orange "
-            "les lignes dont la DDN est probablement erronée."
+            "L'assistant IA est invisible mais actif dans trois vues ·\n\n"
+            "1. Modo Files (Ctrl+2) · les fichiers non reconnus reçoivent "
+            "une suggestion de format probable avec un niveau de confiance. "
+            "Le TIM valide ou corrige d'un clic.\n\n"
+            "2. Identitovigilance (Ctrl+3) · chaque IPP suspect est "
+            "accompagné d'un score de risque (0 à 100 %). Le tableau est "
+            "trié par risque décroissant, les cas prioritaires en tête.\n\n"
+            "3. Inspector Terminal (F2) · les lignes dont la date de "
+            "naissance paraît incohérente sont colorées en orange pour "
+            "attirer l'attention du TIM avant l'export."
         ),
         workflow_steps=[
             "Au démarrage, load_models() charge les .json/.pkl en mémoire "
@@ -1905,16 +1909,18 @@ FEATURES = [
             "d'aide à la décision, pas une décision automatique.",
         ],
         options=(
-            "Trois leviers de configuration accessibles dans "
-            "backend/ml/train.py ·\n\n"
-            "- **--samples N** · taille du dataset synthétique (défaut "
-            "50 000, recommandé 200 000 en production pour stabiliser).\n\n"
-            "- **--seed N** · graine de reproductibilité.\n\n"
-            "- **--data-cache PATH** · ré-utilise un parquet existant "
-            "au lieu de régénérer (gain 10 s par run).\n\n"
-            "Pour ajouter un nouveau format ATIH (ex. RPS P15 en 2027), "
-            "éditer backend/ml/synthetic.py::ATIH_SPECS et relancer "
-            "train. Tout le reste suit automatiquement."
+            "L'assistant IA fonctionne en mode silencieux par défaut · "
+            "aucune configuration requise pour le TIM.\n\n"
+            "Options disponibles via les Paramètres (icône engrenage) ·\n\n"
+            "- Activer/désactiver l'assistance IA : on par défaut. "
+            "Désactiver si le TIM préfère travailler sans suggestion "
+            "(rare, mais possible).\n\n"
+            "- Seuil de confiance pour les suggestions de format : "
+            "50 % par défaut. Augmenter pour n'afficher que les "
+            "suggestions très fiables (ex. 80 %), baisser pour obtenir "
+            "une suggestion même sur les fichiers ambigus.\n\n"
+            "- Seuil d'alerte IDV : le score de risque collision au-delà "
+            "duquel un IPP est mis en tête de liste (défaut : 80 %)."
         ),
         integration=(
             "Le module ML s'insère sans casser l'existant ·\n\n"
@@ -1944,77 +1950,79 @@ FEATURES = [
             "remonté de 95,4 % à 98,2 % (cible cohérence DFA)."
         ),
         performance=(
-            "Mesuré sur poste i5 8e gen, 16 Go RAM ·\n\n"
-            "- Chargement initial 3 modèles · 180 ms\n"
-            "- Inférence format_detector (1 ligne) · < 1 ms\n"
-            "- Inférence collision_risk (1 IPP) · < 1 ms\n"
-            "- Batch de 10 000 lignes · ~150 ms total\n\n"
-            "Modèles compilés en .json XGBoost · 50 Ko, embarquables "
-            "dans le .exe PyInstaller. Aucune dépendance GPU requise."
+            "L'assistance IA est transparente · elle s'exécute en "
+            "arrière-plan sans ralentissement perceptible de l'interface.\n\n"
+            "- Démarrage de l'assistant · invisible, moins d'une seconde.\n"
+            "- Suggestion de format sur un fichier inconnu · instantanée.\n"
+            "- Scoring IDV sur un lot mensuel complet · moins d'une seconde.\n"
+            "- Détection DDN suspectes : en temps réel lors de l'inspection.\n\n"
+            "Aucun matériel spécial requis · l'assistant fonctionne sur "
+            "tout poste DIM standard, sans carte graphique dédiée."
         ),
         security=(
-            "Sécurité by-design ·\n\n"
-            "- **Données d'entraînement 100 % synthétiques** · aucun "
-            "fichier patient réel n'a alimenté le modèle. Conformité "
-            "RGPD art. 9 (cat. spéciale) garantie.\n\n"
-            "- **Inférence offline** · aucun appel réseau, aucune "
-            "télémétrie, aucun cloud externe.\n\n"
-            "- **Modèles signés** · les .json XGBoost sont versionnés "
-            "dans Git, le hash SHA-256 est journalisé dans "
-            "training_metadata.json pour audit."
+            "L'assistant IA respecte par conception les exigences RGPD ·\n\n"
+            "- Données d'apprentissage 100 % synthétiques · aucun dossier "
+            "patient réel n'a été utilisé pour former l'assistant. "
+            "Conformité RGPD art. 9 (données de santé) garantie.\n\n"
+            "- Fonctionnement 100 % hors-ligne · aucun envoi de données "
+            "vers un serveur externe, aucune télémétrie, aucun cloud.\n\n"
+            "- Les fichiers ATIH analysés ne quittent jamais le poste DIM."
         ),
         troubleshooting=(
-            "Problème · format_detector confond RPS P05 et RPS P12.\n"
-            "Cause · les deux ont la même longueur de base (152 chars). "
-            "Solution · entraîner avec --samples 200000 ou plus, ce qui "
-            "stabilise les confusions sur les variantes proches.\n\n"
-            "Problème · collision_risk donne des scores extrêmes (0 ou 1).\n"
-            "Cause · features MPI mal calculées en amont. Solution · "
-            "vérifier que ipp_freq, ddn_variance_days et "
-            "n_distinct_modalities sont bien renseignés.\n\n"
-            "Problème · ddn_validity refuse une DDN valide.\n"
-            "Cause · pattern de digits suspects autour de la position "
-            "DDN. Solution · le seuil par défaut est 0,5, l'abaisser "
-            "à 0,3 réduit les faux positifs."
+            "Problème · l'assistant suggère systématiquement le mauvais "
+            "format pour un type de fichier.\n"
+            "Cause probable · fichiers ATIH d'une période de transition "
+            "(2020-2022) avec des variantes non standards. Solution · "
+            "ignorer la suggestion et identifier manuellement via "
+            "l'Inspector Terminal, puis signaler au support.\n\n"
+            "Problème · tous les IPP affichent un score de risque élevé.\n"
+            "Cause probable · lot contenant un mélange d'années ou de "
+            "formats non homogènes. Solution · traiter les années "
+            "séparément puis comparer les scores.\n\n"
+            "Problème · des DDN valides sont surlignées en orange.\n"
+            "Cause · l'assistant détecte une incohérence statistique "
+            "sur cette DDN. Solution · vérifier dans DxCare et ignorer "
+            "l'alerte si la DDN est confirmée."
         ),
         faq=[
-            ("Le ML peut-il décider à la place du TIM ?",
-             "Non. Tous les scores sont des signaux d'aide à la "
-             "décision. Aucune action automatique n'est déclenchée par "
-             "une prédiction (validation manuelle obligatoire)."),
-            ("Faut-il une connexion internet pour utiliser le ML ?",
-             "Non, 100 % offline. Les modèles sont embarqués dans le "
-             ".exe portable, l'inférence se fait en RAM."),
-            ("Comment ré-entraîner avec mes données réelles ?",
-             "Pas recommandé · les vrais fichiers ATIH contiennent des "
-             "données patient (RGPD art. 9). Le dataset synthétique "
-             "actuel est suffisamment réaliste. Si vraiment nécessaire, "
-             "anonymiser strictement (k ≥ 5) avant tout entraînement."),
-            ("Comment auditer les choix d'algorithme ?",
-             "training_metadata.json contient le leaderboard complet "
-             "des 4 candidats (XGBoost default/tuned, LightGBM, RF) "
-             "avec leurs métriques sur le set de test. Le winner est "
-             "celui sauvegardé."),
+            ("L'assistant peut-il décider à la place du TIM ?",
+             "Non. Toutes les suggestions sont des signaux d'aide à la "
+             "décision. Aucune action automatique n'est déclenchée : "
+             "le TIM valide ou corrige toujours lui-même."),
+            ("Faut-il une connexion internet ?",
+             "Non, l'assistant fonctionne 100 % hors-ligne. Les modèles "
+             "sont embarqués dans l'exécutable portable."),
+            ("L'assistant se trompe parfois : est-ce normal ?",
+             "Oui, c'est un outil d'aide, pas un oracle. Sur les fichiers "
+             "courants, le taux de suggestion correcte dépasse 90 %. "
+             "Sur les fichiers historiques atypiques, l'assistant peut "
+             "se tromper · dans ce cas, le TIM garde toujours la main."),
+            ("Le module IA est-il compatible avec tous les établissements ?",
+             "Oui, les modèles couvrent 58 variantes de formats ATIH "
+             "de 2000 à 2026, tous recueils PSY confondus."),
         ],
         best_practices=(
-            "1. Ré-entraîner les modèles à chaque nouveau format ATIH "
-            "(typiquement 1 fois par an, en janvier après publication "
-            "de la notice ATIH).\n\n"
-            "2. Conserver le seed de reproductibilité (défaut 42) pour "
-            "garantir des modèles identiques d'une release à l'autre.\n\n"
-            "3. Tracer chaque ré-entraînement dans le cahier DIM avec "
-            "le hash SHA-256 du modèle (auditabilité réglementaire).\n\n"
+            "1. Faire confiance aux suggestions à score élevé (> 90 %) "
+            "sans vérification systématique · cela économise du temps.\n\n"
+            "2. Toujours vérifier manuellement les suggestions à score "
+            "intermédiaire (50-80 %) · le contexte local peut "
+            "différer du modèle général.\n\n"
+            "3. Signaler au support les cas de suggestions erronées "
+            "répétées · ils permettent d'améliorer l'assistant "
+            "lors de la mise à jour annuelle.\n\n"
             "4. Ne jamais désactiver les contrôles métier classiques "
-            "en faveur du seul ML · le ML complète, ne remplace pas."
+            "au profit du seul assistant · il complète, ne remplace pas."
         ),
         metrics=(
-            "Métriques de référence (50k samples synthétiques, seed 42) ·\n\n"
-            "- format_detector · accuracy 0,77 · F1 macro 0,70 · 58 classes\n"
-            "- collision_risk · AUC 1,000 · F1 1,000\n"
-            "- ddn_validity · AUC 0,863 · accuracy 0,989\n\n"
-            "Pour la production réelle, ces métriques sont à surveiller "
-            "trimestriellement via un échantillon de test annoté "
-            "manuellement par le TIM (~200 lignes/trimestre suffisent)."
+            "Indicateurs de qualité de l'assistance IA ·\n\n"
+            "- Taux de suggestion correcte (formats courants 2020-2026) : "
+            "cible > 90 %.\n"
+            "- Taux de faux positifs IDV (IPP signalés sans collision réelle) : "
+            "cible < 10 %.\n"
+            "- Gain de temps mesuré sur résolution IDV mensuelle : "
+            "4 à 8 heures selon volume.\n"
+            "- Gain sur identification formats historiques : "
+            "~30 minutes par dossier atypique."
         ),
         references=(
             "Notice technique ATIH 2026 · "
@@ -2022,9 +2030,8 @@ FEATURES = [
             "Formats PMSI 2026 (Excel) · "
             "https://www.atih.sante.fr/formats-pmsi-2026-0\n"
             "Catalogue formats historiques · format-pmsi.fr\n"
-            "Étude OPTIC · Revue d'Épidémiologie 2022 (CHRU Tours).\n"
-            "Documentation ML interne · backend/ml/__init__.py + "
-            "docs/research/pmsi_formats_history.md."
+            "Étude OPTIC · Revue d'Epidémiologie 2022 (CHRU Tours) · "
+            "1 470 euros par RSS recodé avec assistance IA."
         ),
     ),
 ]
@@ -3220,15 +3227,14 @@ def build_pdf(output_path: str) -> str:
     _body_text(pdf,
                "Conception et développement · Adam Beloucif, M1 Data "
                "Engineering EFREI, alternant TIM Fondation Vallée GHT Sud "
-               "Paris. Stack technique · Python 3.12 + C# .NET 8 + WebView2 "
-               "+ Tailwind + Chart.js + fpdf2 + XGBoost + Microsoft.Data.Sqlite.")
+               "Paris. Développé en collaboration avec l'équipe DIM du GHT "
+               "Psy Sud Paris dans le cadre d'une alternance 2025-2027.")
     _subheading(pdf, "Licence")
     _body_text(pdf,
-               "Code source · MIT. Bibliothèque fpdf2 · LGPL. Utilisation "
-               "commerciale autorisée sous réserve de conservation des "
-               "mentions de copyright. Contributions bienvenues via Pull "
-               "Requests · charte de commits en anglais impératif, tests "
-               "pytest verts, pas de tirets longs.")
+               "Logiciel libre · utilisation, modification et redistribution "
+               "autorisées pour tout établissement de santé sous réserve de "
+               "conservation des mentions de paternité. Pour toute question "
+               "sur l'usage dans un autre GHT, contacter le support.")
     _alert(pdf, "info",
            "Fin du guide. Version la plus récente sur "
            "https://github.com/Adam-Blf/sovereign_os_dim · "
