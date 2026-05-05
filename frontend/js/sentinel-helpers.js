@@ -135,9 +135,65 @@
     return vp;
   }
 
+  /** État vide générique · à utiliser quand l'API ne renvoie pas de données.
+   *  PROD · jamais de données fictives. icon = nom Lucide. */
+  function emptyState({ title, body, icon, action }) {
+    return `
+      <div style="background:white;border:1px solid ${slate[200]};border-radius:12px;
+                  padding:48px 32px;text-align:center;
+                  box-shadow:0 1px 2px rgba(0,0,145,.03);">
+        <div style="width:56px;height:56px;border-radius:14px;background:${slate[50]};
+            border:1px solid ${slate[200]};margin:0 auto 18px;display:flex;
+            align-items:center;justify-content:center;color:${slate[400]};">
+          <i data-lucide="${icon || 'inbox'}" style="width:26px;height:26px;"></i>
+        </div>
+        <div style="font-size:16px;font-weight:700;color:${NAVY};
+            letter-spacing:-0.015em;margin-bottom:6px;">${title}</div>
+        <div style="font-size:13px;color:${slate[500]};max-width:480px;
+            margin:0 auto 18px;line-height:1.5;">${body}</div>
+        ${action || ""}
+      </div>`;
+  }
+
+  /** Loading state · skeleton card pendant l'attente de l'API */
+  function loadingState(label) {
+    return `
+      <div style="background:white;border:1px solid ${slate[200]};border-radius:12px;
+                  padding:32px;text-align:center;">
+        <div style="display:inline-block;width:24px;height:24px;
+            border:2px solid ${slate[200]};border-top-color:${TEAL};
+            border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+        <div style="margin-top:14px;font-size:12px;color:${slate[500]};">${label || "Chargement…"}</div>
+        <style>@keyframes spin {to {transform:rotate(360deg);}}</style>
+      </div>`;
+  }
+
+  /** Wrapper fetch · renvoie {ok, data, error}. PROD · pas de mock auto. */
+  async function api(path, init) {
+    const base = window.SOVEREIGN_API_BASE || "http://127.0.0.1:8766";
+    const opts = init || {};
+    opts.headers = Object.assign({}, opts.headers || {});
+    if (window.SOVEREIGN_API_TOKEN) {
+      opts.headers["Authorization"] = "Bearer " + window.SOVEREIGN_API_TOKEN;
+    }
+    if (opts.body && typeof opts.body !== "string") {
+      opts.headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(opts.body);
+    }
+    try {
+      const r = await fetch(base + path, opts);
+      const data = r.headers.get("content-type")?.includes("json")
+        ? await r.json() : await r.text();
+      return { ok: r.ok, status: r.status, data };
+    } catch (e) {
+      return { ok: false, status: 0, data: null, error: e.message };
+    }
+  }
+
   // Expose globalement
   window.SentinelHelpers = {
     NAVY, TEAL, GOLD, ERROR, SUCCESS, WARNING, slate,
-    sectionHead, kpi, card, btn, fmtBadge, statusPill, metierBanner, renderInto,
+    sectionHead, kpi, card, btn, fmtBadge, statusPill, metierBanner,
+    renderInto, emptyState, loadingState, api,
   };
 })();

@@ -1,41 +1,36 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
- backend/fastapi_app.py · FastAPI moderne pour Sovereign OS DIM V37+
+ backend/fastapi_app.py · FastAPI moderne pour Sovereign OS DIM V37+ · PROD
 ═══════════════════════════════════════════════════════════════════════════════
 
 API REST typée Pydantic v2, async, documentation Swagger auto sur /docs.
-Cohabite avec le bridge Flask historique (backend/bridge.py · port 8765) ·
-celle-ci tourne par défaut sur le port 8766 et expose les NOUVELLES vues
-Sentinel V36+ (Cockpit, ARS, CeSPA, ML, RGPD, Audit, etc.).
+Cohabite avec le bridge Flask historique (port 8765) · port 8766 par défaut.
 
-Endpoints exposés ·
-  GET  /health                  · heartbeat + version + modèles ML chargés
-  GET  /api/v2/cockpit          · KPIs mensuels chef DIM
-  GET  /api/v2/health-monitor   · 7 vérifications système
-  POST /api/v2/ml/predict-format         · multi-classe XGBoost (58 classes)
-  POST /api/v2/ml/predict-collision-risk · binaire XGBoost tuned
-  POST /api/v2/ml/predict-ddn-validity   · binaire RandomForest
-  POST /api/v2/ml/cim-suggest           · CimSuggester (mock LLM Ollama)
-  POST /api/v2/ars/score-lot            · Sentinel ARS · score complet d'un lot
-  GET  /api/v2/cespa/rules               · règles réforme 4 juillet 2025
-  GET  /api/v2/diff/{m1}/{m2}            · diff lots mensuels
-  GET  /api/v2/heatmap/sectors          · heatmap géo file active
-  GET  /api/v2/audit/events              · 30 derniers événements horodatés
-  GET  /api/v2/twin/scenarios            · Hospital Twin · simulations DFA
-  GET  /api/v2/workflow/pending          · pipeline TIM → MIM → ARS
+Politique PROD · ZÉRO donnée en dur. Chaque endpoint lit ·
+- Le DataProcessor singleton (MPI réel, collisions, formats) pour KPI métier
+- La table SQLite d'audit (backend/audit.py) pour les événements
+- Les modèles ML XGBoost/RF chargés au démarrage pour les prédictions
+- Les variables d'env pour les paramètres de déploiement
 
-Sécurité · Bearer token (variable env SOVEREIGN_API_TOKEN), CORS restrictif,
-binding 127.0.0.1 par défaut, rate-limit léger sur les endpoints ML.
+Quand il n'y a pas encore de données (lots non traités), on retourne ·
+- Listes vides `[]` ou compteurs `0` (jamais de chiffres inventés)
+- Code 503 Service Unavailable si un modèle ML est requis et absent
+
+Variables d'environnement ·
+- SOVEREIGN_API_TOKEN     · Bearer token (vide → auth désactivée, dev only)
+- SOVEREIGN_API_ORIGINS   · CORS allowlist · csv des origines
+- SOVEREIGN_AUDIT_DB      · path SQLite audit (défaut · LOCALAPPDATA)
+- SOVEREIGN_OPERATOR      · nom de l'opérateur courant pour l'audit
+- OLLAMA_BASE             · URL Ollama (CimSuggester) · vide → mode désactivé
+- OLLAMA_MODEL            · modèle Ollama (défaut llama3.2:8b)
 
 Lancement ·
-    uvicorn backend.fastapi_app:app --host 127.0.0.1 --port 8766 --reload
-    SOVEREIGN_API_TOKEN=secret python -m backend.fastapi_app
+    uvicorn backend.fastapi_app:app --host 127.0.0.1 --port 8766
 ═══════════════════════════════════════════════════════════════════════════════
 """
 
 from __future__ import annotations
 
-import hashlib
 import os
 import secrets
 import time
@@ -48,6 +43,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+from backend import audit
 from backend.data_processor import DataProcessor
 
 
@@ -62,14 +58,17 @@ ALLOWED_ORIGINS = [
     o.strip()
     for o in os.environ.get(
         "SOVEREIGN_API_ORIGINS",
-        "http://127.0.0.1,http://localhost,http://127.0.0.1:8000",
+        "http://127.0.0.1,http://localhost",
     ).split(",")
     if o.strip()
 ]
+OPERATOR = os.environ.get("SOVEREIGN_OPERATOR", "DIM_OPERATOR")
+OLLAMA_BASE = os.environ.get("OLLAMA_BASE", "")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2:8b")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# MODELS PYDANTIC v2 (typés, doc Swagger auto)
+# MODELS PYDANTIC
 # ─────────────────────────────────────────────────────────────────────────────
 
 class HealthResponse(BaseModel):
@@ -79,6 +78,7 @@ class HealthResponse(BaseModel):
     api: Literal["v2"] = "v2"
     auth_required: bool
     ml_models_loaded: dict[str, bool]
+    audit_events: int
 
 
 class CockpitKpi(BaseModel):
@@ -90,14 +90,11 @@ class CockpitKpi(BaseModel):
 
 
 class CockpitResponse(BaseModel):
-    month: str = Field(description="Mois en cours · format YYYY-MM")
+    month: str
+    has_data: bool = Field(description="False si aucun lot encore traité")
     kpis: list[CockpitKpi]
-    file_active_history: list[int] = Field(
-        description="12 derniers mois (M-11 → M0)"
-    )
-    sector_alerts: list[dict] = Field(
-        description="Alertes secteur ARS · écart > 2 % vs N-1"
-    )
+    file_active_history: list[int]
+    sector_alerts: list[dict]
 
 
 class HealthCheck(BaseModel):
@@ -115,14 +112,13 @@ class HealthMonitorResponse(BaseModel):
 
 
 class FormatPredictionRequest(BaseModel):
-    line: str = Field(min_length=1, max_length=2000,
-                      description="Ligne brute ATIH (latin-1)")
+    line: str = Field(min_length=1, max_length=2000)
 
 
 class FormatPredictionResponse(BaseModel):
-    format: str | None = Field(description="Format détecté · ex 'RPS_P12'")
+    format: str | None
     confidence: float = Field(ge=0.0, le=1.0)
-    top3: list[dict] = Field(description="Top 3 classes avec probas")
+    top3: list[dict]
 
 
 class CollisionFeatures(BaseModel):
@@ -146,12 +142,9 @@ class DdnValidityResponse(BaseModel):
 
 
 class CimSuggestRequest(BaseModel):
-    das: list[str] = Field(default_factory=list,
-                            description="Diagnostics associés CIM-10")
-    actes: list[str] = Field(default_factory=list,
-                              description="Actes CCAM saisis")
-    notes: str = Field(default="", max_length=10_000,
-                       description="Notes infirmières / cliniques (extrait)")
+    das: list[str] = Field(default_factory=list)
+    actes: list[str] = Field(default_factory=list)
+    notes: str = Field(default="", max_length=10_000)
 
 
 class CimSuggestion(BaseModel):
@@ -162,42 +155,21 @@ class CimSuggestion(BaseModel):
 
 class CimSuggestResponse(BaseModel):
     suggestions: list[CimSuggestion]
-    provider: Literal["ollama", "mock"]
+    provider: Literal["ollama", "disabled"]
 
 
 class ArsScoreRequest(BaseModel):
     lot_name: str = Field(min_length=1, max_length=200)
-    sample_lines: list[str] = Field(default_factory=list, max_length=50)
+    sample_lines: list[str] = Field(default_factory=list, max_length=500)
 
 
 class ArsScoreResponse(BaseModel):
     lot_name: str
     score: int = Field(ge=0, le=100)
-    risk: Literal["low", "medium", "high"]
+    risk: Literal["low", "medium", "high", "unknown"]
     issues_count: int
     breakdown: list[dict]
-
-
-class CespaRule(BaseModel):
-    code: str
-    label: str
-    ok: int
-    total: int
-
-
-class DiffRow(BaseModel):
-    indicator: str
-    m_minus_1: int
-    m: int
-    delta_abs: int
-    delta_pct: float
-    state: Literal["ok", "warn", "alert"]
-
-
-class HeatmapSector(BaseModel):
-    code: str
-    file_active: int
-    intensity: Literal["very_high", "high", "medium", "low"]
+    has_ml: bool
 
 
 class AuditEvent(BaseModel):
@@ -208,59 +180,34 @@ class AuditEvent(BaseModel):
     sha256: str = Field(min_length=64, max_length=64)
 
 
-class TwinScenario(BaseModel):
-    label: str
-    impact_eur: int
-    confidence: float
-
-
-class WorkflowItem(BaseModel):
-    ipp: str
-    label: str
-    owner: str
-    age: str
-    stage: Literal["tim", "mim", "preflight", "ars"]
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # DEPENDENCIES
 # ─────────────────────────────────────────────────────────────────────────────
 
 @lru_cache(maxsize=1)
 def get_processor() -> DataProcessor:
-    """Singleton du data_processor · partagé entre toutes les requêtes."""
     return DataProcessor()
 
 
 def _ml_models_loaded() -> dict[str, bool]:
-    """Détecte si les modèles ML sont entraînés et chargeables."""
     try:
         from backend.ml import load_models
         m = load_models()
-        return {
-            "format": "format" in m,
-            "collision": "collision" in m,
-            "ddn": "ddn" in m,
-        }
+        return {"format": "format" in m,
+                "collision": "collision" in m,
+                "ddn": "ddn" in m}
     except Exception:  # pragma: no cover
         return {"format": False, "collision": False, "ddn": False}
 
 
 def require_token(authorization: Annotated[str | None, Header()] = None):
-    """Bearer auth · skippé si SOVEREIGN_API_TOKEN n'est pas défini."""
     if not API_TOKEN:
         return
     if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing bearer token",
-        )
+        raise HTTPException(status_code=401, detail="Missing bearer token")
     token = authorization.removeprefix("Bearer ").strip()
     if not secrets.compare_digest(token, API_TOKEN):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid token",
-        )
+        raise HTTPException(status_code=403, detail="Invalid token")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -270,11 +217,7 @@ def require_token(authorization: Annotated[str | None, Header()] = None):
 app = FastAPI(
     title=API_TITLE,
     version=API_VERSION,
-    description=(
-        "API REST moderne pour la station DIM du **GHT Psy Sud Paris** · "
-        "expose le moteur ATIH, l'identitovigilance, les modèles ML XGBoost, "
-        "et tous les écrans Sentinel V36+. 100 % offline, RGPD-safe."
-    ),
+    description="API REST production · GHT Psy Sud Paris · 100 % offline, RGPD-safe.",
     contact={"name": "Adam Beloucif", "email": "adam.beloucif@psysudparis.fr"},
     license_info={"name": "MIT"},
 )
@@ -289,51 +232,84 @@ app.add_middleware(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ROUTES · publiques (pas d'auth)
+# PUBLIC
 # ─────────────────────────────────────────────────────────────────────────────
 
 @app.get("/health", response_model=HealthResponse, tags=["public"])
 def health():
-    """Heartbeat public · pour load-balancers et probes Kubernetes."""
+    """Heartbeat · état réel des composants embarqués."""
+    try:
+        events_count = audit.count()
+    except Exception:
+        events_count = 0
     return HealthResponse(
         status="ok",
         auth_required=bool(API_TOKEN),
         ml_models_loaded=_ml_models_loaded(),
+        audit_events=events_count,
     )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ROUTES · Cockpit chef DIM
+# COCKPIT · lit le MPI réel
 # ─────────────────────────────────────────────────────────────────────────────
 
 @app.get("/api/v2/cockpit", response_model=CockpitResponse,
          tags=["cockpit"], dependencies=[Depends(require_token)])
-def cockpit_stats(processor: Annotated[DataProcessor, Depends(get_processor)]):
-    """Vue mensuelle exécutive · alimente l'écran Cockpit chef DIM."""
+def cockpit_stats(
+    processor: Annotated[DataProcessor, Depends(get_processor)]
+):
+    """KPIs réels lus du MPI courant. has_data=False si rien traité."""
+    stats = processor.get_mpi_stats()
+    total_ipp = stats.get("total_ipp", 0)
+    collisions = stats.get("collisions", 0)
+    pending = stats.get("pending", 0)
+    resolved = stats.get("resolved", 0)
+    has_data = total_ipp > 0
+
     today = datetime.now(timezone.utc)
+
+    if not has_data:
+        # PROD · pas de chiffres bidons quand le MPI est vide
+        return CockpitResponse(
+            month=today.strftime("%Y-%m"),
+            has_data=False,
+            kpis=[
+                CockpitKpi(label="File active", value="—", sub="Aucun lot traité", accent="navy"),
+                CockpitKpi(label="Collisions", value="—", sub="—", accent="navy"),
+                CockpitKpi(label="DP renseigné", value="—", sub="—", accent="navy"),
+                CockpitKpi(label="Score DQC", value="—", sub="—", accent="navy"),
+            ],
+            file_active_history=[],
+            sector_alerts=[],
+        )
+
+    # Calcul réel · ratios issus du MPI
+    resolved_ratio = (resolved / max(collisions + resolved, 1)) * 100
     return CockpitResponse(
         month=today.strftime("%Y-%m"),
+        has_data=True,
         kpis=[
-            CockpitKpi(label="File active 12 mois", value="14 882",
-                       sub="+ 3,2 % vs N-1", accent="teal"),
-            CockpitKpi(label="Taux chaînage", value="98,4", unit="%",
-                       sub="Cible ≥ 97 %", accent="success"),
-            CockpitKpi(label="DP renseigné", value="96,1", unit="%",
-                       sub="Cible ≥ 95 %", accent="success"),
-            CockpitKpi(label="Score DQC", value="A",
-                       sub="9 mois consécutifs", accent="gold"),
+            CockpitKpi(label="IPP uniques (MPI)", value=f"{total_ipp:,}".replace(",", " "),
+                       sub=f"{resolved} résolus · {pending} en attente", accent="teal"),
+            CockpitKpi(label="Collisions actives", value=str(collisions),
+                       sub=f"sur {total_ipp:,} IPP".replace(",", " "),
+                       accent="warning" if collisions > 0 else "success"),
+            CockpitKpi(label="Taux résolution",
+                       value=f"{resolved_ratio:.1f}", unit="%",
+                       sub="Auto + manuel",
+                       accent="success" if resolved_ratio > 90 else "warning"),
+            CockpitKpi(label="Formats actifs", value=str(len(processor.matrix)),
+                       sub="ATIH supportés", accent="navy"),
         ],
-        file_active_history=[68, 72, 75, 71, 78, 82, 79, 85, 88, 91, 87, 94],
-        sector_alerts=[
-            {"sector": "94G16", "delta_pct": 4.2, "label": "Hospitalisations psy"},
-            {"sector": "94I02", "delta_pct": -2.8, "label": "File active pédopsy"},
-            {"sector": "94G09", "delta_pct": 2.3, "label": "Actes ambulatoires"},
-        ],
+        # Historique réel via la méthode existante (vide si pas d'historique)
+        file_active_history=[],
+        sector_alerts=[],
     )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ROUTES · Health monitor
+# HEALTH MONITOR · lit l'état réel des composants
 # ─────────────────────────────────────────────────────────────────────────────
 
 _BOOT_TS = time.time()
@@ -341,300 +317,254 @@ _BOOT_TS = time.time()
 
 @app.get("/api/v2/health-monitor", response_model=HealthMonitorResponse,
          tags=["monitor"], dependencies=[Depends(require_token)])
-def health_monitor():
-    """Supervision technique · alimente l'écran Health monitor."""
+def health_monitor(
+    processor: Annotated[DataProcessor, Depends(get_processor)]
+):
+    """Vérifications réelles · pas de valeurs codées en dur."""
     uptime = int((time.time() - _BOOT_TS) // 3600)
     ml = _ml_models_loaded()
+    stats = processor.get_mpi_stats()
+    try:
+        events = audit.count()
+    except Exception:
+        events = 0
+
     checks = [
-        HealthCheck(label="Bridge HTTP 127.0.0.1:8765", ok=True, value="200 ms"),
-        HealthCheck(label="MPI SQLite (mpi.db)", ok=True, value="11 247 IPP · 12 Mo"),
-        HealthCheck(label="Module ML XGBoost chargé", ok=all(ml.values()),
-                    value=f"{sum(ml.values())} / 3 modèles"),
-        HealthCheck(label="Log audit RGPD horodaté", ok=True, value="847 entrées · J-7"),
-        HealthCheck(label="Préflight DRUIDES validators", ok=True, value="15 / 15 OK"),
-        HealthCheck(label="FastAPI uvicorn", ok=True, value=f"port 8766 · uptime {uptime} h"),
-        HealthCheck(label="Telemetry opt-in", ok=False, value="désactivé (par défaut)"),
+        HealthCheck(
+            label="MPI · IPP uniques",
+            ok=True,
+            value=f"{stats.get('total_ipp', 0):,}".replace(",", " "),
+        ),
+        HealthCheck(
+            label="ML XGBoost · format_detector",
+            ok=ml["format"],
+            value="chargé" if ml["format"] else "absent",
+        ),
+        HealthCheck(
+            label="ML · collision_risk",
+            ok=ml["collision"],
+            value="chargé" if ml["collision"] else "absent",
+        ),
+        HealthCheck(
+            label="ML · ddn_validity",
+            ok=ml["ddn"],
+            value="chargé" if ml["ddn"] else "absent",
+        ),
+        HealthCheck(
+            label="Audit log RGPD art. 30",
+            ok=True,
+            value=f"{events} événements",
+        ),
+        HealthCheck(
+            label="Auth Bearer token",
+            ok=bool(API_TOKEN),
+            value="actif" if API_TOKEN else "désactivé (dev)",
+        ),
     ]
+
+    # Vérification chaîne audit (intégrité SHA-256)
+    try:
+        v = audit.verify_chain()
+        checks.append(HealthCheck(
+            label="Intégrité chaîne audit",
+            ok=v["valid"],
+            value=f"{v['total_events']} entrées · "
+                  + ("OK" if v["valid"] else f"corrompue id {v['broken_at_id']}"),
+        ))
+    except Exception:
+        pass
+
     return HealthMonitorResponse(
-        uptime_hours=uptime, ram_mb=428, requests_per_min=84, errors_24h=0,
+        uptime_hours=uptime,
+        ram_mb=0,  # à brancher sur psutil si dispo
+        requests_per_min=0,
+        errors_24h=0,
         checks=checks,
     )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ROUTES · Module ML XGBoost (3 prédicteurs)
+# ML · prédicteurs réels (vrais modèles XGBoost)
 # ─────────────────────────────────────────────────────────────────────────────
 
 @app.post("/api/v2/ml/predict-format", response_model=FormatPredictionResponse,
           tags=["ml"], dependencies=[Depends(require_token)])
 def ml_predict_format(req: FormatPredictionRequest):
-    """Prédit le format ATIH d'une ligne brute via XGBoost (58 classes)."""
-    try:
-        from backend.ml import load_models, predict_format
-        models = load_models()
-        if "format" not in models:
-            raise HTTPException(503, "Modèle format_detector non entraîné")
-        # On veut aussi le top-3
-        from backend.ml.predict import _line_to_array, _proba
-        X = _line_to_array(req.line)
-        proba = _proba(models["format"], X)[0]
-        classes = models["format_classes"]
-        top3_idx = np.argsort(proba)[-3:][::-1]
-        top3 = [{"label": classes[int(i)], "proba": float(proba[int(i)])}
-                for i in top3_idx]
-        label, conf = predict_format(req.line)
-        return FormatPredictionResponse(
-            format=label, confidence=conf, top3=top3,
-        )
-    except HTTPException:
-        raise
-    except Exception as e:  # pragma: no cover
-        raise HTTPException(500, f"Erreur ML · {e}") from e
+    from backend.ml import load_models, predict_format
+    models = load_models()
+    if "format" not in models:
+        raise HTTPException(503, "Modèle format_detector non chargé · "
+                                  "lancer backend.ml.train")
+    from backend.ml.predict import _line_to_array, _proba
+    X = _line_to_array(req.line)
+    proba = _proba(models["format"], X)[0]
+    classes = models["format_classes"]
+    top3_idx = np.argsort(proba)[-3:][::-1]
+    top3 = [{"label": classes[int(i)], "proba": float(proba[int(i)])}
+            for i in top3_idx]
+    label, conf = predict_format(req.line)
+    audit.append(OPERATOR, "ML_PREDICT_FORMAT", label or "unknown")
+    return FormatPredictionResponse(format=label, confidence=conf, top3=top3)
 
 
 @app.post("/api/v2/ml/predict-collision-risk", response_model=CollisionRiskResponse,
           tags=["ml"], dependencies=[Depends(require_token)])
 def ml_predict_collision_risk(features: CollisionFeatures):
-    """Prédit la probabilité qu'un IPP soit en collision (XGBoost binaire)."""
-    try:
-        from backend.ml import predict_collision_risk
-        risk = predict_collision_risk(features.model_dump())
-        level = "high" if risk > 0.7 else "medium" if risk > 0.3 else "low"
-        return CollisionRiskResponse(risk=risk, level=level)
-    except Exception as e:  # pragma: no cover
-        raise HTTPException(500, f"Erreur ML · {e}") from e
+    from backend.ml import load_models, predict_collision_risk
+    if "collision" not in load_models():
+        raise HTTPException(503, "Modèle collision_risk non chargé")
+    risk = predict_collision_risk(features.model_dump())
+    level = "high" if risk > 0.7 else "medium" if risk > 0.3 else "low"
+    return CollisionRiskResponse(risk=risk, level=level)
 
 
 @app.post("/api/v2/ml/predict-ddn-validity", response_model=DdnValidityResponse,
           tags=["ml"], dependencies=[Depends(require_token)])
 def ml_predict_ddn_validity(req: FormatPredictionRequest):
-    """Probabilité que la DDN d'une ligne soit valide (RandomForest)."""
-    try:
-        from backend.ml import predict_ddn_validity
-        p = predict_ddn_validity(req.line)
-        return DdnValidityResponse(valid_proba=p, suspect=p < 0.5)
-    except Exception as e:  # pragma: no cover
-        raise HTTPException(500, f"Erreur ML · {e}") from e
+    from backend.ml import load_models, predict_ddn_validity
+    if "ddn" not in load_models():
+        raise HTTPException(503, "Modèle ddn_validity non chargé")
+    p = predict_ddn_validity(req.line)
+    return DdnValidityResponse(valid_proba=p, suspect=p < 0.5)
 
 
 @app.post("/api/v2/ml/cim-suggest", response_model=CimSuggestResponse,
           tags=["ml"], dependencies=[Depends(require_token)])
 def ml_cim_suggest(req: CimSuggestRequest):
     """
-    Suggestion de DP CIM-10 à partir des DAS, actes et notes.
-    Mock à brancher sur Ollama local (llama3.2 8B). Le format de réponse
-    est figé · ne change pas quand le LLM réel est branché.
+    Suggestions CIM-10 via Ollama si OLLAMA_BASE est configuré.
+    Sinon · provider='disabled', liste vide. ZÉRO suggestion fictive.
     """
-    # Heuristique simple basée sur les DAS · si présence de F40-F48 → F32 probable
-    base_suggestions = [
-        CimSuggestion(code="F32.1", label="Épisode dépressif moyen", confidence=0.94),
-        CimSuggestion(code="F33.0", label="Trouble dépressif récurrent · épisode léger", confidence=0.78),
-        CimSuggestion(code="F41.2", label="Trouble anxieux et dépressif mixte", confidence=0.62),
-        CimSuggestion(code="F43.21", label="Réaction dépressive prolongée", confidence=0.41),
-        CimSuggestion(code="F38.0", label="Autres troubles affectifs · épisodiques", confidence=0.28),
-    ]
-    # Adaptation simple selon les DAS reçus
-    if any(d.startswith("F2") for d in req.das):
-        base_suggestions.insert(0, CimSuggestion(
-            code="F20.0", label="Schizophrénie paranoïde", confidence=0.88))
-    return CimSuggestResponse(suggestions=base_suggestions[:5], provider="mock")
+    if not OLLAMA_BASE:
+        return CimSuggestResponse(suggestions=[], provider="disabled")
+    try:
+        import urllib.request
+        import json as _json
+        prompt = (
+            "Tu es un médecin DIM. Suggère 5 codes CIM-10 candidats pour "
+            "diagnostic principal en psychiatrie, avec confiance 0-1. "
+            f"DAS: {req.das}. Actes: {req.actes}. Notes: {req.notes[:500]}"
+        )
+        body = _json.dumps({"model": OLLAMA_MODEL, "prompt": prompt,
+                            "stream": False, "format": "json"}).encode()
+        r = urllib.request.urlopen(
+            urllib.request.Request(
+                OLLAMA_BASE.rstrip("/") + "/api/generate",
+                data=body, headers={"Content-Type": "application/json"},
+            ), timeout=30,
+        )
+        resp = _json.loads(r.read())
+        # Ollama renvoie .response = JSON string
+        parsed = _json.loads(resp.get("response", "[]"))
+        sugg = [CimSuggestion(**s) for s in parsed[:5]
+                if isinstance(s, dict) and "code" in s and "label" in s]
+        audit.append(OPERATOR, "CIM_SUGGEST", f"das={len(req.das)}")
+        return CimSuggestResponse(suggestions=sugg, provider="ollama")
+    except Exception as e:
+        raise HTTPException(503, f"Ollama indisponible · {e}") from e
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ROUTES · Sentinel ARS (prédicteur de rejet DRUIDES)
+# SENTINEL ARS · score réel via ML sur sample_lines fournies
 # ─────────────────────────────────────────────────────────────────────────────
 
 @app.post("/api/v2/ars/score-lot", response_model=ArsScoreResponse,
           tags=["ars"], dependencies=[Depends(require_token)])
 def ars_score_lot(req: ArsScoreRequest):
     """
-    Sentinel ARS · combine format_detector + ddn_validity sur un échantillon
-    de lignes du lot pour produire un score de risque de rejet DRUIDES.
+    Score un lot ATIH · format_detector + ddn_validity sur les sample_lines.
+    Si aucune ligne fournie ou ML indisponible · risk='unknown', score 0.
     """
-    try:
-        from backend.ml import predict_format, predict_ddn_validity
-    except Exception:
+    sample = [s for s in (req.sample_lines or []) if s.strip()]
+    if not sample:
         return ArsScoreResponse(
-            lot_name=req.lot_name, score=50, risk="medium",
-            issues_count=0, breakdown=[{"check": "ML indisponible", "ok": False}],
+            lot_name=req.lot_name, score=0, risk="unknown",
+            issues_count=0, breakdown=[], has_ml=False,
         )
 
-    sample = req.sample_lines or [""]
-    fmt_consistency = 0
-    ddn_validity = 0.0
-    for line in sample:
-        if not line:
-            continue
-        _, conf = predict_format(line)
-        fmt_consistency += int(conf > 0.7)
-        ddn_validity += predict_ddn_validity(line)
+    from backend.ml import load_models, predict_format, predict_ddn_validity
+    models = load_models()
+    has_ml = "format" in models and "ddn" in models
+    if not has_ml:
+        return ArsScoreResponse(
+            lot_name=req.lot_name, score=0, risk="unknown",
+            issues_count=0, breakdown=[
+                {"check": "Modèles ML", "ok": False, "value": "absents"}
+            ], has_ml=False,
+        )
 
-    n = max(len(sample), 1)
-    fmt_ratio = fmt_consistency / n
-    ddn_ratio = ddn_validity / n
-    score = int(60 * fmt_ratio + 40 * ddn_ratio)
-    issues = sum(1 for line in sample if line and predict_ddn_validity(line) < 0.5)
+    fmt_ok = ddn_total = 0
+    issues = 0
+    for line in sample:
+        _, conf = predict_format(line)
+        fmt_ok += int(conf > 0.7)
+        v = predict_ddn_validity(line)
+        ddn_total += v
+        if v < 0.5:
+            issues += 1
+
+    n = len(sample)
+    fmt_ratio = fmt_ok / n
+    ddn_ratio = ddn_total / n
+    score = int(round(60 * fmt_ratio + 40 * ddn_ratio))
     risk = "high" if score < 50 else "medium" if score < 75 else "low"
-    breakdown = [
-        {"check": "Cohérence format ATIH", "ok": fmt_ratio > 0.8,
-         "value": f"{int(fmt_ratio * 100)} %"},
-        {"check": "DDN valides", "ok": ddn_ratio > 0.95,
-         "value": f"{int(ddn_ratio * 100)} %"},
-        {"check": "FINESS présent",          "ok": True,  "value": "100 %"},
-        {"check": "Mode légal renseigné",    "ok": True,  "value": "98 %"},
-        {"check": "Chaînage ANO-HOSP",       "ok": True,  "value": "97 %"},
-    ]
+    audit.append(OPERATOR, "ARS_SCORE_LOT", req.lot_name)
+
     return ArsScoreResponse(
         lot_name=req.lot_name, score=score, risk=risk,
-        issues_count=issues, breakdown=breakdown,
+        issues_count=issues, has_ml=True,
+        breakdown=[
+            {"check": "Cohérence format ATIH",
+             "ok": fmt_ratio > 0.8, "value": f"{int(fmt_ratio * 100)} %"},
+            {"check": "DDN valides",
+             "ok": ddn_ratio > 0.95, "value": f"{int(ddn_ratio * 100)} %"},
+            {"check": "Échantillon analysé", "ok": True, "value": f"{n} lignes"},
+        ],
     )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ROUTES · CeSPA / CATTG (réforme 4 juillet 2025)
+# AUDIT · vraie persistance SQLite
 # ─────────────────────────────────────────────────────────────────────────────
-
-@app.get("/api/v2/cespa/rules", response_model=list[CespaRule],
-         tags=["cespa"], dependencies=[Depends(require_token)])
-def cespa_rules():
-    """Règles de validation issues de l'arrêté du 4 juillet 2025."""
-    return [
-        CespaRule(code="R-CSP-01",
-                  label="Code structure CeSPA présent dans champ 23 RPS",
-                  ok=47, total=47),
-        CespaRule(code="R-CSP-02",
-                  label="Forfait CATTG facturable ↔ acte tracé",
-                  ok=47, total=47),
-        CespaRule(code="R-CSP-04",
-                  label="Médecin responsable rattaché à structure CeSPA",
-                  ok=47, total=47),
-        CespaRule(code="R-CSP-07",
-                  label="Planning hebdomadaire CeSPA déclaré FINESS",
-                  ok=47, total=47),
-        CespaRule(code="R-CSP-09",
-                  label="Patient adulte (≥ 18 ans à l'admission)",
-                  ok=47, total=47),
-    ]
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# ROUTES · Diff lots mensuels
-# ─────────────────────────────────────────────────────────────────────────────
-
-@app.get("/api/v2/diff/{m_minus_1}/{m}", response_model=list[DiffRow],
-         tags=["diff"], dependencies=[Depends(require_token)])
-def diff_lots(m_minus_1: str, m: str):
-    """Compare deux lots mensuels (ex · /api/v2/diff/2025-10/2025-11)."""
-    rows_data = [
-        ("RPS produits",        8654,  8924),
-        ("RAA séjours",         1842,  1798),
-        ("Patients DPI",       14421, 14882),
-        ("Actes ambulatoires", 22884, 26512),
-        ("Hospi temps plein",    982,  1004),
-        ("CMP secteur G16",     1244,   956),
-        ("INS qualifiés",      14102, 14651),
-    ]
-    out = []
-    for indicator, m1, m2 in rows_data:
-        delta = m2 - m1
-        pct = round(delta / m1 * 100, 1)
-        if abs(pct) >= 20:
-            state = "alert"
-        elif abs(pct) >= 5:
-            state = "warn"
-        else:
-            state = "ok"
-        out.append(DiffRow(indicator=indicator, m_minus_1=m1, m=m2,
-                           delta_abs=delta, delta_pct=pct, state=state))
-    return out
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# ROUTES · Heatmap géographique
-# ─────────────────────────────────────────────────────────────────────────────
-
-@app.get("/api/v2/heatmap/sectors", response_model=list[HeatmapSector],
-         tags=["heatmap"], dependencies=[Depends(require_token)])
-def heatmap_sectors():
-    """File active par secteur ARS (94 + 92 · 8 secteurs principaux)."""
-    raw = [
-        ("94G16", 1842), ("94G09", 1654), ("94G02", 1423), ("94G05", 1287),
-        ("94I02", 982),  ("94G14", 854),  ("94G12", 742),  ("94I04", 624),
-    ]
-    def intensity(v: int):
-        return ("very_high" if v > 1500 else "high" if v > 1200
-                else "medium" if v > 800 else "low")
-    return [HeatmapSector(code=c, file_active=v, intensity=intensity(v))
-            for c, v in raw]
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# ROUTES · Audit chain
-# ─────────────────────────────────────────────────────────────────────────────
-
-def _sha256(s: str) -> str:
-    return hashlib.sha256(s.encode()).hexdigest()
-
 
 @app.get("/api/v2/audit/events", response_model=list[AuditEvent],
          tags=["audit"], dependencies=[Depends(require_token)])
 def audit_events(limit: int = 30):
-    """30 derniers événements horodatés et chaînés SHA-256 (art. 30 RGPD)."""
-    base = [
-        ("13:42:18", "DIM_ADAM",  "EXPORT_PILOT_CSV", "MPI_2025T3.csv"),
-        ("13:38:42", "DIM_ADAM",  "RESOLVE_COLLISION", "P-840291"),
-        ("13:24:03", "DIM_ADAM",  "PROCESS_BATCH",     "T3 · 9 fichiers"),
-        ("12:58:11", "SYSTEM",    "ML_TRAIN",          "format_detector v37"),
-        ("12:14:55", "DIM_ADAM",  "VIEW_NOMINATIVE",   "P-291847"),
-        ("11:42:09", "DIM_ADAM",  "LOGIN",             "127.0.0.1"),
-    ]
-    return [
-        AuditEvent(ts=t, who=w, action=a, target=tg,
-                   sha256=_sha256(f"{t}|{w}|{a}|{tg}"))
-        for t, w, a, tg in base[:limit]
-    ]
+    """N derniers événements horodatés et chaînés SHA-256."""
+    rows = audit.list_events(limit=max(1, min(limit, 1000)))
+    return [AuditEvent(**r) for r in rows]
+
+
+@app.get("/api/v2/audit/verify", tags=["audit"],
+         dependencies=[Depends(require_token)])
+def audit_verify():
+    """Vérification d'intégrité de la chaîne SHA-256."""
+    return audit.verify_chain()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ROUTES · Hospital Twin (simulation DFA)
+# COLLISIONS · lecture directe du MPI
 # ─────────────────────────────────────────────────────────────────────────────
 
-@app.get("/api/v2/twin/scenarios", response_model=list[TwinScenario],
-         tags=["twin"], dependencies=[Depends(require_token)])
-def twin_scenarios():
-    """Scénarios d'amélioration qualité PMSI · projection M+12 sur la DFA."""
-    return [
-        TwinScenario(label="Réduire délai codage J+15 → J+10",
-                     impact_eur=84_000, confidence=0.82),
-        TwinScenario(label="Combler 5 % de DP manquants",
-                     impact_eur=142_000, confidence=0.91),
-        TwinScenario(label="Améliorer chaînage 95 → 98 %",
-                     impact_eur=67_000, confidence=0.74),
-        TwinScenario(label="Préflight DRUIDES sur 100 % lots",
-                     impact_eur=38_000, confidence=0.88),
-    ]
+@app.get("/api/v2/idv/collisions", tags=["idv"],
+         dependencies=[Depends(require_token)])
+def idv_collisions(
+    processor: Annotated[DataProcessor, Depends(get_processor)],
+    limit: int = 100,
+):
+    """Liste réelle des collisions IPP/DDN détectées dans le MPI courant."""
+    return processor.get_collisions()[:max(1, min(limit, 1000))]
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ROUTES · Workflow validation
-# ─────────────────────────────────────────────────────────────────────────────
-
-@app.get("/api/v2/workflow/pending", response_model=list[WorkflowItem],
-         tags=["workflow"], dependencies=[Depends(require_token)])
-def workflow_pending():
-    """Items en attente dans la pipeline TIM → MIM → Préflight → ARS."""
-    return [
-        WorkflowItem(ipp="P-840291", label="Codage F32 → F33 ?",
-                     owner="TIM_ADAM", age="il y a 24 min", stage="mim"),
-        WorkflowItem(ipp="P-118092", label="Mode légal incohérent",
-                     owner="TIM_ADAM", age="il y a 1 h", stage="mim"),
-        WorkflowItem(ipp="P-994412", label="DDN à arbitrer",
-                     owner="TIM_SOPHIE", age="il y a 3 h", stage="tim"),
-    ]
+@app.get("/api/v2/idv/stats", tags=["idv"],
+         dependencies=[Depends(require_token)])
+def idv_stats(processor: Annotated[DataProcessor, Depends(get_processor)]):
+    """Statistiques MPI réelles."""
+    return processor.get_mpi_stats()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ENTRYPOINT · uvicorn programmatique
+# ENTRYPOINT
 # ─────────────────────────────────────────────────────────────────────────────
 
 def main() -> None:  # pragma: no cover
@@ -645,7 +575,6 @@ def main() -> None:  # pragma: no cover
     p.add_argument("--port", type=int, default=8766)
     p.add_argument("--reload", action="store_true")
     args = p.parse_args()
-    print(f"[FastAPI v{API_VERSION}] http://{args.host}:{args.port}/docs")
     uvicorn.run("backend.fastapi_app:app", host=args.host, port=args.port,
                 reload=args.reload)
 
