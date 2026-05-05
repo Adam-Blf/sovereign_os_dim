@@ -3236,7 +3236,7 @@ def build_pdf(output_path: str) -> str:
                "conservation des mentions de paternité. Pour toute question "
                "sur l'usage dans un autre GHT, contacter le support.")
     _alert(pdf, "info",
-           "Fin du guide. Version la plus récente sur "
+           "Fin du guide métier. Version la plus récente sur "
            "https://github.com/Adam-Blf/sovereign_os_dim · "
            "release publiée tous les trimestres.")
 
@@ -3248,8 +3248,8 @@ def build_pdf(output_path: str) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Genere le guide complet PDF · 20 pages par feature, "
-                    "logo Paul Guiraud en entete."
+        description="Genere le guide metier PDF (TIM, medecin DIM, chef de pole). "
+                    "Pour le guide developpeur, utiliser generate_guide_dev.py."
     )
     default_output = os.path.join(ROOT, "Sovereign_OS_DIM_Guide.pdf")
     parser.add_argument(
@@ -3278,11 +3278,15 @@ def main() -> None:
         from pypdf import PdfReader
         pages = len(PdfReader(path).pages)
         expected = len(FEATURES) * 3 + 5  # +cover, sommaire, intro, roadmap, support
-        print(f"[OK] Guide genere · {path}")
+        print(f"[OK] Guide metier genere · {path}")
         print(f"      {pages} pages · {size_kb} Ko · attendu ~{expected} pages "
               f"· {enriched}")
+        dev_guide = os.path.join(ROOT, "Sovereign_OS_DIM_Guide_Dev.pdf")
+        if not os.path.exists(dev_guide):
+            print(f"[INFO] Guide developpeur absent · lancer : "
+                  f"python tools/generate_guide_dev.py")
     except Exception:
-        print(f"[OK] Guide genere · {path} · {size_kb} Ko · {enriched}")
+        print(f"[OK] Guide metier genere · {path} · {size_kb} Ko · {enriched}")
 
 
 if __name__ == "__main__":  # pragma: no cover

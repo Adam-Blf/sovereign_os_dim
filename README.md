@@ -171,14 +171,16 @@ sovereign_os_dim/
 │   ├── pmsi_formats_history.md
 │   └── dim_business_value.md
 ├── tools/
-│   ├── generate_manual.py     · PDF manuel utilisateur
-│   ├── generate_guide.py      · PDF guide complet 38 pages (V36)
+│   ├── generate_manual.py     · PDF mode d'emploi court (utilisateurs)
+│   ├── generate_guide.py      · PDF guide métier 38 pages (TIM, médecin DIM, chef de pôle)
+│   ├── generate_guide_dev.py  · PDF guide développeur (DSI, contributeurs)
 │   └── capture_screenshots.py · Playwright headless
 ├── tests/
 │   ├── test_data_processor.py · 233 tests Python
 │   └── frontend/
 │       └── test_activity_analysis.mjs · 30 tests JS
-├── Sovereign_OS_DIM_Guide.pdf · Guide utilisateur 38 pages (V36)
+├── Sovereign_OS_DIM_Guide.pdf     · Guide métier (TIM, médecin DIM, chef de pôle)
+├── Sovereign_OS_DIM_Guide_Dev.pdf · Guide développeur (DSI, contributeurs)
 └── README.md
 ```
 
@@ -209,7 +211,7 @@ sovereign_os_dim/
 
 Le bundle C# prêt à livrer vit dans `D:\SovereignOS_DIM_CSharp\` ·
 `SovereignOS.Desktop.exe` (97 Mo), `frontend/` (patchs sécurité inclus),
-`Sovereign_OS_DIM_Guide.pdf` (38 pages, V36), `LISEZ-MOI.txt`,
+`Sovereign_OS_DIM_Guide.pdf` (guide métier), `Sovereign_OS_DIM_Guide_Dev.pdf` (guide dev), `LISEZ-MOI.txt`,
 `LICENCE.txt`, `VERSION`, `CHECKSUMS.sha256`. Total 140 Mo.
 
 ## Roadmap V37+
