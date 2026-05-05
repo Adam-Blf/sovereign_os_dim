@@ -113,36 +113,28 @@ MOCK_RESPONSES = {
 
 
 SCREENSHOTS = [
-    {
-        "name": "01_dashboard",
-        "title": "Dashboard · vue d'ensemble",
-        "nav": "nav-dashboard",
-    },
-    {
-        "name": "02_modo_files",
-        "title": "Modo Files · selection des fichiers ATIH",
-        "nav": "nav-modo",
-    },
-    {
-        "name": "03_idv",
-        "title": "Identitovigilance · collisions IPP / DDN",
-        "nav": "nav-idv",
-    },
-    {
-        "name": "04_pilot_csv",
-        "title": "PMSI Pilot CSV · exports normalises",
-        "nav": "nav-pilot",
-    },
-    {
-        "name": "05_csv_import",
-        "title": "Import CSV externe",
-        "nav": "nav-csv",
-    },
-    {
-        "name": "06_structure",
-        "title": "Structure · arborescence polaire",
-        "nav": "nav-structure",
-    },
+    # ── Vues classiques ─────────────────────────────────────────────────────
+    {"name": "01_dashboard",       "title": "Dashboard · vue d'ensemble",            "nav": "nav-dashboard"},
+    {"name": "02_modo_files",      "title": "Modo Files · selection des fichiers ATIH","nav": "nav-modo"},
+    {"name": "03_idv",             "title": "Identitovigilance · collisions IPP / DDN","nav": "nav-idv"},
+    {"name": "04_pilot_csv",       "title": "PMSI Pilot CSV · exports normalises",   "nav": "nav-pilot"},
+    {"name": "05_csv_import",      "title": "Import CSV externe",                    "nav": "nav-csv"},
+    {"name": "06_structure",       "title": "Structure · arborescence polaire",      "nav": "nav-structure"},
+    # ── Vues Sentinel V36 ─────────────────────────────────────────────────
+    {"name": "08_cockpit",         "title": "Cockpit chef DIM · tableau executif",   "nav": "nav-cockpit"},
+    {"name": "09_health",          "title": "Health monitor · supervision technique","nav": "nav-health"},
+    {"name": "10_ars",             "title": "Sentinel ARS · predicteur de rejet",    "nav": "nav-ars"},
+    {"name": "11_cespa",           "title": "CeSPA / CATTG · conformite reforme 2025","nav": "nav-cespa"},
+    {"name": "12_diff",            "title": "Diff lots mensuels · anti-regression",  "nav": "nav-diff"},
+    {"name": "13_cim",             "title": "CimSuggester · LLM Ollama local",       "nav": "nav-cim"},
+    {"name": "14_lstm",            "title": "Predicteur DMS · LSTM par groupe CIM-10","nav": "nav-lstm"},
+    {"name": "15_cluster",         "title": "Clustering UMAP · 6 archetypes patients","nav": "nav-cluster"},
+    {"name": "16_twin",            "title": "Hospital Twin · simulation DFA",        "nav": "nav-twin"},
+    {"name": "17_heatmap",         "title": "Heatmap geographique · sectorisation",  "nav": "nav-heatmap"},
+    {"name": "18_pivot",           "title": "Tableaux croises ad hoc",                "nav": "nav-pivot"},
+    {"name": "19_rgpd",            "title": "RGPD command center · DPO panel",       "nav": "nav-rgpd"},
+    {"name": "20_audit",           "title": "Audit chain · tracabilite SHA-256",     "nav": "nav-audit"},
+    {"name": "21_workflow",        "title": "Workflows DIM · TIM > MIM > ARS",       "nav": "nav-workflow"},
     {
         "name": "07_structure_activity",
         "title": "Analyse d'activite par UM",
@@ -174,26 +166,48 @@ def run():
                                       device_scale_factor=1.5)
         page = context.new_page()
 
-        # Mock toutes les /api/*
+        # Mock toutes les /api/* et /health · catch-all sur les autres fetch
         def handle_route(route):
-            url = route.request.url
-            path = url.split("127.0.0.1:8787", 1)[-1].split("?", 1)[0]
-            body = MOCK_RESPONSES.get(path)
-            if body is None:
-                # POST generic fallback · renvoie un payload vide OK
-                body = {"ok": True}
-            route.fulfill(
-                status=200,
-                content_type="application/json",
-                body=json.dumps(body),
-            )
+            req_url = route.request.url
+            # Ignore les ressources statiques (CSS / JS / images / Tailwind CDN)
+            if any(req_url.endswith(ext) for ext in (".css", ".js", ".png", ".jpg",
+                    ".svg", ".woff", ".woff2", ".ttf", ".ico")):
+                route.continue_()
+                return
+            # Match un endpoint connu · sinon renvoie {"ok": true}
+            for prefix in ("/api/", "/health"):
+                if prefix in req_url:
+                    path = req_url.split(prefix, 1)[1]
+                    full = (prefix + path).split("?", 1)[0].rstrip("/")
+                    if not full.startswith("/"):
+                        full = "/" + full
+                    body = MOCK_RESPONSES.get(full, {"ok": True})
+                    route.fulfill(status=200, content_type="application/json",
+                                  body=json.dumps(body))
+                    return
+            route.continue_()
 
         context.route("**/api/**", handle_route)
         context.route("**/health", handle_route)
 
         page.goto(index_url, wait_until="domcontentloaded")
-        # Attendre que le frontend ait boot (Lucide icons, etc.)
-        page.wait_for_timeout(1500)
+        # Attendre que le frontend ait boot (Lucide icons + Sentinel views)
+        page.wait_for_timeout(2500)
+        # Skip le boot screen si présent · cliquer sur le bouton ignite
+        page.evaluate("""
+            () => {
+                const btn = document.getElementById('btn-ignite');
+                if (btn && btn.offsetParent !== null) btn.click();
+                const overlay = document.getElementById('boot-overlay');
+                if (overlay) overlay.style.display = 'none';
+                const root = document.getElementById('app-root');
+                if (root) {
+                    root.classList.remove('hidden');
+                    root.style.opacity = '1';
+                }
+            }
+        """)
+        page.wait_for_timeout(500)
 
         # Force le theme clair pour des captures lisibles en impression
         page.evaluate("document.documentElement.classList.remove('dark')")
@@ -224,20 +238,18 @@ def run():
             # Laisser le rendu se stabiliser
             page.wait_for_timeout(900)
 
-            # Action post-nav · si on doit charger la structure pour la vue activite
+            # Action post-nav · skip silencieusement si fetch interdit en file://
             if shot.get("post_action") == "loadStructure":
-                # Simuler que la structure a ete chargee · appelle render via window
-                page.evaluate("""
-                    async () => {
-                        const api = window.pywebview && window.pywebview.api;
-                        if (!api || !api.load_structure) return;
-                        const data = await fetch('/api/structure').then(r => r.json());
-                        // Simule ce que ferait le bouton selectionner · on injecte directement
-                        const btn = document.getElementById('btn-structure-select');
-                        if (btn) btn.click();
-                    }
-                """)
-                page.wait_for_timeout(1500)
+                try:
+                    page.evaluate("""
+                        () => {
+                            const btn = document.getElementById('btn-structure-select');
+                            if (btn) btn.click();
+                        }
+                    """)
+                    page.wait_for_timeout(1000)
+                except Exception:
+                    pass
 
             png_path = OUT_DIR / f"{shot['name']}.png"
             page.screenshot(path=str(png_path), full_page=False)

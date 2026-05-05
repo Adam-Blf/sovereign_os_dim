@@ -3122,6 +3122,68 @@ def build_pdf(output_path: str) -> str:
             print(f"[ERR] Feature {i} · {feat['title']} · {e}", file=sys.stderr)
             raise
 
+    # ══════ GALERIE · 16 VUES SENTINEL V36 (4 thumbnails par page) ══════
+    sentinel_gallery = [
+        ("01_dashboard.png",   "Dashboard · MPI",                "Vue d'ensemble · 4 KPI + donut formats"),
+        ("08_cockpit.png",     "Cockpit chef DIM",                "Tableau exécutif mensuel · file active 12 mois"),
+        ("09_health.png",      "Health monitor",                  "Supervision système · 7 vérifications"),
+        ("10_ars.png",         "Sentinel ARS",                    "Prédicteur de rejet DRUIDES · score par lot"),
+        ("11_cespa.png",       "CeSPA / CATTG",                   "Conformité réforme 4 juillet 2025"),
+        ("12_diff.png",        "Diff lots mensuels",              "Anti-régression M+1 vs M · 14 indicateurs"),
+        ("13_cim.png",         "CimSuggester",                    "IA codage CIM-10 · LLM Ollama local"),
+        ("14_lstm.png",        "Prédicteur DMS",                  "LSTM par groupe diagnostique CIM-10"),
+        ("15_cluster.png",     "Clustering UMAP",                 "6 archétypes patients · UMAP+HDBSCAN"),
+        ("16_twin.png",        "Hospital Twin",                   "Simulation impact tarifaire DFA"),
+        ("17_heatmap.png",     "Heatmap géographique",            "File active par secteur ARS"),
+        ("18_pivot.png",       "Tableaux croisés",                "Exploration ad hoc · pivot drag-drop"),
+        ("02_modo_files.png",  "Modo Files",                      "Sélection + traitement des lots ATIH"),
+        ("03_idv.png",         "Identitovigilance",               "Résolution des collisions IPP / DDN"),
+        ("19_rgpd.png",        "RGPD command center",             "DPO panel · audit art. 30"),
+        ("20_audit.png",       "Audit chain",                     "Traçabilité immutable SHA-256"),
+        ("21_workflow.png",    "Workflows DIM",                   "TIM → MIM → Préflight → ARS"),
+    ]
+
+    for page_idx in range(0, len(sentinel_gallery), 4):
+        page_items = sentinel_gallery[page_idx:page_idx + 4]
+        pdf.add_page()
+        _page_header(pdf, LOGO_PATH, "Galerie des vues V36",
+                     "Sentinel · Refonte écrans", 0, total_feats)
+        _page_title(pdf, page_idx // 4 + 1,
+                    f"Galerie des écrans · {page_idx + 1}/{len(sentinel_gallery)}")
+        _body_text(pdf,
+                   "Aperçu visuel des vues principales du logiciel SovereignOS DIM "
+                   "V36 · refonte design Sentinel pilotée par le chef de pôle. Chaque "
+                   "vue est accessible depuis la sidebar · les vues IA et métier "
+                   "exploitent les modèles XGBoost embarqués (format_detector, "
+                   "collision_risk, ddn_validity).")
+        # Grille 2 × 2
+        cell_w, cell_h = 88, 60
+        gap_x, gap_y = 8, 12
+        for idx, (png, title, sub) in enumerate(page_items):
+            col, row = idx % 2, idx // 2
+            x0 = pdf.l_margin + col * (cell_w + gap_x)
+            y0 = pdf.get_y() + row * (cell_h + gap_y + 14)
+            png_path = os.path.join(SCREENSHOT_DIR, png)
+            # Cadre
+            pdf.set_draw_color(*SLATE_200)
+            pdf.set_line_width(0.3)
+            pdf.rect(x0, y0, cell_w, cell_h)
+            if os.path.exists(png_path):
+                try:
+                    pdf.image(png_path, x=x0 + 0.5, y=y0 + 0.5,
+                              w=cell_w - 1, h=cell_h - 1)
+                except Exception:  # pragma: no cover
+                    pass
+            # Titre + sous-titre
+            pdf.set_xy(x0, y0 + cell_h + 1)
+            pdf.set_font(SANS, "B", TYPE["small"])
+            pdf.set_text_color(*GH_NAVY)
+            pdf.cell(cell_w, 4, title, new_x="LMARGIN", new_y="NEXT")
+            pdf.set_x(x0)
+            pdf.set_font(SANS, "", TYPE["caption"])
+            pdf.set_text_color(*SLATE_500)
+            pdf.cell(cell_w, 4, sub, new_x="LMARGIN", new_y="NEXT")
+
     # ══════ PAGE ROADMAP · OUTILS PROPOSÉS V37+ ══════
     pdf.add_page()
     _page_header(pdf, LOGO_PATH, "Roadmap métier", "Roadmap", total_feats, total_feats)

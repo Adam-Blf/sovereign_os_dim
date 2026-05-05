@@ -66,12 +66,13 @@ def _build_outline_entries() -> list[tuple[str, int]]:
         ("Introduction métier", 2),
     ]
     for i, title in enumerate(FEATURE_TITLES, start=1):
-        # Feature N commence à la page (3 + (N-1)*3) en 0-indexé
         first_page = 3 + (i - 1) * 3
         out.append((f"{i:02d}. {title}", first_page))
-    # Après les 11 features (3 + 11*3 = 36)
-    out.append(("Roadmap métier · V37+", 36))
-    out.append(("Support, crédits, licence", 37))
+    # Galerie V36 · 5 pages (17 vues / 4 par page)
+    gallery_start = 3 + len(FEATURE_TITLES) * 3
+    out.append(("Galerie des vues V36", gallery_start))
+    out.append(("Roadmap métier · V37+", gallery_start + 5))
+    out.append(("Support, crédits, licence", gallery_start + 6))
     return out
 
 
