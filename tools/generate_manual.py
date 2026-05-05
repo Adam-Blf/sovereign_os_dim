@@ -472,7 +472,35 @@ def main() -> None:
     args = parser.parse_args()
 
     path = build_pdf(args.output)
-    print(f"[OK] Manuel genere : {path}")
+
+    # Post-traitement · métadonnées + outline (skill pdf-official)
+    try:
+        import sys as _sys
+        _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from enrich_guide_pdf import enrich_pdf
+        from pypdf import PdfReader
+        n_pages = len(PdfReader(path).pages)
+        sections = [
+            ("Couverture", 0),
+            ("Workflow quotidien", 1 if n_pages > 1 else 0),
+            ("Raccourcis et formats", 2 if n_pages > 2 else 0),
+            ("Annexes", 3 if n_pages > 3 else 0),
+        ]
+        enrich_pdf(
+            path, path,
+            title="Sovereign OS DIM · Manuel TIM",
+            author="Adam Beloucif",
+            subject="Manuel quotidien TIM · workflow rapide",
+            keywords="PMSI, ATIH, DRUIDES, TIM, manuel, GHT Sud Paris",
+            creator="tools/generate_manual.py",
+            sections=sections,
+        )
+        enriched = "(enrichi · metadata + bookmarks)"
+    except Exception as e:  # pragma: no cover
+        print(f"[WARN] Enrichissement PDF echoue · {e}")
+        enriched = "(brut)"
+
+    print(f"[OK] Manuel genere : {path} · {enriched}")
 
 
 if __name__ == "__main__":

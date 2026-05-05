@@ -75,6 +75,45 @@ def _build_outline_entries() -> list[tuple[str, int]]:
     return out
 
 
+def enrich_pdf(input_path: str, output_path: str, *,
+               title: str, author: str, subject: str, keywords: str,
+               creator: str, sections: list[tuple[str, int]]) -> None:
+    """
+    Enrichisseur générique · ajoute métadonnées + outline navigable
+    à n'importe quel PDF produit par fpdf2.
+
+    sections · liste de (label, page_index_0_based).
+    """
+    reader = PdfReader(input_path)
+    writer = PdfWriter()
+    for page in reader.pages:
+        writer.add_page(page)
+
+    writer.add_metadata({
+        "/Title": title,
+        "/Author": author,
+        "/Subject": subject,
+        "/Keywords": keywords,
+        "/Creator": creator,
+        "/Producer": "fpdf2 · post-traité avec pypdf (skill pdf-official)",
+        "/CreationDate": f"D:{datetime.now().strftime('%Y%m%d%H%M%S')}+02'00'",
+    })
+
+    for label, page_idx in sections:
+        if 0 <= page_idx < len(writer.pages):
+            writer.add_outline_item(label, page_idx, fit=Fit.fit())
+
+    catalog = writer._root_object
+    catalog[NameObject("/PageMode")] = NameObject("/UseOutlines")
+    catalog[NameObject("/OpenAction")] = ArrayObject([
+        writer.pages[0].indirect_reference,
+        NameObject("/Fit"),
+    ])
+
+    with open(output_path, "wb") as f:
+        writer.write(f)
+
+
 def enrich(input_path: str, output_path: str) -> None:
     reader = PdfReader(input_path)
     writer = PdfWriter()

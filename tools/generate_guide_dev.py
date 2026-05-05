@@ -871,8 +871,41 @@ def main() -> None:
     )
     args = parser.parse_args()
     path = build_pdf(args.output)
+
+    # Post-traitement · métadonnées + outline navigable (skill pdf-official)
+    try:
+        import sys as _sys
+        _sys.path.insert(0, HERE if isinstance(HERE, str) else str(HERE))
+        from enrich_guide_pdf import enrich_pdf
+        enrich_pdf(
+            path, path,
+            title="Sovereign OS DIM · Guide développeur V36",
+            author="Adam Beloucif",
+            subject="Architecture, build, tests, déploiement, ML stack",
+            keywords=("PMSI, ATIH, architecture, Python, .NET 8, XGBoost, "
+                      "fpdf2, pywebview, tests, CI/CD, RGPD"),
+            creator="tools/generate_guide_dev.py",
+            sections=[
+                ("Page de garde", 0),
+                ("Sommaire", 1),
+                ("1. Architecture générale", 2),
+                ("2. Stack technique et dépendances", 3),
+                ("3. Bridge HTTP et intégration PHP", 4),
+                ("4. Module ML · configuration et entraînement", 6),
+                ("5. Sécurité et conformité RGPD", 8),
+                ("6. CI/CD · pipeline et qualité", 9),
+                ("7. Performances et benchmarks", 10),
+                ("8. Contribuer au projet", 11),
+                ("Références et ressources", 12),
+            ],
+        )
+        enriched = "(enrichi · metadata + 11 bookmarks)"
+    except Exception as e:  # pragma: no cover
+        print(f"[WARN] Enrichissement PDF echoue · {e}")
+        enriched = "(brut)"
+
     size_kb = os.path.getsize(path) // 1024
-    print(f"[OK] Guide développeur généré : {path}  ({size_kb} Ko)")
+    print(f"[OK] Guide développeur généré : {path}  ({size_kb} Ko) · {enriched}")
 
 
 if __name__ == "__main__":
