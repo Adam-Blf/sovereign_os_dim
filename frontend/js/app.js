@@ -147,12 +147,26 @@
     // =========================================================================
     const VIEWS = {
         dashboard: { title: "Dashboard", sub: "Tableau de bord de production" },
-        cockpit: { title: "Cockpit chef DIM", sub: "Tableau de bord exécutif mensuel" },
-        modo: { title: "Modo Files", sub: "Ingestion & traitement batch" },
-        idv: { title: "Identitovigilance", sub: "Master Patient Index — Résolution des collisions" },
-        pilot: { title: "PMSI Pilot CSV", sub: "Export des données réconciliées" },
-        csv: { title: "Import CSV", sub: "Visualiseur de fichiers CSV externes" },
-        tuto: { title: "Tutoriel d'utilisation", sub: "Guide pas-à-pas Sentinel" }
+        cockpit:   { title: "Cockpit chef DIM", sub: "Tableau de bord exécutif mensuel" },
+        health:    { title: "Health monitor",   sub: "Supervision technique · auto-refresh 30 s" },
+        ars:       { title: "Sentinel ARS",     sub: "Prédicteur de rejet DRUIDES" },
+        cespa:     { title: "CeSPA / CATTG",    sub: "Conformité réforme 4 juillet 2025" },
+        diff:      { title: "Diff lots mensuels", sub: "Anti-régression M+1 vs M" },
+        cim:       { title: "CimSuggester",     sub: "IA codage CIM-10 · LLM Ollama local" },
+        lstm:      { title: "Prédicteur DMS",    sub: "LSTM · stratifié par groupe diagnostique" },
+        cluster:   { title: "Clustering UMAP",  sub: "UMAP + HDBSCAN · 6 archétypes patients" },
+        twin:      { title: "Hospital Twin",    sub: "Simulation impact tarifaire DFA" },
+        heatmap:   { title: "Heatmap géo",       sub: "Sectorisation 94 + 92 · file active" },
+        pivot:     { title: "Tableaux croisés", sub: "Exploration ad hoc du MPI" },
+        modo:      { title: "Modo Files",       sub: "Ingestion & traitement batch" },
+        idv:       { title: "Identitovigilance", sub: "Master Patient Index — Résolution des collisions" },
+        pilot:     { title: "PMSI Pilot CSV",   sub: "Export des données réconciliées" },
+        csv:       { title: "Import CSV",       sub: "Visualiseur de fichiers CSV externes" },
+        structure: { title: "Structure",        sub: "Pôle / Secteur / UM · arborescence" },
+        rgpd:      { title: "RGPD",             sub: "DPO panel · audit art. 30" },
+        audit:     { title: "Audit chain",      sub: "Traçabilité immutable SHA-256" },
+        workflow:  { title: "Workflows DIM",    sub: "TIM → MIM → Préflight → ARS" },
+        tuto:      { title: "Tutoriel",         sub: "Guide pas-à-pas Sentinel" },
     };
 
     function navigateTo(view) {
@@ -178,6 +192,18 @@
     function render(view) {
         const vp = $("os-viewport");
         if (!vp) return;
+        // Vues Sentinel · portées depuis docs/design/sentinel-refonte/
+        const sentinelMap = {
+            health: "health", ars: "ars", cespa: "cespa", diff: "diff",
+            cim: "cim", lstm: "lstm", cluster: "cluster",
+            twin: "twin", heatmap: "heatmap", pivot: "pivot",
+            rgpd: "rgpd", audit: "audit", workflow: "workflow",
+        };
+        if (sentinelMap[view] && window.SentinelViews && window.SentinelViews[sentinelMap[view]]) {
+            window.SentinelViews[sentinelMap[view]]();
+            return;
+        }
+
         switch (view) {
             case "dashboard": renderDashboard(vp); break;
             case "cockpit":
@@ -2220,7 +2246,16 @@
         if (_initialized) return;
         _initialized = true;
 
-        const navMap = { "nav-dashboard": "dashboard", "nav-cockpit": "cockpit", "nav-modo": "modo", "nav-idv": "idv", "nav-pilot": "pilot", "nav-csv": "csv", "nav-structure": "structure", "nav-tuto": "tuto" };
+        const navMap = {
+            "nav-dashboard": "dashboard", "nav-cockpit": "cockpit", "nav-health": "health",
+            "nav-ars": "ars", "nav-cespa": "cespa", "nav-diff": "diff",
+            "nav-cim": "cim", "nav-lstm": "lstm", "nav-cluster": "cluster",
+            "nav-twin": "twin", "nav-heatmap": "heatmap", "nav-pivot": "pivot",
+            "nav-modo": "modo", "nav-idv": "idv",
+            "nav-pilot": "pilot", "nav-csv": "csv", "nav-structure": "structure",
+            "nav-rgpd": "rgpd", "nav-audit": "audit", "nav-workflow": "workflow",
+            "nav-tuto": "tuto",
+        };
         Object.entries(navMap).forEach(([id, v]) => {
             const el = $(id);
             if (el) el.addEventListener("click", () => navigateTo(v));
