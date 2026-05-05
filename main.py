@@ -1,134 +1,213 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM — Point d'entrée principal
+#  SOVEREIGN OS DIM — Point d'entrée principal V37
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V35.0 — Station DIM GHT Sud Paris
-#  Date    : 2026-03-03
+#  Project : Sovereign OS V37.0 — Station DIM GHT Sud Paris
 #
-#  Description:
-#    Lance l'application de bureau Sovereign OS via pywebview.
-#    La fenêtre native charge le frontend HTML/CSS/JS et expose l'API Python
-#    via le js_api de pywebview (window.pywebview.api dans le frontend).
+#  Description ·
+#    Lance l'écosystème complet en un seul .exe ·
+#      1. Bridge Flask (port 8765) · API legacy + intégration PHP
+#      2. FastAPI v2 (port 8766) · API moderne pour les vues Sentinel V36+
+#      3. Fenêtre pywebview · charge le frontend HTML/CSS/JS qui consomme
+#         les 2 API en parallèle
 #
-#  Architecture:
-#    main.py ──► pywebview.create_window() ──► frontend/index.html
-#                 └─ js_api=Api() ──► backend/api.py ──► backend/data_processor.py
+#    Les 2 serveurs tournent en threads daemon · ils s'arrêtent
+#    automatiquement quand la fenêtre se ferme.
 #
-#  Usage:
-#    - Développement :  python main.py
-#    - Compilé :        PyInstaller (voir build.bat)
+#  Architecture ·
+#    main.py ──► [Thread Flask :8765] backend/bridge.py
+#            ──► [Thread FastAPI :8766] backend/fastapi_app.py
+#            ──► pywebview.create_window() ──► frontend/index.html
+#                 └─ js_api=Api() · expose backend.api.Api au frontend
+#                 └─ fetch http://127.0.0.1:8766/api/v2/* via Sentinel views
+#
+#  Usage ·
+#    - Développement ·  python main.py
+#    - Compilé .exe ·   double-cliquer sur Sovereign_OS_DIM_Portable.exe
 # ══════════════════════════════════════════════════════════════════════════════
 
+from __future__ import annotations
+
+import contextlib
 import os
+import socket
 import sys
+import threading
+import time
 
 
 def _check_dependencies():
     """
-    Vérifie que toutes les dépendances critiques sont installées.
-
-    Pourquoi ? Sur Windows, pywebview nécessite pythonnet pour créer une
-    fenêtre native via EdgeChromium (.NET). Sans pythonnet, pywebview lance
-    une WebViewException cryptique. On la rend humaine ici.
+    Vérifie que les dépendances critiques sont installées et signale les
+    manquantes avec un message humain (sans backtrace cryptique).
     """
     errors = []
 
-    # pythonnet est obligatoire sur Windows pour le renderer EdgeChromium
     if sys.platform == "win32":
         try:
-            import clr  # noqa: F401 — pythonnet expose le module 'clr'
+            import clr  # noqa · pythonnet
         except ImportError:
             errors.append(
                 "pythonnet n'est pas installé.\n"
-                "   → pip install pythonnet>=3.0.3\n"
-                "   → Requis pour pywebview sur Windows (renderer EdgeChromium)"
+                "   ->pip install pythonnet>=3.0.3 (renderer EdgeChromium Windows)"
             )
 
-    # pywebview est le cœur de l'application
     try:
-        import webview  # noqa: F401
+        import webview  # noqa
     except ImportError:
-        errors.append(
-            "pywebview n'est pas installé.\n"
-            "   → pip install pywebview>=5.3.2"
-        )
+        errors.append("pywebview n'est pas installé · pip install pywebview>=5.3.2")
+
+    # FastAPI + Flask sont fortement recommandées (les vues live en dépendent)
+    # mais on n'en fait pas un blocage · l'app marche en mode mock sinon.
 
     if errors:
         print("╔══════════════════════════════════════════════════════════╗")
-        print("║   ❌ DÉPENDANCES MANQUANTES — Sovereign OS DIM          ║")
-        print("╚══════════════════════════════════════════════════════════╝")
-        print()
+        print("║   [ERR] DÉPENDANCES MANQUANTES · Sovereign OS DIM          ║")
+        print("╚══════════════════════════════════════════════════════════╝\n")
         for e in errors:
-            print(f"  • {e}")
-        print()
-        print("  💡 Installez toutes les dépendances avec :")
-        print("     pip install -r requirements.txt")
-        print()
+            print(f"  · {e}")
+        print("\n  Astuce · pip install -r requirements.txt\n")
         sys.exit(1)
 
 
 def get_frontend_path():
-    """
-    Résout le chemin du dossier frontend.
-
-    Pourquoi deux cas ? PyInstaller bundle les fichiers dans un dossier
-    temporaire (_MEIPASS) quand l'app est compilée. En mode développement,
-    on utilise le dossier du script courant.
-    """
-    if getattr(sys, 'frozen', False):
-        # Compilé via PyInstaller — fichiers dans le bundle temporaire
+    """Résout le dossier frontend (mode dev ou bundle PyInstaller)."""
+    if getattr(sys, "frozen", False):
         base = sys._MEIPASS
     else:
-        # Mode développement — chemin relatif au script
         base = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base, "frontend")
 
 
-def main():
-    """
-    Point d'entrée de l'application Sovereign OS.
+# ══════════════════════════════════════════════════════════════════════════════
+# SERVEURS EN THREADS DAEMON · Flask + FastAPI lancés au boot
+# ══════════════════════════════════════════════════════════════════════════════
 
-    Crée une fenêtre native pywebview avec :
-      - Le frontend HTML chargé localement (pas de serveur HTTP)
-      - L'API Python exposée au JavaScript via js_api
-      - Une taille de fenêtre optimisée pour les écrans DIM (1440x900)
+def _is_port_free(port: int, host: str = "127.0.0.1") -> bool:
+    """True si on peut binder le port · sinon un autre process l'utilise."""
+    with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        try:
+            s.bind((host, port))
+            return True
+        except OSError:
+            return False
+
+
+def _start_flask_bridge(port: int = 8765) -> threading.Thread | None:
+    """Démarre le bridge Flask en thread daemon · serveur silencieux en prod."""
+    if not _is_port_free(port):
+        print(f"  · Bridge Flask · port {port} déjà occupé, skip")
+        return None
+
+    def _run():
+        try:
+            from backend.bridge import create_app
+            app = create_app()
+            # Werkzeug silencieux pour ne pas polluer la console
+            import logging
+            logging.getLogger("werkzeug").setLevel(logging.WARNING)
+            app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
+        except Exception as e:  # pragma: no cover
+            print(f"  [ERR] Bridge Flask · {e}")
+
+    t = threading.Thread(target=_run, daemon=True, name="sovereign-flask-bridge")
+    t.start()
+    print(f"  [OK] Bridge Flask · http://127.0.0.1:{port}")
+    return t
+
+
+def _start_fastapi_v2(port: int = 8766) -> threading.Thread | None:
+    """Démarre la FastAPI v2 (uvicorn) en thread daemon."""
+    if not _is_port_free(port):
+        print(f"  · FastAPI v2 · port {port} déjà occupé, skip")
+        return None
+
+    def _run():
+        try:
+            import uvicorn
+            from backend.fastapi_app import app
+            config = uvicorn.Config(
+                app, host="127.0.0.1", port=port,
+                log_level="warning", access_log=False,
+            )
+            server = uvicorn.Server(config)
+            server.run()
+        except ImportError as e:
+            print(f"  · FastAPI v2 · dépendance manquante ({e}) · "
+                  "skip (mode mock dans l'UI)")
+        except Exception as e:  # pragma: no cover
+            print(f"  [ERR] FastAPI v2 · {e}")
+
+    t = threading.Thread(target=_run, daemon=True, name="sovereign-fastapi-v2")
+    t.start()
+    print(f"  [OK] FastAPI v2 · http://127.0.0.1:{port}/docs")
+    return t
+
+
+def _wait_for_servers(timeout: float = 6.0) -> None:
     """
-    # Vérification des dépendances avant tout import lourd
+    Attend que Flask et FastAPI répondent sur leurs ports avant de lancer
+    pywebview · évite l'effet de "DONNÉES MOCK" au boot pendant que les
+    serveurs finissent de démarrer.
+    """
+    deadline = time.time() + timeout
+    targets = [8765, 8766]
+    while time.time() < deadline and targets:
+        for p in list(targets):
+            try:
+                with socket.create_connection(("127.0.0.1", p), timeout=0.2):
+                    targets.remove(p)
+            except OSError:
+                continue
+        if targets:
+            time.sleep(0.1)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MAIN
+# ══════════════════════════════════════════════════════════════════════════════
+
+def main() -> None:
     _check_dependencies()
 
-    # Imports après vérification (pour éviter des crashes non-lisibles)
+    print("╔══════════════════════════════════════════════════════════╗")
+    print("║   Sovereign OS DIM V37.0 · GHT Psy Sud Paris             ║")
+    print("╚══════════════════════════════════════════════════════════╝")
+    print("\n[1/3] Démarrage des serveurs API ·")
+    flask_thread = _start_flask_bridge(port=8765)
+    fastapi_thread = _start_fastapi_v2(port=8766)
+
+    print("\n[2/3] Attente des serveurs (max 6 s) ·")
+    _wait_for_servers(timeout=6.0)
+    print("       ->prêt")
+
+    print("\n[3/3] Lancement de la fenêtre pywebview ·")
     import webview
     from backend.api import Api
 
-    # Instanciation de l'API backend
     api = Api()
-
-    # Résolution du chemin vers le frontend
     frontend = get_frontend_path()
     index_html = os.path.join(frontend, "index.html")
-
-    # Vérification que le frontend existe (protège contre les builds cassés)
     if not os.path.isfile(index_html):
-        print(f"❌ ERREUR : {index_html} introuvable.")
-        print("   Vérifiez que le dossier 'frontend/' est présent.")
+        print(f"\n  [ERR] ERREUR · {index_html} introuvable.")
         sys.exit(1)
 
-    # Création de la fenêtre native pywebview
-    window = webview.create_window(
-        title="Sovereign OS V35.0 | Station DIM - GHT Sud Paris",
+    webview.create_window(
+        title="Sovereign OS V37.0 | Station DIM · GHT Psy Sud Paris",
         url=index_html,
-        js_api=api,        # Expose toutes les méthodes publiques de Api()
-        width=1440,        # Largeur optimale pour les écrans de bureau DIM
-        height=900,        # Hauteur confortable pour la navigation
-        min_size=(1100, 700),  # Taille minimum pour garder l'UI lisible
+        js_api=api,
+        width=1440,
+        height=900,
+        min_size=(1100, 700),
         resizable=True,
-        background_color="#020617",  # Fond slate-950 pendant le chargement
-        text_select=True,  # Permet la sélection de texte (important pour les IPP)
+        background_color="#020617",
+        text_select=True,
     )
 
-    # Lancement de la boucle événementielle pywebview
-    # debug=True active les DevTools (F12) pour le développement
+    # webview.start() bloque jusqu'à fermeture · les threads daemon
+    # s'arrêtent automatiquement à ce moment-là.
     webview.start(debug=False)
+    print("\n  ->Fenêtre fermée · arrêt des serveurs (threads daemon).")
 
 
 if __name__ == "__main__":

@@ -56,13 +56,47 @@ HIDDEN_IMPORTS = [
     "backend.bridge",
     "backend.api",
     "backend.data_processor",
+    "backend.fastapi_app",
+    "backend.ml",
+    "backend.ml.predict",
+    "backend.ml.synthetic",
     # Excel (utilisé par le bridge pour /api/import-excel)
     "openpyxl",
+    # FastAPI v2 (V37+) · uvicorn charge h11/httptools/anyio dynamiquement
+    "fastapi",
+    "uvicorn",
+    "uvicorn.loops.asyncio",
+    "uvicorn.lifespan.on",
+    "uvicorn.protocols.http.h11_impl",
+    "uvicorn.protocols.websockets.auto",
+    "uvicorn.logging",
+    "h11",
+    "anyio",
+    "anyio._backends._asyncio",
+    "sniffio",
+    "starlette",
+    "starlette.routing",
+    "pydantic",
+    "pydantic_core",
+    # ML (XGBoost stack) · embarqué pour inférence locale
+    "xgboost",
+    "lightgbm",
+    "sklearn.ensemble._forest",
+    "sklearn.tree._utils",
+    "numpy",
 ]
 
-# Paquets à collecter en entier (données + submodules). `webview` contient
-# des fichiers JS de bridge, `pythonnet` contient des DLLs natives.
-COLLECT_ALL = ["webview", "clr_loader", "pythonnet"]
+# Paquets à collecter en entier (données + submodules).
+COLLECT_ALL = [
+    "webview", "clr_loader", "pythonnet",
+    "fastapi", "uvicorn", "starlette", "pydantic", "pydantic_core",
+]
+
+# Modules à inclure avec leurs données (poids des modèles ML, etc.)
+ADD_DATA = [
+    ("frontend", "frontend"),
+    ("backend/ml/models", "backend/ml/models"),
+]
 
 
 def _run(cmd: list[str], step: str) -> None:
@@ -107,9 +141,11 @@ def _pyinstaller_args(name: str, onefile: bool) -> list[str]:
         "--windowed",
         "--name", name,
         "--icon", "frontend/favicon.ico",
-        # Frontend embarqué : HTML/CSS/JS/logo
-        "--add-data", "frontend;frontend",
     ]
+    # Données embarquées (frontend + modèles ML)
+    for src, dst in ADD_DATA:
+        if (ROOT / src).exists():
+            args += ["--add-data", f"{src};{dst}"]
     args.append("--onefile" if onefile else "--onedir")
     for h in HIDDEN_IMPORTS:
         args += ["--hidden-import", h]

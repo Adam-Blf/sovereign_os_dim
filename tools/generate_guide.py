@@ -124,16 +124,17 @@ def _register_fonts(pdf):
 # Mapping feature -> screenshot (nom de fichier dans docs/screenshots/)
 # Si un screenshot est absent, fallback sur le mockup schematique.
 FEATURE_SCREENSHOTS = {
-    0: "01_dashboard.png",           # Dashboard et MPI
-    1: "02_modo_files.png",          # Modo Files
-    2: "03_idv.png",                 # Identitovigilance
-    3: "04_pilot_csv.png",           # PMSI Pilot CSV
-    4: "02_modo_files.png",          # Inspector + Preflight · se lance depuis Modo
-    5: "01_dashboard.png",           # Dashboard Live · KPIs proches Dashboard
-    6: "06_structure.png",           # Structure
-    7: "07_structure_activity.png",  # Analyse d'activite par UM (feature phare)
-    8: "05_csv_import.png",          # Import CSV + HTML to PDF
-    9: "08_tuto.png",                # Administration / Tutoriel
+    0: "01_dashboard.png",           # 01 · Dashboard et MPI
+    1: "02_modo_files.png",          # 02 · Modo Files
+    2: "03_idv.png",                 # 03 · Identitovigilance
+    3: "04_pilot_csv.png",           # 04 · PMSI Pilot CSV
+    4: "02_modo_files.png",          # 05 · Inspector + Preflight · se lance depuis Modo
+    5: "08_cockpit.png",             # 06 · Dashboard Live · vue exécutive
+    6: "06_structure.png",           # 07 · Structure
+    7: "07_structure_activity.png",  # 08 · Analyse d'activité par UM
+    8: "05_csv_import.png",          # 09 · Import CSV + HTML to PDF
+    9: "08_tuto.png",                # 10 · Tutoriel
+    10: "13_cim.png",                # 11 · Module ML XGBoost · CimSuggester live
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -2916,7 +2917,16 @@ def render_feature(pdf, feat, logo_path, feat_num, total_feats, screenshot_path=
 
     pdf.ln(SPACE["xs"])
     _subheading(pdf, "Aperçu de la vue")
-    _feature_schema(pdf, feat_num)
+    # Si un screenshot existe pour cette feature, on l'utilise · sinon
+    # on retombe sur le mockup vectoriel.
+    if screenshot_path and os.path.exists(screenshot_path):
+        ok = _screenshot_box(pdf, screenshot_path,
+                             caption=f"Vue {ft.split(' · ')[0]}",
+                             max_w=170)
+        if not ok:
+            _feature_schema(pdf, feat_num)
+    else:
+        _feature_schema(pdf, feat_num)
 
     # ═══ PAGE 2 · WORKFLOW + OPTIONS ═══
     pdf.add_page()
