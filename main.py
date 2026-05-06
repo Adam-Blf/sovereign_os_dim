@@ -35,9 +35,16 @@ import sys
 import threading
 import time
 
-# ── Force UTF-8 sur stdout/stderr · console Windows par défaut = cp1252 et
-#    casse sur les caractères Unicode (box-drawing, accents, médiopoint).
-#    On reconfigure AVANT le premier print pour ne pas exploser.
+# ── Force UTF-8 sur la console Windows pour garder les accents (é, è, ç...).
+#    1. chcp 65001 bascule cmd.exe en UTF-8 avant le 1er print
+#    2. reconfigure(encoding="utf-8") aligne Python sur la même page de code
+#    3. _safe_print() fait fallback ASCII si malgré tout l'encodage casse
+if sys.platform == "win32":
+    try:
+        os.system("chcp 65001 >nul 2>&1")
+    except OSError:
+        pass
+
 for _stream in (sys.stdout, sys.stderr):
     try:
         _stream.reconfigure(encoding="utf-8", errors="replace")
@@ -46,7 +53,7 @@ for _stream in (sys.stdout, sys.stderr):
 
 
 def _safe_print(*args, **kwargs):
-    """Print insensible à l'encodage cp1252 et au stdout=None (PyInstaller --windowed)."""
+    """Print insensible à l'encodage et au stdout=None (PyInstaller --windowed)."""
     try:
         print(*args, **kwargs)
     except (UnicodeEncodeError, OSError, AttributeError):
@@ -83,13 +90,13 @@ def _check_dependencies():
 
     if errors:
         _safe_print("=" * 60)
-        _safe_print("  [ERR] DEPENDANCES MANQUANTES - Sovereign OS DIM")
+        _safe_print("  [ERR] DÉPENDANCES MANQUANTES · Sovereign OS DIM")
         _safe_print("=" * 60)
         _safe_print("")
         for e in errors:
-            _safe_print(f"  - {e}")
+            _safe_print(f"  · {e}")
         _safe_print("")
-        _safe_print("  Astuce: pip install -r requirements.txt")
+        _safe_print("  Astuce · pip install -r requirements.txt")
         _safe_print("")
         sys.exit(1)
 
@@ -120,7 +127,7 @@ def _is_port_free(port: int, host: str = "127.0.0.1") -> bool:
 def _start_flask_bridge(port: int = 8765) -> threading.Thread | None:
     """Démarre le bridge Flask en thread daemon · serveur silencieux en prod."""
     if not _is_port_free(port):
-        _safe_print(f"  - Bridge Flask: port {port} deja occupe, skip")
+        _safe_print(f"  · Bridge Flask · port {port} déjà occupé, skip")
         return None
 
     def _run():
@@ -132,18 +139,18 @@ def _start_flask_bridge(port: int = 8765) -> threading.Thread | None:
             logging.getLogger("werkzeug").setLevel(logging.WARNING)
             app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
         except Exception as e:  # pragma: no cover
-            _safe_print(f"  [ERR] Bridge Flask: {e}")
+            _safe_print(f"  [ERR] Bridge Flask · {e}")
 
     t = threading.Thread(target=_run, daemon=True, name="sovereign-flask-bridge")
     t.start()
-    _safe_print(f"  [OK] Bridge Flask: http://127.0.0.1:{port}")
+    _safe_print(f"  [OK] Bridge Flask · http://127.0.0.1:{port}")
     return t
 
 
 def _start_fastapi_v2(port: int = 8766) -> threading.Thread | None:
     """Démarre la FastAPI v2 (uvicorn) en thread daemon."""
     if not _is_port_free(port):
-        _safe_print(f"  - FastAPI v2: port {port} deja occupe, skip")
+        _safe_print(f"  · FastAPI v2 · port {port} déjà occupé, skip")
         return None
 
     def _run():
@@ -157,13 +164,13 @@ def _start_fastapi_v2(port: int = 8766) -> threading.Thread | None:
             server = uvicorn.Server(config)
             server.run()
         except ImportError as e:
-            _safe_print(f"  - FastAPI v2: dependance manquante ({e}), skip (mode mock UI)")
+            _safe_print(f"  · FastAPI v2 · dépendance manquante ({e}), skip (mode dégradé UI)")
         except Exception as e:  # pragma: no cover
-            _safe_print(f"  [ERR] FastAPI v2: {e}")
+            _safe_print(f"  [ERR] FastAPI v2 · {e}")
 
     t = threading.Thread(target=_run, daemon=True, name="sovereign-fastapi-v2")
     t.start()
-    _safe_print(f"  [OK] FastAPI v2: http://127.0.0.1:{port}/docs")
+    _safe_print(f"  [OK] FastAPI v2 · http://127.0.0.1:{port}/docs")
     return t
 
 
@@ -194,19 +201,19 @@ def main() -> None:
     _check_dependencies()
 
     _safe_print("=" * 60)
-    _safe_print("  Sovereign OS DIM V37.0 - GHT Psy Sud Paris")
+    _safe_print("  Sovereign OS DIM V37.0 · GHT Psy Sud Paris")
     _safe_print("=" * 60)
     _safe_print("")
-    _safe_print("[1/3] Demarrage des serveurs API:")
+    _safe_print("[1/3] Démarrage des serveurs API ·")
     flask_thread = _start_flask_bridge(port=8765)
     fastapi_thread = _start_fastapi_v2(port=8766)
 
     _safe_print("")
-    _safe_print("[2/3] Attente des serveurs (max 6 s):")
+    _safe_print("[2/3] Attente des serveurs (max 6 s) ·")
     _wait_for_servers(timeout=6.0)
-    _safe_print("       -> pret")
+    _safe_print("       → prêt")
     _safe_print("")
-    _safe_print("[3/3] Lancement de la fenetre pywebview:")
+    _safe_print("[3/3] Lancement de la fenêtre pywebview ·")
     import webview
     from backend.api import Api
 
@@ -219,7 +226,7 @@ def main() -> None:
         sys.exit(1)
 
     webview.create_window(
-        title="Sovereign OS V37.0 - Station DIM - GHT Psy Sud Paris",
+        title="Sovereign OS V37.0 · Station DIM · GHT Psy Sud Paris",
         url=index_html,
         js_api=api,
         width=1440,
@@ -234,7 +241,7 @@ def main() -> None:
     # s'arrêtent automatiquement à ce moment-là.
     webview.start(debug=False)
     _safe_print("")
-    _safe_print("  -> Fenetre fermee, arret des serveurs (threads daemon).")
+    _safe_print("  → Fenêtre fermée · arrêt des serveurs (threads daemon).")
 
 
 if __name__ == "__main__":

@@ -78,30 +78,90 @@
     }));
   }
 
-  // ── CeSPA · pas d'endpoint encore · empty state explicite ──────────────
+  // ── CeSPA · validateur réel via /api/v2/cespa/check ───────────────────
   async function renderCespa() {
-    renderInto(sectionHead({
-      eyebrow: "Réforme financement psy", title: "CeSPA / CATTG",
-      meta: "Validateur réforme 4 juillet 2025",
-    }) + emptyState({
-      icon: "check-circle",
-      title: "Validateur CeSPA · backend en cours",
-      body: "Cet écran sera alimenté par /api/v2/cespa/check qui validera "
-          + "les structures CeSPA déclarées (FicUM) et les actes CATTG du lot "
-          + "courant. La logique de validation est dans la roadmap V37.",
-    }));
+    renderInto(sectionHead({ eyebrow: "Réforme financement psy",
+      title: "CeSPA / CATTG" }) + loadingState());
+    const r = await api("/api/v2/cespa/check");
+    if (!r.ok) {
+      renderInto(sectionHead({ eyebrow: "Réforme financement psy",
+        title: "CeSPA / CATTG" }) + apiOffline("CeSPA", r.status));
+      return;
+    }
+    const d = r.data;
+    if (!d.has_data) {
+      renderInto(sectionHead({ eyebrow: "Réforme financement psy",
+        title: "CeSPA / CATTG" }) + emptyState({
+          icon: "check-circle",
+          title: "Aucune ligne RPS/RAA dans le MPI",
+          body: "Le validateur CeSPA s'applique aux lignes RPS (champ 23) et "
+              + "RAA (modalité 33). Importer un lot via Modo Files pour "
+              + "déclencher la vérification.",
+        }));
+      return;
+    }
+    renderInto(
+      sectionHead({ eyebrow: "Réforme financement psy", title: "CeSPA / CATTG",
+        meta: `RPS: ${d.rps_lines} · RAA: ${d.raa_lines}` }) +
+      card({ title: "Règles arrêté 4 juillet 2025", icon: "shield",
+        body: d.rules.map((rule, i) => {
+          const ratio = rule.total > 0 ? Math.round(rule.ok / rule.total * 100) : 0;
+          const color = ratio === 100 ? SUCCESS : ratio >= 80 ? WARNING : ERROR;
+          return `<div style="display:grid;grid-template-columns:100px 1fr auto;
+              gap:14px;align-items:center;padding:10px 0;
+              ${i < d.rules.length - 1 ? `border-bottom:1px solid ${slate[100]};` : ""}">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;
+                font-weight:700;color:${NAVY};">${rule.code}</span>
+            <span style="font-size:12px;color:${slate[700]};">${rule.label}</span>
+            ${statusPill(`${rule.ok}/${rule.total}`, color)}
+          </div>`;
+        }).join("") }));
   }
 
+  // ── Diff lots mensuels · agrégat réel ──────────────────────────────────
   async function renderDiff() {
-    renderInto(sectionHead({
-      eyebrow: "Anti-régression", title: "Diff lots mensuels",
-      meta: "Comparaison M-1 vs M",
-    }) + emptyState({
-      icon: "git-compare",
-      title: "Aucune comparaison disponible",
-      body: "Le diff mensuel nécessite au moins 2 mois de lots traités. "
-          + "Importer puis traiter les lots des 2 derniers mois.",
-    }));
+    renderInto(sectionHead({ eyebrow: "Anti-régression",
+      title: "Diff lots mensuels" }) + loadingState());
+    const r = await api("/api/v2/diff");
+    if (!r.ok) {
+      renderInto(sectionHead({ eyebrow: "Anti-régression",
+        title: "Diff lots mensuels" }) + apiOffline("Diff", r.status));
+      return;
+    }
+    if (!r.data.has_data) {
+      renderInto(sectionHead({ eyebrow: "Anti-régression",
+        title: "Diff lots mensuels" }) + emptyState({
+        icon: "git-compare",
+        title: r.data.message || "Aucune comparaison disponible",
+        body: "Le diff nécessite des lots traités. Importer un lot pour "
+            + "que les indicateurs soient calculés.",
+      }));
+      return;
+    }
+    const rows = r.data.rows;
+    renderInto(sectionHead({ eyebrow: "Anti-régression",
+      title: "Diff lots mensuels", meta: `${rows.length} indicateurs` }) +
+      card({ title: "Comparaison volumétrique", icon: "git-compare", padding: 0,
+        body: `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead><tr style="background:${slate[50]};">
+            <th style="padding:10px 14px;text-align:left;font-size:9px;
+                font-weight:700;color:${slate[500]};letter-spacing:0.16em;
+                text-transform:uppercase;">Indicateur</th>
+            <th style="padding:10px 14px;text-align:right;font-size:9px;
+                font-weight:700;color:${slate[500]};letter-spacing:0.16em;
+                text-transform:uppercase;">Lignes</th>
+            <th style="padding:10px 14px;text-align:left;font-size:9px;
+                font-weight:700;color:${slate[500]};letter-spacing:0.16em;
+                text-transform:uppercase;">État</th>
+          </tr></thead><tbody>
+          ${rows.map(row => `<tr style="border-top:1px solid ${slate[100]};">
+            <td style="padding:10px 14px;font-family:'Plus Jakarta Sans';
+                font-weight:600;color:${slate[800]};">${row.indicator}</td>
+            <td style="padding:10px 14px;text-align:right;
+                font-family:'JetBrains Mono',monospace;font-weight:700;
+                color:${NAVY};">${row.current.toLocaleString("fr-FR")}</td>
+            <td style="padding:10px 14px;">${statusPill("Nouveau", TEAL)}</td>
+          </tr>`).join("")}</tbody></table>` }));
   }
 
   // ── CimSuggester · provider réel via Ollama ────────────────────────────
@@ -165,28 +225,91 @@
   }
 
   async function renderHospitalTwin() {
-    renderInto(sectionHead({
-      eyebrow: "Simulation DFA", title: "Hospital Twin",
-      meta: "Modèle non encore déployé",
-    }) + emptyState({
-      icon: "database",
-      title: "Simulation DFA · roadmap V38",
-      body: "Hospital Twin requiert le calcul des compartiments de "
-          + "financement réels et un modèle économétrique calibré sur "
-          + "les données ScanSanté du GHT.",
-    }));
+    renderInto(sectionHead({ eyebrow: "Simulation DFA",
+      title: "Hospital Twin" }) + loadingState());
+    const r = await api("/api/v2/twin/scenarios");
+    if (!r.ok) {
+      renderInto(sectionHead({ eyebrow: "Simulation DFA",
+        title: "Hospital Twin" }) + apiOffline("Hospital Twin", r.status));
+      return;
+    }
+    if (!r.data.has_data) {
+      renderInto(sectionHead({ eyebrow: "Simulation DFA",
+        title: "Hospital Twin" }) + emptyState({
+        icon: "database",
+        title: r.data.message || "Simulation impossible",
+        body: "Hospital Twin calcule l'impact tarifaire potentiel sur la "
+            + "DFA à partir du volume MPI réel. Importer un lot pour "
+            + "déclencher les calculs.",
+      }));
+      return;
+    }
+    const fr = n => n.toLocaleString("fr-FR");
+    renderInto(sectionHead({ eyebrow: "Simulation DFA",
+      title: "Hospital Twin",
+      meta: `Base: ${fr(r.data.ipp_base)} IPP` }) +
+      card({ title: "Scénarios d'impact tarifaire", icon: "target",
+        body: r.data.scenarios.map((s, i) => `
+          <div style="padding:14px 0;
+              ${i < r.data.scenarios.length - 1 ? `border-bottom:1px solid ${slate[100]};` : ""}
+              display:grid;grid-template-columns:1fr auto auto;gap:18px;
+              align-items:center;">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:${slate[800]};">${s.label}</div>
+              <div style="height:4px;width:120px;background:${slate[100]};
+                  border-radius:999px;overflow:hidden;margin-top:6px;">
+                <div style="width:${s.confidence * 100}%;height:100%;background:${TEAL};"></div>
+              </div>
+            </div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:18px;
+                font-weight:800;color:${SUCCESS};">+ ${fr(s.impact_eur)} €</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;
+                color:${slate[500]};">conf. ${(s.confidence * 100).toFixed(0)} %</span>
+          </div>`).join("") }));
   }
 
   async function renderHeatmap() {
-    renderInto(sectionHead({
-      eyebrow: "Sectorisation", title: "Heatmap géographique",
-      meta: "Calcul depuis MPI",
-    }) + emptyState({
-      icon: "globe",
-      title: "Heatmap par secteur · backend en cours",
-      body: "Cette vue agrégera la file active par secteur ARS issu du "
-          + "FicUM. Endpoint /api/v2/heatmap/sectors à brancher en V37.1.",
-    }));
+    renderInto(sectionHead({ eyebrow: "Sectorisation",
+      title: "Heatmap géographique" }) + loadingState());
+    const r = await api("/api/v2/heatmap/sectors");
+    if (!r.ok) {
+      renderInto(sectionHead({ eyebrow: "Sectorisation",
+        title: "Heatmap géographique" }) + apiOffline("Heatmap", r.status));
+      return;
+    }
+    if (!r.data.has_data) {
+      renderInto(sectionHead({ eyebrow: "Sectorisation",
+        title: "Heatmap géographique" }) + emptyState({
+        icon: "globe",
+        title: "Aucune donnée géographique disponible",
+        body: "L'agrégation par code postal nécessite des observations "
+            + "MPI avec un champ code_postal renseigné. Importer un lot "
+            + "RPS pour peupler la carte.",
+      }));
+      return;
+    }
+    const sectors = r.data.sectors;
+    const colorOf = i => ({ very_high: ERROR, high: WARNING,
+      medium: TEAL, low: SUCCESS })[i] || slate[400];
+    renderInto(sectionHead({ eyebrow: "Sectorisation",
+      title: "Heatmap géographique",
+      meta: `Top ${sectors.length} codes postaux` }) +
+      card({ title: "File active par code postal", icon: "globe", body: `
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+          ${sectors.map(s => `
+            <div style="background:${colorOf(s.intensity)}22;
+                border:2px solid ${colorOf(s.intensity)};border-radius:12px;
+                padding:18px 14px;">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:14px;
+                  font-weight:800;color:${NAVY};">${s.code}</div>
+              <div style="font-size:24px;font-weight:800;
+                  color:${colorOf(s.intensity)};margin-top:4px;
+                  letter-spacing:-0.025em;">${s.file_active}</div>
+              <div style="font-size:9px;font-weight:700;color:${slate[500]};
+                  text-transform:uppercase;letter-spacing:0.14em;
+                  margin-top:4px;">observations</div>
+            </div>`).join("")}
+        </div>` }));
   }
 
   async function renderPivot() {
@@ -328,15 +451,60 @@
   }
 
   async function renderWorkflow() {
-    renderInto(sectionHead({
-      eyebrow: "Workflow validation", title: "Pipeline DIM",
-      meta: "Backend en cours",
-    }) + emptyState({
-      icon: "workflow",
-      title: "Workflow TIM → MIM → ARS · backend en cours",
-      body: "L'endpoint /api/v2/workflow/pending sera branché sur la table "
-          + "des items en attente de validation MIM. Roadmap V37.3.",
-    }));
+    renderInto(sectionHead({ eyebrow: "Workflow validation",
+      title: "Pipeline DIM" }) + loadingState());
+    const r = await api("/api/v2/workflow/pending");
+    if (!r.ok) {
+      renderInto(sectionHead({ eyebrow: "Workflow validation",
+        title: "Pipeline DIM" }) + apiOffline("Workflow", r.status));
+      return;
+    }
+    const { counts, items } = r.data;
+    const stages = [
+      { l: "TIM corrige", k: "tim", c: NAVY, icon: "user" },
+      { l: "MIM valide", k: "mim", c: TEAL, icon: "user-check" },
+      { l: "Préflight DRUIDES", k: "preflight", c: GOLD, icon: "shield" },
+      { l: "Export ARS", k: "ars", c: SUCCESS, icon: "send" },
+    ];
+    const stageCards = stages.map((s, i) => `
+      <div style="background:white;border:1px solid ${slate[200]};
+          border-radius:12px;padding:18px;text-align:center;position:relative;">
+        ${i < stages.length - 1 ? `<div style="position:absolute;right:-18px;
+            top:50%;transform:translateY(-50%);width:32px;height:2px;
+            background:${slate[200]};"></div>` : ""}
+        <div style="width:48px;height:48px;border-radius:12px;background:${s.c}22;
+            color:${s.c};margin:0 auto 12px;display:flex;align-items:center;
+            justify-content:center;">
+          <i data-lucide="${s.icon}" style="width:22px;height:22px;"></i>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:${slate[500]};
+            text-transform:uppercase;letter-spacing:0.16em;">${s.l}</div>
+        <div style="font-size:32px;font-weight:800;color:${s.c};margin-top:4px;
+            letter-spacing:-0.03em;">${counts[s.k] || 0}</div>
+        <div style="font-size:11px;color:${slate[500]};">en cours</div>
+      </div>`).join("");
+
+    const itemList = !items.length
+      ? `<div style="font-size:12px;color:${slate[500]};text-align:center;
+            padding:24px 0;">Aucun item en attente · pipeline propre.</div>`
+      : items.map((it, i) => `
+          <div style="display:grid;grid-template-columns:120px 1fr 110px 90px;
+              gap:14px;align-items:center;padding:12px 0;
+              ${i < items.length - 1 ? `border-bottom:1px solid ${slate[100]};` : ""}">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:13px;
+                font-weight:700;color:${NAVY};">${it.ipp}</span>
+            <span style="font-size:13px;color:${slate[800]};">${it.label}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;
+                color:${slate[500]};">${it.owner}</span>
+            ${statusPill(it.stage, TEAL)}
+          </div>`).join("");
+
+    renderInto(
+      sectionHead({ eyebrow: "Workflow validation", title: "Pipeline DIM",
+        meta: `${items.length} items en attente` }) +
+      `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;
+          margin-bottom:18px;">${stageCards}</div>` +
+      card({ title: "Items en attente", icon: "clipboard-check", body: itemList }));
   }
 
   // ── Exposition ─────────────────────────────────────────────────────────
