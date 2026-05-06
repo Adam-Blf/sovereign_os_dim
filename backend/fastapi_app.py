@@ -437,9 +437,19 @@ def ml_cim_suggest(req: CimSuggestRequest):
     """
     if not OLLAMA_BASE:
         return CimSuggestResponse(suggestions=[], provider="disabled")
+    # Validation stricte du schéma · seule http:// ou https:// vers une URL
+    # locale ou explicitement configurée est autorisée. Empêche l'utilisation
+    # accidentelle de file:// ou ftp:// (bandit B310).
+    from urllib.parse import urlparse
+    parsed = urlparse(OLLAMA_BASE)
+    if parsed.scheme not in ("http", "https"):
+        raise HTTPException(503, f"OLLAMA_BASE doit utiliser http ou https, "
+                                  f"reçu '{parsed.scheme}'")
+    if not parsed.netloc:
+        raise HTTPException(503, "OLLAMA_BASE doit inclure un hôte")
     try:
-        import urllib.request
         import json as _json
+        import urllib.request
         prompt = (
             "Tu es un médecin DIM. Suggère 5 codes CIM-10 candidats pour "
             "diagnostic principal en psychiatrie, avec confiance 0-1. "
@@ -447,12 +457,13 @@ def ml_cim_suggest(req: CimSuggestRequest):
         )
         body = _json.dumps({"model": OLLAMA_MODEL, "prompt": prompt,
                             "stream": False, "format": "json"}).encode()
-        r = urllib.request.urlopen(
-            urllib.request.Request(
-                OLLAMA_BASE.rstrip("/") + "/api/generate",
-                data=body, headers={"Content-Type": "application/json"},
-            ), timeout=30,
+        # URL reconstruite à partir du parse validé · garantit le schéma sûr
+        safe_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path.rstrip('/')}/api/generate"
+        req_obj = urllib.request.Request(
+            safe_url, data=body,
+            headers={"Content-Type": "application/json"},
         )
+        r = urllib.request.urlopen(req_obj, timeout=30)  # nosec B310 · URL validée http(s) ci-dessus
         resp = _json.loads(r.read())
         # Ollama renvoie .response = JSON string
         parsed = _json.loads(resp.get("response", "[]"))
