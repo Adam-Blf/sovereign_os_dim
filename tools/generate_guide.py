@@ -219,19 +219,19 @@ FEATURES = [
         tagline="Vue d'ensemble temps reel du traitement PMSI",
         purpose=(
             "Le Tableau de bord est la page d'accueil de Sovereign OS DIM. Il centralise les "
-            "indicateurs essentiels apres un ou plusieurs traitements de lot ATIH et "
+            "indicateurs essentiels après un ou plusieurs traitements de lot ATIH et "
             "construit le MPI (Master Patient Index) , l'index unifie qui associe a "
             "chaque IPP (Identifiant Patient Permanent) l'ensemble de ses occurrences "
             "dans les differents recueils PMSI.\n\n"
-            "Sans MPI, impossible de detecter les collisions d'identite, les patients "
+            "Sans MPI, impossible de détecter les collisions d'identité, les patients "
             "cross-modalites (PSY + SSR + HAD), ou la file active cumulative. Le "
             "Tableau de bord est donc le point d'ancrage de tout le mode opératoire DIM."
         ),
         prerequisites=(
-            "Aucun. Le Tableau de bord s'affiche des l'ouverture de l'application, meme "
-            "sans dossier ATIH selectionne (indicateur a zero). Les donnees apparaissent "
+            "Aucun. Le Tableau de bord s'affiche des l'ouverture de l'application, même "
+            "sans dossier ATIH sélectionne (indicateur a zero). Les données apparaissent "
             "progressivement au fil des traitements.\n\n"
-            "Pour des donnees peuplees , au moins un dossier ATIH ajoute via "
+            "Pour des données peuplees , au moins un dossier ATIH ajoute via "
             "Sélection des fichiers et un premier traitement lance. La duree d'un traitement depend "
             "du volume , 30 000 lignes par seconde en moyenne sur poste standard."
         ),
@@ -247,40 +247,40 @@ FEATURES = [
             "Organisation verticale en 4 blocs ,\n\n"
             "1. En-tete , titre du tableau de bord + date du dernier traitement.\n"
             "2. Bande de 4 indicateur , fichiers traites, IPP uniques, collisions "
-            "detectees, formats distincts.\n"
+            "détectées, formats distincts.\n"
             "3. Graphique donut , repartition des lignes par format PMSI.\n"
             "4. Timeline Cross-modalites , patients porteurs de 3 formats ou plus.\n\n"
-            "Chaque indicateur est une carte cliquable qui ouvre le detail (liste des "
+            "Chaque indicateur est une carte cliquable qui ouvre le détail (liste des "
             "fichiers, liste des collisions, etc.)."
         ),
         workflow_steps=[
             # 1
             "Ouvrir l'application et observer le Tableau de bord , si un MPI persiste "
             "existe, les indicateur sont peuples. Sinon, aller en Sélection des fichiers (Ctrl+2) pour "
-            "ajouter un premier dossier ATIH. Le systeme detecte automatiquement "
+            "ajouter un premier dossier ATIH. Le système détecte automatiquement "
             "les 23 formats PMSI supportes.",
             # 2
-            "Apres avoir ajoute un ou plusieurs dossiers, revenir au Tableau de bord. "
-            "Cliquer sur Traiter le lot , une barre de progression s'affiche et "
-            "les indicateur se mettent a jour ligne par ligne. Pour un lot typique "
+            "Après avoir ajoute un ou plusieurs dossiers, revenir au Tableau de bord. "
+            "Cliquer sur Traiter le lot , une barre de progrèssion s'affiche et "
+            "les indicateur se mettent à jour ligne par ligne. Pour un lot typique "
             "annuel (50 000 lignes), compter 2 a 5 secondes.",
             # 3
             "Une fois le traitement termine, analyser les indicateurs. Le nombre de "
             "collisions indique combien d'IPP portent des DDN differentes entre "
-            "recueils , c'est le travail principal du TIM de les resoudre avant "
+            "recueils , c'est le travail principal du TIM de les résoudre avant "
             "export e-PMSI. Cliquer sur la carte Collisions pour ouvrir "
             "Identitovigilance (Ctrl+3).",
         ],
         options=(
             "Deux options configurables au niveau du Tableau de bord ,\n\n"
             "1. Réinitialiser le registre , bouton en haut a droite, efface le MPI SQLite "
-            "persiste. Aucune donnee source n'est touchee. Utile pour reprendre "
-            "une analyse propre apres erreur.\n\n"
+            "persiste. Aucune donnée source n'est touchee. Utile pour reprendre "
+            "une analyse propre après erreur.\n\n"
             "2. Mode sombre , toggle en haut a droite, bascule toutes les vues "
             "en theme dark. Prefere par les TIM travaillant en fin de journee "
             "pour reduire la fatigue visuelle.\n\n"
             "Aucune configuration de persistance n'est exposee , le MPI est "
-            "toujours sauvegarde en SQLite apres chaque traitement."
+            "toujours sauvegarde en SQLite après chaque traitement."
         ),
         integration=(
             "Le Tableau de bord est alimente par toutes les autres features ,\n\n"
@@ -288,72 +288,72 @@ FEATURES = [
             "- Identitovigilance (Ctrl+3) alimente le comptage collisions.\n"
             "- Inspecteur ligne par ligne (F2) utilise le MPI pour decoder une ligne.\n"
             "- Contrôle préalable DRUIDES (F3) lit le MPI pour valider la coherence.\n"
-            "- Tableau de bord en direct (F4) reprend les memes donnees en Chart.js en direct.\n\n"
-            "Les donnees circulent uniquement en memoire et en SQLite locale, "
-            "jamais en reseau."
+            "- Tableau de bord en direct (F4) reprend les mêmes données en Chart.js en direct.\n\n"
+            "Les données circulent uniquement en memoire et en SQLite locale, "
+            "jamais en réseau."
         ),
         usecase_1=(
             "Cas , reception mensuelle d'un lot de 12 fichiers ATIH en fin de mois. "
             "Le TIM charge les 12 fichiers, lance le traitement, consulte le "
-            "Tableau de bord , 147 collisions detectees. Il passe en "
-            "Identitovigilance, resout automatiquement 128 par regle majoritaire, "
+            "Tableau de bord , 147 collisions détectées. Il passe en "
+            "Identitovigilance, résout automatiquement 128 par règle majoritaire, "
             "traite manuellement les 19 restantes, puis exporte le CSV sanitized "
             "pour téléversement e-PMSI. Duree totale , environ 45 minutes."
         ),
         usecase_2=(
-            "Cas , audit annuel pediatrie (Fondation Vallee). Le chef de pole "
+            "Cas , audit annuel pediatrie (Fondation Vallee). Le chef de pôle "
             "demande la file active 2024. Le TIM charge les 4 lots trimestriels, "
             "le Tableau de bord affiche 4821 IPP uniques. Sur la timeline Cross-modalites, "
             "il repere 23 patients porteurs de RPS + RSS (transferts MCO) et 8 "
             "patients porteurs de EDGAR + FICHSUP-PSY (ambulatoire avec isolement). "
-            "Cette repartition alimente le rapport annuel du pole."
+            "Cette repartition alimente le rapport annuel du pôle."
         ),
         performance=(
             "Le Tableau de bord est rendu en JavaScript pur , aucun framework lourd. "
-            "Les metriques sont recalculees en memoire depuis le MPI charge en "
+            "Les metriques sont recalculées en memoire depuis le MPI charge en "
             "SQLite. Pour un MPI de 50 000 IPP et 500 000 lignes ,\n\n"
             "- Chargement initial , < 400 ms\n"
-            "- Rafraichissement apres traitement , < 200 ms\n"
+            "- Rafraichissement après traitement , < 200 ms\n"
             "- Rendu donut Chart.js , < 80 ms\n\n"
             "La limite pratique observee est d'environ 2 millions de lignes sur "
-            "poste standard (8 Go RAM), avec degradation progressive au-dela."
+            "poste standard (8 Go RAM), avec degradation progrèssive au-dela."
         ),
         security=(
-            "Le Tableau de bord n'expose aucune donnee nominative par defaut , les "
+            "Le Tableau de bord n'expose aucune donnée nominative par defaut , les "
             "indicateur sont des agregats. Seule la timeline Cross-modalites affiche "
             "des IPP, mais pseudonymises (IPP_XXXX) si le mode audit est actif.\n\n"
             "Le bouton Réinitialiser le registre declenche une confirmation obligatoire , "
             "impossible de perdre le MPI par erreur d'un simple clic. La "
             "suppression est logguee dans l'journal d audit art. 30 RGPD.\n\n"
-            "Aucune donnee Tableau de bord n'est transmise hors du poste."
+            "Aucune donnée Tableau de bord n'est transmise hors du poste."
         ),
         troubleshooting=(
-            "Probleme , Tableau de bord affiche zero apres traitement.\n"
+            "Problème , Tableau de bord affiche zero après traitement.\n"
             "Cause probable , Sélection des fichiers contient uniquement des fichiers INCONNU. "
-            "Solution , verifier le nommage ATIH attendu (RPS_AAAAMM*).\n\n"
-            "Probleme , indicateur collisions anormalement eleve (> 50 pourcent).\n"
+            "Solution , vérifier le nommage ATIH attendu (RPS_AAAAMM*).\n\n"
+            "Problème , indicateur collisions anormalement élevé (> 50 pourcent).\n"
             "Cause probable , annees de transition 2021 ou les formats IPP ont "
             "change. Solution , activer la normalisation IPP (par defaut oui).\n\n"
-            "Probleme , Tableau de bord lent au rafraichissement (> 2 s).\n"
+            "Problème , Tableau de bord lent au rafraichissement (> 2 s).\n"
             "Cause probable , MPI > 500 000 lignes. Solution , envisager un "
             "réinitialiser le registre et traiter uniquement l'annee courante."
         ),
         faq=[
             ("Le MPI est-il sauvegarde automatiquement ?",
-             "Oui, apres chaque traitement de lot, une sauvegarde SQLite est "
+             "Oui, après chaque traitement de lot, une sauvegarde SQLite est "
              "ecrite dans %LOCALAPPDATA%/SovereignOS/mpi.db."),
             ("Puis-je exporter les indicateur du Tableau de bord ?",
-             "Oui, via Tableau de bord en direct (F4) qui genere un PDF paysage 2 pages."),
+             "Oui, via Tableau de bord en direct (F4) qui génère un PDF paysage 2 pages."),
             ("Que se passe-t-il si je ferme l'app en cours de traitement ?",
-             "Le traitement s'interrompt proprement , les donnees deja extraites "
+             "Le traitement s'interrompt proprement , les données déjà extraites "
              "sont sauvegardees, le reste est perdu. Relancer le traitement "
-             "reprend la ou il s'etait arrete (cf. persistance SQLite)."),
+             "reprend là où il s'était arrête (cf. persistance SQLite)."),
             ("Le Tableau de bord fonctionne-t-il en hors ligne ?",
-             "Oui, 100 pourcent hors ligne. Aucune requete reseau."),
+             "Oui, 100 pourcent hors ligne. Aucune requête réseau."),
         ],
         best_practices=(
             "1. Commencer chaque session par un coup d'oeil au Tableau de bord , si "
-            "les indicateur sont anormaux (collisions tres elevees par exemple), "
+            "les indicateur sont anormaux (collisions très élevées par exemple), "
             "investiguer avant de lancer un export.\n\n"
             "2. Ne pas utiliser Réinitialiser le registre sans raison , le MPI cumule l'historique "
             "et permet les comparaisons mois N vs N-1.\n\n"
@@ -374,7 +374,7 @@ FEATURES = [
             "Documentation ATIH , https://www.atih.sante.fr\n"
             "Format RPS P05 , Guide technique ATIH 2024 chapitre 4.\n"
             "Identitovigilance , HAS , Instruction DGOS/PF2 2019.\n"
-            "DRUIDES , succeseur PIVOINE depuis 2025.\n"
+            "DRUIDES , succèseur PIVOINE depuis 2025.\n"
             "GHT Sud Paris , Paul Guiraud + Fondation Vallee, convention 2016."
         ),
     ),
@@ -383,22 +383,22 @@ FEATURES = [
     # FEATURE 2 · MODO FILES
     # ══════════════════════════════════════════════════════════════════════
     mk(
-        title="Sélection des fichiers , selection et traitement des lots ATIH",
+        title="Sélection des fichiers , sélection et traitement des lots ATIH",
         category="Lots",
         tagline="Scanner, identifier et traiter les 23 formats PMSI",
         purpose=(
             "Sélection des fichiers est le point d'entree de toute analyse PMSI , c'est ici "
-            "que le TIM selectionne les dossiers contenant les fichiers ATIH "
-            "transmis par les logiciels sources (CPage, DxCare) ou telecharges "
+            "que le TIM sélectionne les dossiers contenant les fichiers ATIH "
+            "transmis par les logiciels sources (CPage, DxCare) ou télécharges "
             "depuis e-PMSI. Le scan est recursif , les sous-dossiers annuels, "
-            "mensuels ou par pole sont inclus automatiquement.\n\n"
-            "Sans Sélection des fichiers, rien ne peut etre traite , les autres vues "
+            "mensuels ou par pôle sont inclus automatiquement.\n\n"
+            "Sans Sélection des fichiers, rien ne peut être traite , les autres vues "
             "(Identitovigilance, Contrôle préalable, Exports) consomment toutes le MPI "
-            "construit a partir des fichiers ici selectionnes."
+            "construit à partir des fichiers ici sélectionnes."
         ),
         prerequisites=(
             "Un dossier accessible en lecture contenant au moins un fichier ATIH "
-            "au format texte latin-1. Les dossiers reseau SMB sont supportes si "
+            "au format texte latin-1. Les dossiers réseau SMB sont supportes si "
             "la lettre de lecteur est mappee dans Windows.\n\n"
             "Les fichiers attendus respectent le nommage ATIH , `<FORMAT>_<ANNEE><MOIS>` "
             "ou `<FORMAT>_<ANNEE>`. Exemples , RPS_202410.txt, RAA_2024.txt, "
@@ -408,19 +408,19 @@ FEATURES = [
         access=(
             "Raccourci clavier , Ctrl+2. La vue Sélection des fichiers est l'onglet le plus "
             "utilise par les TIM , elle reste cachee tant qu'aucun dossier n'est "
-            "selectionne, avec un call-to-action central Ajouter un dossier.\n\n"
-            "Apres ajout, la vue affiche , liste des dossiers actifs, compteur "
+            "sélectionne, avec un call-to-action central Ajouter un dossier.\n\n"
+            "Après ajout, la vue affiche , liste des dossiers actifs, compteur "
             "de fichiers, repartition par format, et boutons d'action (Traiter, "
-            "Scanner a nouveau, Vider la selection)."
+            "Scanner a nouveau, Vider la sélection)."
         ),
         interface=(
             "3 zones principales ,\n\n"
-            "1. Panneau superieur , liste des dossiers ajoutes, chacun avec son "
-            "chemin, le nombre de fichiers detectes et un bouton Supprimer.\n\n"
+            "1. Panneau supérieur , liste des dossiers ajoutes, chacun avec son "
+            "chemin, le nombre de fichiers détectés et un bouton Supprimer.\n\n"
             "2. Panneau central , tableau des fichiers identifies , colonnes "
-            "Nom, Format, Taille, Annee detectee, Lignes, Statut.\n\n"
+            "Nom, Format, Taille, Annee détectée, Lignes, Statut.\n\n"
             "3. Barre d'actions , Ajouter un dossier, Scanner a nouveau, "
-            "Traiter le lot, Vider la selection.\n\n"
+            "Traiter le lot, Vider la sélection.\n\n"
             "Les formats INCONNU sont grises et ignores au traitement. Un clic "
             "sur une ligne ouvre l'Inspecteur ligne par ligne (F2) sur ce fichier."
         ),
@@ -433,37 +433,37 @@ FEATURES = [
             "verifier le nommage , il doit contenir 'RPS' dans son nom.",
             "Cliquer Traiter le lot. Le moteur extrait les couples IPP/DDN en "
             "parallele (jusqu'a 8 fichiers simultanes), construit le MPI et "
-            "persiste en SQLite. La progression est affichee ligne par ligne "
+            "persiste en SQLite. La progrèssion est affichee ligne par ligne "
             "dans le terminal integre.",
         ],
         options=(
             "Options disponibles depuis la barre d'actions ,\n\n"
             "- Scanner a nouveau , re-lit tous les dossiers en cas de modification "
             "des fichiers sources.\n\n"
-            "- Vider la selection , supprime tous les dossiers actifs (aucune "
-            "donnee source touchee).\n\n"
+            "- Vider la sélection , supprime tous les dossiers actifs (aucune "
+            "donnée source touchee).\n\n"
             "- Filtrer par format , menu deroulant pour masquer certains formats "
             "(ex. afficher uniquement les RPS).\n\n"
-            "Aucune option de parallelisme n'est exposee , le moteur detecte "
+            "Aucune option de parallelisme n'est exposee , le moteur détecte "
             "automatiquement le nombre de coeurs disponibles et plafonne a 8 "
             "workers pour eviter la saturation du MPI SQLite."
         ),
         integration=(
             "Sélection des fichiers alimente directement ,\n\n"
             "- Le Tableau de bord (Ctrl+1) , indicateur fichiers, lignes, formats.\n"
-            "- Identitovigilance (Ctrl+3) , collisions detectees.\n"
+            "- Identitovigilance (Ctrl+3) , collisions détectées.\n"
             "- PMSI Pilot CSV (Ctrl+4) , sources pour les exports.\n"
             "- Inspecteur ligne par ligne (F2) , fichier source pour le diag.\n"
             "- Contrôle préalable DRUIDES (F3) , lit la liste des fichiers a valider.\n\n"
-            "En amont, Sélection des fichiers ne depend que du systeme de fichiers , aucun "
+            "En amont, Sélection des fichiers ne depend que du système de fichiers , aucun "
             "appel a CPage, DxCare ou autre logiciel tiers."
         ),
         usecase_1=(
             "Cas , fin de trimestre, arrivee des 3 lots mensuels d'ATIH "
-            "(juillet, aout, septembre). Le TIM cree un dossier D:/DIM/ATIH/2024/T3 "
+            "(juillet, août, septembre). Le TIM créé un dossier D:/DIM/ATIH/2024/T3 "
             "contenant 3 sous-dossiers mensuels, y copie les fichiers recus par "
             "email, puis n'ajoute que ce dossier T3 dans Sélection des fichiers. Le scan "
-            "recursif detecte automatiquement les 27 fichiers repartis dans les "
+            "recursif détecte automatiquement les 27 fichiers repartis dans les "
             "3 sous-dossiers."
         ),
         usecase_2=(
@@ -479,29 +479,29 @@ FEATURES = [
             "- Identification par heuristique + regex , 180 us par fichier.\n"
             "- Traitement d'un lot mensuel (10 fichiers, 150 000 lignes) , 5 s.\n"
             "- Parallelisme effectif , 8 workers en pic CPU.\n\n"
-            "Le goulot principal est l'ecriture SQLite. Pour un tres gros lot "
-            "(> 1 M lignes), envisager de traiter par trimestres successifs."
+            "Le goulot principal est l'ecriture SQLite. Pour un très gros lot "
+            "(> 1 M lignes), envisager de traiter par trimestres succèssifs."
         ),
         security=(
             "Aucun fichier source n'est jamais modifie, renomme ou deplace , "
-            "l'application est en lecture seule sur vos donnees ATIH. Les "
+            "l'application est en lecture seule sur vos données ATIH. Les "
             "exports sont toujours ecrits dans un dossier distinct choisi "
             "par l'utilisateur, jamais a cote des sources.\n\n"
-            "Les donnees patient (IPP, DDN) sont protegees en memoire "
+            "Les données patient (IPP, DDN) sont protegees en memoire "
             "uniquement pendant le traitement, puis chiffrees dans la base "
-            "locale. Aucune donnee n'est transmise hors du poste DIM.\n\n"
-            "Toute tentative d'acces a un dossier non autorise est bloquee "
-            "silencieusement , aucun chemin hors du poste ne peut etre cible."
+            "locale. Aucune donnée n'est transmise hors du poste DIM.\n\n"
+            "Toute tentative d'accès a un dossier non autorise est bloquee "
+            "silencieusement , aucun chemin hors du poste ne peut être cible."
         ),
         troubleshooting=(
-            "Probleme , scanner annonce 0 fichier alors que le dossier en contient.\n"
-            "Cause , permissions refusees (dossier reseau). Solution , verifier "
+            "Problème , scanner annonce 0 fichier alors que le dossier en contient.\n"
+            "Cause , permissions refusees (dossier réseau). Solution , vérifier "
             "les droits, re-mapper la lettre de lecteur.\n\n"
-            "Probleme , fichier RPS apparait INCONNU.\n"
+            "Problème , fichier RPS apparait INCONNU.\n"
             "Cause , longueur de ligne non standard (ancien format P04 2021). "
-            "Solution , le systeme tente les variantes, si l'echec persiste "
+            "Solution , le système tente les variantes, si l'échec persiste "
             "ouvrir le fichier dans Inspecteur ligne par ligne pour diagnostic manuel.\n\n"
-            "Probleme , traitement plante apres 80 pourcent.\n"
+            "Problème , traitement plante après 80 pourcent.\n"
             "Cause , fichier corrompu en milieu de lot. Solution , isoler le "
             "fichier, ouvrir dans Inspecteur ligne par ligne ligne par ligne pour "
             "identifier la ligne fautive."
@@ -509,12 +509,12 @@ FEATURES = [
         faq=[
             ("Puis-je ajouter plusieurs dossiers simultanement ?",
              "Oui, jusqu'a 50 dossiers distincts en session. Au-dela, la "
-             "performance se degrade mais le systeme ne plante pas."),
+             "performance se degrade mais le système ne plante pas."),
             ("Les fichiers .zip sont-ils supportes ?",
              "Non, il faut decompresser en amont. Une fonctionnalite future "
              "supportera l'ingestion directe de .zip ATIH."),
             ("Que se passe-t-il si un fichier est modifie pendant le scan ?",
-             "Le fichier est re-scanne au prochain cycle. Les donnees deja "
+             "Le fichier est re-scanne au prochain cycle. Les données déjà "
              "extraites sont conservees jusqu'au nouveau traitement."),
             ("Puis-je exclure certains fichiers ?",
              "Oui, via le filtre par format ou en decochant manuellement dans "
@@ -525,17 +525,17 @@ FEATURES = [
             "D:/DIM/ATIH/<ANNEE>/<MOIS>. Le scan recursif en profite pleinement.\n\n"
             "2. Ne jamais renommer les fichiers sources , preserver les noms "
             "ATIH facilite l'identification et l'audit.\n\n"
-            "3. Apres un gros traitement, utiliser Tableau de bord en direct (F4) pour "
-            "valider visuellement la coherence des donnees avant export.\n\n"
+            "3. Après un gros traitement, utiliser Tableau de bord en direct (F4) pour "
+            "valider visuellement la coherence des données avant export.\n\n"
             "4. Conserver les fichiers sources 5 ans minimum (obligation "
-            "reglementaire PMSI)."
+            "règlementaire PMSI)."
         ),
         metrics=(
             "Metriques cles a suivre ,\n\n"
             "- Nombre de fichiers INCONNU , cible 0. Si > 0, investiguer le nommage.\n"
-            "- Repartition par annee , doit etre coherente avec la periode attendue.\n"
+            "- Repartition par annee , doit être coherente avec la période attendue.\n"
             "- Taille moyenne par fichier , 1 a 10 Mo typique pour un CHS moyen.\n"
-            "- Taux d'echec d'identification , cible < 0.1 pourcent.\n"
+            "- Taux d'échec d'identification , cible < 0.1 pourcent.\n"
             "- Duree du traitement , 30 000 lignes par seconde en moyenne."
         ),
         references=(
@@ -551,38 +551,38 @@ FEATURES = [
     # FEATURE 3 · IDENTITOVIGILANCE
     # ══════════════════════════════════════════════════════════════════════
     mk(
-        title="Identitovigilance , resolution des collisions IPP/DDN",
+        title="Identitovigilance , résolution des collisions IPP/DDN",
         category="Lots",
-        tagline="Detecter et resoudre les identites patient ambigues",
+        tagline="Détecter et résoudre les identités patient ambigues",
         purpose=(
-            "Un meme IPP (numero de dossier patient) peut apparaitre avec des "
+            "Un même IPP (numero de dossier patient) peut apparaitre avec des "
             "dates de naissance differentes selon les recueils , erreur de saisie, "
-            "changement de format au cours du temps, ou homonymie non detectee. "
+            "changement de format au cours du temps, ou homonymie non détectée. "
             "Ces collisions sont la principale cause de rejet a l'téléversement DRUIDES "
-            "et degradent la qualite du MPI pour toute analyse en aval.\n\n"
-            "Cette fonctionnalité detecte automatiquement toutes les collisions apres "
-            "traitement et propose deux strategies de resolution , automatique "
-            "(regle majoritaire) ou manuelle (choix par le TIM)."
+            "et degradent la qualité du MPI pour toute analyse en aval.\n\n"
+            "Cette fonctionnalité détecte automatiquement toutes les collisions après "
+            "traitement et propose deux strategies de résolution , automatique "
+            "(règle majoritaire) ou manuelle (choix par le TIM)."
         ),
         prerequisites=(
             "Un MPI construit via Sélection des fichiers. Sans MPI, la vue affiche un etat "
             "vide avec un lien vers Sélection des fichiers.\n\n"
-            "Pour une resolution efficace , disposer d'au moins deux recueils "
+            "Pour une résolution efficace , disposer d'au moins deux recueils "
             "distincts (ex. RPS + RAA ou RPS + FICHSUP-PSY) , la croisement "
-            "augmente la probabilite de detecter les incoherences."
+            "augmente la probabilite de détecter les incoherences."
         ),
         access=(
             "Raccourci clavier , Ctrl+3. Egalement accessible depuis le "
             "Tableau de bord en cliquant sur la carte indicateur Collisions.\n\n"
-            "La vue s'ouvre immediatement sur la liste des collisions detectees, "
+            "La vue s'ouvre immediatement sur la liste des collisions détectées, "
             "triees par severite decroissante (nombre de DDN differentes d'abord, "
             "puis nombre de sources)."
         ),
         interface=(
-            "Liste a gauche, detail a droite ,\n\n"
+            "Liste a gauche, détail a droite ,\n\n"
             "Liste , chaque ligne affiche IPP, nombre de DDN distincts, nombre "
             "de sources (fichiers), et une icone de severite.\n\n"
-            "Detail , pour l'IPP selectionne , tableau des variantes DDN, chacune "
+            "Detail , pour l'IPP sélectionne , tableau des variantes DDN, chacune "
             "avec son nombre d'occurrences, la liste des fichiers sources et le "
             "bouton Retenir cette DDN. Un bouton Auto-resolve en haut tranche "
             "automatiquement toutes les collisions restantes.\n\n"
@@ -590,27 +590,27 @@ FEATURES = [
             "(RPS, RAA, etc.), ou par annee."
         ),
         workflow_steps=[
-            "Apres traitement, ouvrir Identitovigilance (Ctrl+3). La liste est "
+            "Après traitement, ouvrir Identitovigilance (Ctrl+3). La liste est "
             "peuplee automatiquement. Trier par severite decroissante , les cas "
-            "a 3+ DDN doivent etre traites manuellement en priorite.",
-            "Pour chaque collision selectionnee, analyser les variantes , la "
-            "DDN majoritaire est preselectionnee. Verifier les fichiers sources "
+            "a 3+ DDN doivent être traites manuellement en priorité.",
+            "Pour chaque collision sélectionnee, analyser les variantes , la "
+            "DDN majoritaire est presélectionnee. Verifier les fichiers sources "
             "(clic sur le bouton Sources) , souvent la DDN minoritaire vient "
             "d'un recueil ancien converti. Cliquer Retenir cette DDN pour "
             "trancher.",
             "Une fois toutes les collisions manuelles traitees, cliquer "
-            "Auto-resolve pour trancher automatiquement le reste. Le systeme "
-            "applique la regle majoritaire. Les choix sont logguees dans "
+            "Auto-resolve pour trancher automatiquement le reste. Le système "
+            "applique la règle majoritaire. Les choix sont logguees dans "
             "l'journal d audit art. 30 RGPD.",
         ],
         options=(
             "Options disponibles ,\n\n"
             "- Mode anonymise , affiche les IPP pseudonymises (IPP_XXXX) pour "
-            "eviter l'exposition nominative. Active par defaut apres 10 min "
+            "eviter l'exposition nominative. Active par defaut après 10 min "
             "d'inactivite.\n\n"
             "- Export de la liste des collisions , CSV avec toutes les variantes "
-            "par IPP, utile pour audit ou partage avec le chef de pole.\n\n"
-            "- Regle de priorite , par defaut DDN majoritaire. Alternative , "
+            "par IPP, utile pour audit ou partage avec le chef de pôle.\n\n"
+            "- Règle de priorité , par defaut DDN majoritaire. Alternative , "
             "DDN la plus recente (horodatage du fichier source).\n\n"
             "- Seuil d'auto-resolve , configurable (defaut , tout IPP a 2 DDN "
             "avec ratio majoritaire >= 70 pourcent)."
@@ -620,58 +620,58 @@ FEATURES = [
             "- Le MPI construit par Sélection des fichiers.\n"
             "- Les metadonnees de fichiers (noms, annees) pour l'affichage.\n\n"
             "Identitovigilance alimente ,\n\n"
-            "- PMSI Pilot CSV , les exports filtrent selon la resolution.\n"
+            "- PMSI Pilot CSV , les exports filtrent selon la résolution.\n"
             "- Contrôle préalable DRUIDES , les collisions non-resolues sont signalees.\n"
             "- Inspecteur ligne par ligne , reprend le contexte de collision pour une "
-            "ligne donnee.\n\n"
-            "Les choix de resolution sont persistes en SQLite avec le MPI."
+            "ligne donnée.\n\n"
+            "Les choix de résolution sont persistes en SQLite avec le MPI."
         ),
         usecase_1=(
             "Cas , RPS historique 2021 au format P04 (142 chars) vs RPS 2024 au "
-            "format P05 (154 chars). Les IPP ont ete convertis entre temps. 340 "
+            "format P05 (154 chars). Les IPP ont été convertis entre temps. 340 "
             "collisions apparaissent , toutes resultent de la conversion. "
             "L'Auto-resolve tranche en moins de 1 seconde, le TIM valide le "
-            "rapport en verifiant un echantillon de 10 cas."
+            "rapport en verifiant un échantillon de 10 cas."
         ),
         usecase_2=(
-            "Cas , homonymie reelle detectee. Deux patients nommes Dupont Marie "
-            "portent le meme IPP temporaire suite a une erreur d'admission. "
+            "Cas , homonymie reelle détectée. Deux patients nommes Dupont Marie "
+            "portent le même IPP temporaire suite a une erreur d'admission. "
             "Identitovigilance affiche 2 DDN distinctes (1985 et 1987), avec "
             "15 lignes pour chaque. Le TIM ouvre Inspecteur ligne par ligne sur les 2 "
             "fichiers, identifie les IPP definitifs corrects cote CPage, et "
-            "applique la resolution manuelle fichier par fichier."
+            "applique la résolution manuelle fichier par fichier."
         ),
         performance=(
-            "La detection des collisions est O(N) ou N = nombre de lignes "
+            "La détection des collisions est O(N) ou N = nombre de lignes "
             "extraites , un passage unique sur le MPI avec index SQLite. Pour "
             "un MPI de 500 000 observations ,\n\n"
-            "- Detection , 120 ms.\n"
+            "- Détection , 120 ms.\n"
             "- Affichage de la liste triee , 80 ms.\n"
             "- Auto-resolve , 200 ms.\n\n"
-            "Le rendu de la vue detail est instantane grace a l'index SQLite "
+            "Le rendu de la vue détail est instantane grace a l'index SQLite "
             "sur la colonne ipp."
         ),
         security=(
-            "Cette vue traite des donnees identifiantes de sante soumises "
+            "Cette vue traite des données identifiantes de sante soumises "
             "au RGPD. Protections appliquees ,\n\n"
-            "- Anonymisation automatique apres 10 min d'inactivite (IPP "
+            "- Anonymisation automatique après 10 min d'inactivite (IPP "
             "masques a l'ecran).\n"
-            "- Chaque resolution est tracee dans le journal d'audit RGPD "
+            "- Chaque résolution est tracee dans le journal d'audit RGPD "
             "(qui, quand, quel choix). Consultable a tout moment.\n"
             "- Les exports CSV sont pseudonymises , aucun IPP en clair "
-            "dans les fichiers partages avec le chef de pole ou l'ARS.\n\n"
-            "L'acces aux donnees non-anonymisees est reserve au cadre DIM "
+            "dans les fichiers partages avec le chef de pôle ou l'ARS.\n\n"
+            "L'accès aux données non-anonymisees est reserve au cadre DIM "
             "authentifie, conformement a la politique du GHT."
         ),
         troubleshooting=(
-            "Probleme , Auto-resolve ne tranche aucune collision.\n"
+            "Problème , Auto-resolve ne tranche aucune collision.\n"
             "Cause , toutes les collisions ont un ratio < seuil. Solution , "
             "baisser le seuil a 60 pourcent ou traiter manuellement.\n\n"
-            "Probleme , collision apparente qui n'en est pas une apres "
+            "Problème , collision apparente qui n'en est pas une après "
             "verification DxCare.\n"
             "Cause , format DDN differents (JJMMAAAA vs AAAAMMJJ). Solution , "
             "verifier la normalisation DDN dans les settings, re-traiter le lot.\n\n"
-            "Probleme , trop de collisions (> 20 pourcent des IPP).\n"
+            "Problème , trop de collisions (> 20 pourcent des IPP).\n"
             "Cause , melange de formats sources non-normalises. Solution , "
             "activer la normalisation IPP (par defaut oui) et re-traiter."
         ),
@@ -679,10 +679,10 @@ FEATURES = [
             ("Que se passe-t-il aux lignes dont la DDN est rejetee ?",
              "Elles sont exclues des exports sanitized, mais restent dans le "
              "MPI avec un flag 'rejected' pour tracabilite."),
-            ("Puis-je annuler une resolution ?",
+            ("Puis-je annuler une résolution ?",
              "Oui, cliquer a nouveau sur la variante puis Retenir cette DDN "
              "pour changer d'avis. Chaque changement est logue."),
-            ("Le mode anonymise peut-il etre desactive ?",
+            ("Le mode anonymise peut-il être desactive ?",
              "Uniquement par un cadre DIM authentifie. Le mode par defaut est "
              "anonymise conformement a la politique du GHT."),
             ("Combien de temps sont conservees les collisions dans le MPI ?",
@@ -691,9 +691,9 @@ FEATURES = [
         best_practices=(
             "1. Toujours traiter d'abord les cas a 3+ DDN manuellement , ils "
             "signalent souvent une vraie homonymie ou erreur d'admission.\n\n"
-            "2. Documenter chaque resolution manuelle importante dans le cahier "
+            "2. Documenter chaque résolution manuelle importante dans le cahier "
             "DIM papier , le log applicatif n'est pas suffisant pour l'audit ARS.\n\n"
-            "3. Apres resolution complete, lancer le Contrôle préalable DRUIDES (F3) pour "
+            "3. Après résolution complete, lancer le Contrôle préalable DRUIDES (F3) pour "
             "valider l'absence de collisions residuelles.\n\n"
             "4. Une fois par trimestre, exporter la liste pseudonymisee des "
             "collisions pour analyse de tendance (evolution du taux d'erreur)."
@@ -703,15 +703,15 @@ FEATURES = [
             "- Taux de collisions mensuel , cible < 2 pourcent en regime "
             "nominal.\n"
             "- Ratio Auto-resolve vs manuel , typique 80/20.\n"
-            "- Nombre de collisions a 3+ DDN , indicateur de qualite saisie "
+            "- Nombre de collisions a 3+ DDN , indicateur de qualité saisie "
             "cote CPage/DxCare.\n"
-            "- Temps moyen de resolution manuelle , cible < 2 min par cas.\n"
+            "- Temps moyen de résolution manuelle , cible < 2 min par cas.\n"
             "- Recurrence IPP multi-sessions , signale une erreur systematique."
         ),
         references=(
             "HAS , Instruction DGOS/PF2 no 2019-116 (identitovigilance).\n"
             "ANS , Referentiel national d'identito-vigilance 2023.\n"
-            "RGPD art. 9 , donnees de sante identifiantes.\n"
+            "RGPD art. 9 , données de sante identifiantes.\n"
             "Journal d audit art. 30 RGPD , obligation de tracabilite.\n"
             "MPI (Master Patient Index) , concept , IHE-PIX."
         ),
@@ -725,7 +725,7 @@ FEATURES = [
         category="Exports avancés",
         tagline="Produire les fichiers attendus par DRUIDES et BIQuery",
         purpose=(
-            "Apres traitement et resolution des collisions, le MPI doit etre "
+            "Après traitement et résolution des collisions, le MPI doit être "
             "transmis a la plateforme nationale (DRUIDES, anciennement PIVOINE) "
             "et alimenter le tableau de bord interne BIQuery. Cette fonctionnalité produit "
             "les fichiers attendus dans les formats exacts requis.\n\n"
@@ -734,17 +734,17 @@ FEATURES = [
             "chaque rejet coute en moyenne 3 jours de retard."
         ),
         prerequisites=(
-            "MPI traite via Sélection des fichiers + collisions resolues via Identitovigilance. "
-            "Un warning s'affiche si des collisions ne sont pas resolues , "
+            "MPI traite via Sélection des fichiers + collisions résolues via Identitovigilance. "
+            "Un warning s'affiche si des collisions ne sont pas résolues , "
             "l'export est possible mais non recommande.\n\n"
             "Un dossier cible accessible en ecriture , typiquement un partage "
-            "reseau accessible au chef de pole ou a l'ARS."
+            "réseau accessible au chef de pôle ou a l'ARS."
         ),
         access=(
             "Raccourci , Ctrl+4. L'onglet est grise tant qu'aucun MPI n'est "
             "charge. Une fois active, il propose deux types d'export distincts.\n\n"
-            "L'onglet reste accessible apres fermeture de l'application , le "
-            "MPI SQLite persiste, les exports peuvent etre relances sans re-scan."
+            "L'onglet reste accessible après fermeture de l'application , le "
+            "MPI SQLite persiste, les exports peuvent être relances sans re-scan."
         ),
         interface=(
             "Deux sections principales ,\n\n"
@@ -752,7 +752,7 @@ FEATURES = [
             "du MPI avec colonnes standardisees (IPP, DDN, Sexe, Format, Annee, "
             "Fichier source, Ligne). Destine a BIQuery.\n\n"
             "2. Export .txt sanitized , reprise des fichiers sources originaux, "
-            "filtres selon la resolution des collisions. Destine a DRUIDES.\n\n"
+            "filtres selon la résolution des collisions. Destine a DRUIDES.\n\n"
             "Chaque section a son bouton Exporter qui ouvre un dialog Enregistrer-"
             "Sous natif pour choisir le chemin."
         ),
@@ -761,9 +761,9 @@ FEATURES = [
             "est a zero (ou justifie). Ouvrir PMSI Pilot CSV (Ctrl+4).",
             "Choisir le type d'export , CSV normalise pour BIQuery ou .txt "
             "sanitized pour DRUIDES. Cliquer Exporter , choisir le dossier cible. "
-            "Le fichier est genere en quelques secondes.",
-            "Pour DRUIDES, verifier la structure du .txt genere avec Inspecteur "
-            "Terminal (F2) sur une ligne echantillon. Puis téléversementer sur la "
+            "Le fichier est génère en quelques secondes.",
+            "Pour DRUIDES, vérifier la structure du .txt génère avec Inspecteur "
+            "Terminal (F2) sur une ligne échantillon. Puis téléverser sur la "
             "plateforme DRUIDES via le navigateur. En cas de rejet, revenir a "
             "Identitovigilance ou Contrôle préalable pour corriger.",
         ],
@@ -783,60 +783,60 @@ FEATURES = [
         integration=(
             "PMSI Pilot CSV consomme ,\n\n"
             "- Le MPI persiste en SQLite.\n"
-            "- Les resolutions de collisions (table linked).\n"
+            "- Les résolutions de collisions (table linked).\n"
             "- Les metadonnees de fichier source (pour le .txt sanitized).\n\n"
             "Il alimente ,\n\n"
             "- DRUIDES (téléversement manuel via navigateur) pour la transmission ARS.\n"
             "- BIQuery (ingestion automatique des CSV places dans un dossier "
             "partage surveille par un cron).\n"
-            "- Rapports internes pour chef de pole."
+            "- Rapports internes pour chef de pôle."
         ),
         usecase_1=(
             "Cas , fin de mois, transmission e-PMSI obligatoire avant le 15. Le "
-            "TIM lance l'export .txt sanitized. Le fichier genere respecte les "
+            "TIM lance l'export .txt sanitized. Le fichier génère respecte les "
             "positions fixes RPS P05 (154 chars). Téléversement DRUIDES reussi du "
-            "premier coup , gain de 2 jours par rapport a la methode manuelle "
+            "premier coup , gain de 2 jours par rapport a la méthode manuelle "
             "precedente."
         ),
         usecase_2=(
-            "Cas , chef de pole demande un extract BIQuery pour analyse de "
-            "tendance sur 3 ans. Le TIM charge 36 lots mensuels, resout les "
+            "Cas , chef de pôle demande un extract BIQuery pour analyse de "
+            "tendance sur 3 ans. Le TIM charge 36 lots mensuels, résout les "
             "collisions, exporte un CSV unique de 850 000 lignes. Depot dans "
             "le dossier BIQuery , ingestion automatique la nuit suivante, "
-            "tableaux de bord mis a jour le lendemain matin."
+            "tableaux de bord mis à jour le lendemain matin."
         ),
         performance=(
             "Performances sur un MPI de 500 000 lignes ,\n\n"
             "- Export CSV normalise , 2 s (ecriture SSD).\n"
             "- Export .txt sanitized , 8 s (relecture des sources + filtrage).\n"
-            "- Taille CSV genere , ~80 Mo.\n"
+            "- Taille CSV génère , ~80 Mo.\n"
             "- Taille .txt sanitized , quasi identique aux sources (delta "
             "minime du aux lignes rejetees).\n\n"
             "Pour des MPI > 2 M lignes, envisager un export par annee pour "
             "eviter les delais > 30 s."
         ),
         security=(
-            "Les exports contiennent des donnees nominatives , precautions ,\n\n"
+            "Les exports contiennent des données nominatives , precautions ,\n\n"
             "- Dialog Enregistrer-Sous obligatoire , impossible d'exporter "
             "silencieusement vers un chemin par defaut.\n"
             "- Chemin de sortie loggue dans l'journal d audit art. 30 RGPD.\n"
-            "- Validation du chemin , path traversal refuse, dossiers systeme "
+            "- Validation du chemin , path traversal refuse, dossiers système "
             "proteges.\n"
             "- Option de pseudonymisation disponible (hash IPP) pour exports "
             "non-nominatifs.\n\n"
-            "L'utilisateur est responsable du circuit aval , ne pas deposer "
+            "L'utilisateur est responsable du circuit aval , ne pas déposer "
             "sur cle USB non chiffree, respecter la charte IT GHT."
         ),
         troubleshooting=(
-            "Probleme , export CSV s'ouvre en Excel avec caracteres illisibles.\n"
+            "Problème , export CSV s'ouvre en Excel avec caractères illisibles.\n"
             "Cause , BOM manquant ou encodage mal choisi. Solution , re-exporter "
             "avec UTF-8 + BOM (defaut).\n\n"
-            "Probleme , DRUIDES rejette l'téléversement pour erreur de longueur de ligne.\n"
+            "Problème , DRUIDES rejette l'téléversement pour erreur de longueur de ligne.\n"
             "Cause , option Conservation positions desactivee. Solution , "
             "re-exporter avec l'option activee (defaut).\n\n"
-            "Probleme , fichier .txt genere vide.\n"
-            "Cause , toutes les lignes rejetees par resolution. Solution , "
-            "revoir les decisions en Identitovigilance, retenir plus de variantes."
+            "Problème , fichier .txt génère vide.\n"
+            "Cause , toutes les lignes rejetees par résolution. Solution , "
+            "revoir les décisions en Identitovigilance, retenir plus de variantes."
         ),
         faq=[
             ("Puis-je exporter en Parquet ?",
@@ -858,7 +858,7 @@ FEATURES = [
             "D:/DIM/Exports/YYYY/MM pour faciliter l'audit et les reprises.\n\n"
             "3. Conserver les exports 12 mois minimum en local avant archivage "
             "(tracabilite).\n\n"
-            "4. Apres téléversement DRUIDES reussi, tagger le lot dans le cahier DIM "
+            "4. Après téléversement DRUIDES reussi, tagger le lot dans le cahier DIM "
             "pour eviter les doubles transmissions."
         ),
         metrics=(
@@ -901,41 +901,41 @@ FEATURES = [
             "disponible. Touche F3 depuis n'importe quelle vue."
         ),
         access=(
-            "Inspecteur ligne par ligne , touche F2 depuis Sélection des fichiers apres avoir "
-            "selectionne un fichier, ou clic direct sur une ligne du tableau.\n\n"
+            "Inspecteur ligne par ligne , touche F2 depuis Sélection des fichiers après avoir "
+            "sélectionne un fichier, ou clic direct sur une ligne du tableau.\n\n"
             "Contrôle préalable DRUIDES , touche F3 depuis n'importe ou, y compris "
             "Tableau de bord. L'ouverture en overlay plein-ecran."
         ),
         interface=(
             "Inspecteur ligne par ligne ,\n\n"
-            "- Header , nom du fichier, format detecte, longueur de ligne, "
+            "- Header , nom du fichier, format détecte, longueur de ligne, "
             "total de lignes.\n"
             "- Input numero de ligne + bouton Inspecter.\n"
             "- Zone de decomposition , tableau champ par champ avec positions "
             "(debut, fin), valeur brute, valeur decodee, statut de validation.\n"
-            "- Panneau d'erreurs , erreurs detectees avec severite et "
+            "- Panneau d'erreurs , erreurs détectées avec severite et "
             "suggestion de correction.\n\n"
             "Contrôle préalable DRUIDES ,\n\n"
-            "- 15 validateurs groupes en 4 categories (structure, coherence, "
+            "- 15 validateurs groupes en 4 catégories (structure, coherence, "
             "coherence inter-fichier, metier).\n"
             "- Progression globale + par validateur.\n"
             "- Rapport final , erreurs classees par severite + export PDF."
         ),
         workflow_steps=[
-            "Apres traitement du lot, lancer Contrôle préalable DRUIDES (F3). "
+            "Après traitement du lot, lancer Contrôle préalable DRUIDES (F3). "
             "L'analyse prend 3-15 s selon la taille. Les erreurs bloquantes "
-            "rouge doivent etre corrigees avant téléversement.",
+            "rouge doivent être corrigees avant téléversement.",
             "Pour chaque erreur, cliquer le lien 'Voir dans l'inspecteur'. "
             "L'inspecteur s'ouvre sur la ligne fautive. Analyser le champ en "
-            "cause, verifier s'il s'agit d'une erreur source (CPage/DxCare) ou "
+            "cause, vérifier s'il s'agit d'une erreur source (CPage/DxCare) ou "
             "d'une erreur de traitement.",
             "Si erreur source , signaler au service qui a produit le fichier "
             "pour correction. Si erreur de traitement , ouvrir un issue GitHub. "
-            "Relancer Contrôle préalable apres correction pour confirmer.",
+            "Relancer Contrôle préalable après correction pour confirmer.",
         ],
         options=(
             "Inspecteur ligne par ligne ,\n\n"
-            "- Anonymisation auto apres 3 lignes inspectees (pseudonymisation).\n"
+            "- Anonymisation auto après 3 lignes inspectees (pseudonymisation).\n"
             "- Copie champ par champ interdite (anti-fuite).\n"
             "- Navigation precedent/suivant sur les erreurs du fichier.\n\n"
             "Contrôle préalable DRUIDES ,\n\n"
@@ -946,8 +946,8 @@ FEATURES = [
         ),
         integration=(
             "Inspecteur et Contrôle préalable se completent ,\n\n"
-            "- Contrôle préalable detecte les erreurs, Inspecteur les analyse en detail.\n"
-            "- Inspecteur peut etre ouvert depuis Sélection des fichiers, Identitovigilance "
+            "- Contrôle préalable détecte les erreurs, Inspecteur les analyse en détail.\n"
+            "- Inspecteur peut être ouvert depuis Sélection des fichiers, Identitovigilance "
             "(sur une ligne en collision), ou le rapport Preflight.\n"
             "- Contrôle préalable lit le MPI + les fichiers sources pour des "
             "validations cross-fichier (ex. chainage VID-HOSP).\n\n"
@@ -957,45 +957,45 @@ FEATURES = [
         usecase_1=(
             "Cas , DRUIDES a rejete le lot precedent avec erreur 'FINESS "
             "incoherent ligne 2341'. Le TIM ouvre Contrôle préalable , l'erreur est "
-            "immediatement detectee. Clic 'Voir dans l'inspecteur' , ligne 2341 "
+            "immediatement détectée. Clic 'Voir dans l'inspecteur' , ligne 2341 "
             "a 940000001 au lieu de 940110018 (Fondation Vallee). Correction "
             "cote CPage, re-traitement, re-export, téléversement reussi."
         ),
         usecase_2=(
             "Cas , nouveau TIM formation. Il lance Contrôle préalable sur un lot de "
             "test, voit 38 warnings. Il parcourt chacun dans Inspecteur pour "
-            "comprendre les regles ATIH. En 2 h, il maitrise les formats RPS, "
+            "comprendre les règles ATIH. En 2 h, il maitrise les formats RPS, "
             "RAA, FICHSUP-PSY et leurs validations. Formation accelere de 3j a 1j."
         ),
         performance=(
             "Inspecteur ligne par ligne ,\n"
             "- Ouverture d'un fichier , < 200 ms (lazy load).\n"
             "- Inspection d'une ligne , < 50 ms.\n"
-            "- Validation de 15 regles sur une ligne , < 30 ms.\n\n"
+            "- Validation de 15 règles sur une ligne , < 30 ms.\n\n"
             "Contrôle préalable DRUIDES ,\n"
             "- Validation de 1000 lignes , 450 ms.\n"
             "- Validation d'un lot mensuel (10 fichiers, 150 000 lignes) , 12 s.\n"
             "- Export du rapport PDF , 2-4 s."
         ),
         security=(
-            "Inspecteur expose potentiellement des donnees nominatives ,\n\n"
-            "- Pseudonymisation automatique apres 3 lignes inspectees.\n"
+            "Inspecteur expose potentiellement des données nominatives ,\n\n"
+            "- Pseudonymisation automatique après 3 lignes inspectees.\n"
             "- Copy clipboard des champs IPP/DDN desactivee.\n"
             "- Chaque ouverture loggue IPP + fichier + heure.\n"
-            "- En mode audit (authentifie cadre DIM), les donnees brutes sont "
+            "- En mode audit (authentifie cadre DIM), les données brutes sont "
             "accessibles mais l'journal d audit est imprimable.\n\n"
             "Contrôle préalable ne remonte que des metadonnees (numero de ligne, type "
             "d'erreur) , pas d'IPP dans le rapport PDF."
         ),
         troubleshooting=(
-            "Probleme , Inspecteur n'ouvre pas un fichier.\n"
+            "Problème , Inspecteur n'ouvre pas un fichier.\n"
             "Cause , format INCONNU ou permissions refusees. Solution , "
             "verifier l'identification dans Sélection des fichiers d'abord.\n\n"
-            "Probleme , Contrôle préalable bloque a un validateur specifique (> 2 min).\n"
+            "Problème , Contrôle préalable bloque a un validateur spécifique (> 2 min).\n"
             "Cause , fichier corrompu en cours de validation. Solution , "
             "annuler, ouvrir le fichier dans Inspecteur pour identifier la ligne "
             "problematique.\n\n"
-            "Probleme , erreur 'Position invalide' dans Inspecteur.\n"
+            "Problème , erreur 'Position invalide' dans Inspecteur.\n"
             "Cause , format source non standard (ancien P04 2021). Solution , "
             "forcer le format via le menu deroulant en haut de l'inspecteur."
         ),
@@ -1004,9 +1004,9 @@ FEATURES = [
              "Non, une ligne a la fois. Pour plusieurs lignes, utiliser "
              "Contrôle préalable qui scanne tout."),
             ("Contrôle préalable peut-il tourner automatiquement ?",
-             "Oui, option 'Auto-run au chargement' dans les preferences."),
+             "Oui, option 'Auto-run au chargement' dans les préférences."),
             ("Les rapports Contrôle préalable sont-ils archives ?",
-             "Seulement si exportes en PDF. Sinon, regeneres a chaque run."),
+             "Seulement si exportes en PDF. Sinon, regénérés a chaque run."),
             ("Que signifie une erreur 'ERR-DIntelligence artificielleG-ABSENT' ?",
              "Le diagnostic principal (DP) est manquant. CimSuggester Intelligence artificielle peut "
              "proposer un DP plausible (F2 > Suggestion Intelligence artificielle)."),
@@ -1028,15 +1028,15 @@ FEATURES = [
             "- Taux de rejet DRUIDES post-Contrôle préalable , cible < 0.1 pourcent.\n"
             "- Nombre de rapports Contrôle préalable archives par mois , cible = nombre "
             "de lots transmis.\n"
-            "- Distribution des categories d'erreurs , alerte si glissement."
+            "- Distribution des catégories d'erreurs , alerte si glissement."
         ),
         references=(
-            "Cahier des charges DRUIDES 2025 , 53 regles de validation.\n"
+            "Cahier des charges DRUIDES 2025 , 53 règles de validation.\n"
             "15 validateurs Core , FINESS, IPP, DDN, CIM-10, mode legal, "
             "secteur ARS, chainage, duplicatas, orphelins, cohérence annee, "
             "format RPS, Fichsup, Ficum, Anonymisation, syntaxe.\n"
             "CimSuggester Intelligence artificielle , fonctionnalité V35 , fournisseur LLM configurable (API nuage informatique ou Ollama local).\n"
-            "Regles CIM-10 FR , ATIH MAM CIM-10 2024."
+            "Règles CIM-10 FR , ATIH MAM CIM-10 2024."
         ),
     ),
 
@@ -1049,12 +1049,12 @@ FEATURES = [
         tagline="4 graphes Chart.js + 6 indicateur pour piloter le MPI",
         purpose=(
             "Le Tableau de bord en direct est un overlay plein-ecran qui affiche en temps "
-            "reel 4 graphes et 6 indicateur derives du MPI. Il se met a jour sans "
+            "reel 4 graphes et 6 indicateur derives du MPI. Il se met à jour sans "
             "rechargement a chaque nouveau traitement , ideal pour monitoring "
             "pendant une session de traitement intensive ou projection en "
             "reunion DIM.\n\n"
-            "Difference avec le Tableau de bord (Ctrl+1) , Tableau de bord est statique "
-            "(indicateur calcules au chargement), Tableau de bord en direct est dynamique (MAJ "
+            "Différence avec le Tableau de bord (Ctrl+1) , Tableau de bord est statique "
+            "(indicateur calculés au chargement), Tableau de bord en direct est dynamique (MAJ "
             "continue toutes les 2 secondes)."
         ),
         prerequisites=(
@@ -1076,22 +1076,22 @@ FEATURES = [
             "officielles G/I/D/P/Z).\n"
             "- Bas gauche , Top 10 UM les plus actives (bar horizontal).\n"
             "- Bas droit , heatmap des collisions par mois (matrix chart).\n\n"
-            "En bande inferieure, 6 indicateur , file active, DMS, taux reconduction, "
-            "taux collision resolu, UM sans activite, volume pediatrique."
+            "En bande inférieure, 6 indicateur , file active, DMS, taux reconduction, "
+            "taux collision résolu, UM sans activité, volume pediatrique."
         ),
         workflow_steps=[
             "Appuyer F4. L'overlay s'affiche. Les 4 graphes se rendent en "
-            "moins d'une seconde. Les indicateur sont calcules en parallele.",
+            "moins d'une seconde. Les indicateur sont calculés en parallele.",
             "Pendant un traitement en arriere-plan (Sélection des fichiers), les graphes "
-            "se mettent a jour automatiquement toutes les 2 s. Utile pour "
-            "observer la progression et detecter les anomalies immediatement.",
-            "Pour presentation reunion , cliquer le bouton Exporter , un PDF "
-            "paysage 2 pages est genere avec les 4 graphes + les indicateurs. Duree "
-            "de generation , 2-4 s.",
+            "se mettent à jour automatiquement toutes les 2 s. Utile pour "
+            "observer la progrèssion et détecter les anomalies immediatement.",
+            "Pour présentation reunion , cliquer le bouton Exporter , un PDF "
+            "paysage 2 pages est génère avec les 4 graphes + les indicateurs. Duree "
+            "de génération , 2-4 s.",
         ],
         options=(
             "Options disponibles ,\n\n"
-            "- Frequence de MAJ , 2 s (defaut), 5 s, 10 s, ou manuelle.\n"
+            "- Fréquence de MAJ , 2 s (defaut), 5 s, 10 s, ou manuelle.\n"
             "- Plage temporelle affichee , 12 mois, 24 mois, 36 mois, ou tout.\n"
             "- Couleurs des graphes , palette officielle (defaut) ou alternative "
             "daltoniens.\n"
@@ -1101,7 +1101,7 @@ FEATURES = [
         ),
         integration=(
             "Tableau de bord en direct consomme ,\n\n"
-            "- Le MPI SQLite (requetes agregees).\n"
+            "- Le MPI SQLite (requêtes agregees).\n"
             "- La structure chargee (pour repartition secteur ARS).\n"
             "- L'historique de traitements (pour evolution mensuelle).\n\n"
             "Il alimente ,\n\n"
@@ -1112,42 +1112,42 @@ FEATURES = [
             "Cas , reunion mensuelle DIM. Le responsable projette Tableau de bord "
             "En direct en plein-ecran. Les 4 graphes suscitent la discussion sur "
             "l'evolution de la file active, la repartition G/I/D/P, les UM "
-            "les plus actives. En 15 min, les decisions sont prises sur les "
+            "les plus actives. En 15 min, les décisions sont prises sur les "
             "priorites du mois suivant."
         ),
         usecase_2=(
             "Cas , monitoring d'un gros traitement (500 000 lignes). Le TIM "
             "laisse Tableau de bord en direct ouvert sur le 2e ecran pendant le traitement "
             "de 20 min. Il observe que la repartition PSY diminue anormalement "
-            "a mi-parcours , il arrete le traitement, identifie un fichier "
+            "a mi-parcours , il arrête le traitement, identifie un fichier "
             "corrompu, le remplace, relance , evite une analyse biaisee."
         ),
         performance=(
             "Performance Chart.js sur poste standard ,\n\n"
             "- Rendu initial des 4 graphes , 380 ms.\n"
-            "- MAJ sur nouvelles donnees , 120 ms.\n"
+            "- MAJ sur nouvelles données , 120 ms.\n"
             "- Requetes SQL agregees , 40 ms en moyenne.\n"
             "- Export PDF paysage , 3 s.\n\n"
-            "Attention , sur des MPI > 5 M lignes, augmenter la frequence de "
+            "Attention , sur des MPI > 5 M lignes, augmenter la fréquence de "
             "MAJ a 10 s ou manuel pour eviter la saturation."
         ),
         security=(
-            "Le Tableau de bord en direct n'expose jamais de donnees nominatives , "
+            "Le Tableau de bord en direct n'expose jamais de données nominatives , "
             "uniquement des agregats anonymes (counts, sommes, moyennes).\n\n"
-            "Le PDF exporte peut etre partage sans restriction RGPD , aucun "
+            "Le PDF exporte peut être partage sans restriction RGPD , aucun "
             "IPP, DDN, ou identifiant indirect.\n\n"
-            "Les animations et transitions n'exposent pas de donnees , "
+            "Les animations et transitions n'exposent pas de données , "
             "purement visuelles. Journal d audit , chaque ouverture F4 est logguee."
         ),
         troubleshooting=(
-            "Probleme , graphes ne se mettent pas a jour.\n"
-            "Cause , MPI vide ou traitement non termine. Solution , verifier "
+            "Problème , graphes ne se mettent pas à jour.\n"
+            "Cause , MPI vide ou traitement non termine. Solution , vérifier "
             "au Tableau de bord principal que les indicateur sont peuples.\n\n"
-            "Probleme , Chart.js affiche 'No data'.\n"
-            "Cause , filtrage trop restrictif (annee sans donnees). Solution , "
+            "Problème , Chart.js affiche 'No data'.\n"
+            "Cause , filtrage trop restrictif (annee sans données). Solution , "
             "elargir la plage temporelle.\n\n"
-            "Probleme , export PDF echoue.\n"
-            "Cause , fpdf2 non installe en mode source, ou playwright manquant. "
+            "Problème , export PDF échoue.\n"
+            "Cause , fpdf2 non installé en mode source, ou playwright manquant. "
             "Solution , `pip install fpdf2 playwright && playwright install chromium`."
         ),
         faq=[
@@ -1157,32 +1157,32 @@ FEATURES = [
             ("Tableau de bord en direct fonctionne-t-il sans Chart.js ?",
              "Non, Chart.js est embarqué dans l'interface graphique. Disponible "
              "hors ligne."),
-            ("Puis-je projeter en mode dark pour presentation ?",
+            ("Puis-je projeter en mode dark pour présentation ?",
              "Oui, le theme suit celui de l'app. Utiliser Ctrl+D pour "
              "basculer."),
             ("Les graphes s'impriment-ils correctement ?",
-             "Oui, couleurs preservees. Preferer le PDF paysage genere plutot "
+             "Oui, couleurs preservees. Preferer le PDF paysage génère plutot "
              "qu'imprimer directement depuis l'overlay."),
         ],
         best_practices=(
             "1. Garder Tableau de bord en direct sur 2e ecran pendant les traitements "
-            "importants , detection precoce d'anomalies.\n\n"
+            "importants , détection precoce d'anomalies.\n\n"
             "2. Exporter le PDF avant chaque reunion mensuelle , archive des "
-            "decisions prises avec les donnees visibles.\n\n"
-            "3. Adapter la frequence de MAJ au contexte , 2 s pendant un "
-            "traitement, manuel pendant une presentation.\n\n"
+            "decisions prises avec les données visibles.\n\n"
+            "3. Adapter la fréquence de MAJ au contexte , 2 s pendant un "
+            "traitement, manuel pendant une présentation.\n\n"
             "4. Comparer mois N vs N-1 via deux onglets d'export PDF cote "
             "a cote."
         ),
         metrics=(
             "indicateur affiches ,\n\n"
-            "- File active , patients distincts sur la periode, cible croissante\n"
+            "- File active , patients distincts sur la période, cible croissante\n"
             "  en CHS en developpement.\n"
             "- DMS (duree moyenne sejour) , 30-45 j typique en PSY adulte, "
             "15-25 j en pediatrie.\n"
             "- Taux de reconduction , > 40 pourcent signale une chronicite.\n"
-            "- Taux de collision resolu , cible 100 pourcent avant export.\n"
-            "- UM sans activite , signale des fermetures a acter.\n"
+            "- Taux de collision résolu , cible 100 pourcent avant export.\n"
+            "- UM sans activité , signale des fermetures a acter.\n"
             "- Volume pediatrique , typique 20-30 pourcent en Fondation Vallee."
         ),
         references=(
@@ -1200,27 +1200,27 @@ FEATURES = [
     mk(
         title="Structure , arborescence polaire et export PDF",
         category="Exports avancés",
-        tagline="Visualiser la hierarchie Pole-Secteur-UM",
+        tagline="Visualiser la hierarchie Pôle-Secteur-UM",
         purpose=(
             "Cette vue charge un fichier structure (CSV/TSV) decrivant la "
             "hierarchie de l'etablissement , Territoire > Etablissement > "
-            "Pole > Secteur > UM. Elle rend un organigramme interactif et "
+            "Pôle > Secteur > UM. Elle rend un organigramme interactif et "
             "exporte un PDF multi-pages impriable.\n\n"
             "Indispensable pour , valider que la nomenclature UM est "
-            "coherente avec les fichiers ATIH, generer l'annexe du rapport "
-            "annuel ARS, onboarder un nouveau TIM sur la structure du pole."
+            "coherente avec les fichiers ATIH, générer l'annexe du rapport "
+            "annuel ARS, onboarder un nouveau TIM sur la structure du pôle."
         ),
         prerequisites=(
             "Un fichier structure au format CSV/TSV. Exemples de colonnes "
             "acceptees , LEVEL, CODE, PARENT, LABEL. Si les headers ne "
-            "correspondent pas, le parser tente une detection heuristique.\n\n"
+            "correspondent pas, le parser tente une détection heuristique.\n\n"
             "Alternative , fichier plat indente (2 ou 4 espaces = 1 niveau). "
             "Utile pour des structures saisies a la main dans un editeur "
             "texte."
         ),
         access=(
             "Raccourci , Ctrl+6. La vue s'ouvre sur un etat vide avec un "
-            "bouton central Selectionner le fichier structure.\n\n"
+            "bouton central Sélectionner le fichier structure.\n\n"
             "Une fois charge, la structure reste en session , passer sur un "
             "autre onglet et revenir preserve l'affichage."
         ),
@@ -1229,20 +1229,20 @@ FEATURES = [
             "1. En-tete , stat cards (noeuds, racines, profondeur, fichier) + "
             "chips par niveau + toolbar zoom/ajuster/export PDF.\n\n"
             "2. Viewport organigramme , rendu HTML+CSS pur (pas de SVG), "
-            "pole au centre, secteurs en couronne, UM en feuilles. Zoom "
+            "pôle au centre, secteurs en couronne, UM en feuilles. Zoom "
             "molette + Ctrl, boutons +/-, ajuster.\n\n"
-            "3. Section Analyse d'activite par UM (nouvelle V35) , zone de dépôt "
-            "pour RPS/RAA + resultats avec UM sans activite."
+            "3. Section Analyse d'activité par UM (nouvelle V35) , zone de dépôt "
+            "pour RPS/RAA + resultats avec UM sans activité."
         ),
         workflow_steps=[
-            "Cliquer Selectionner le fichier structure , dialog natif. "
+            "Cliquer Sélectionner le fichier structure , dialog natif. "
             "Choisir un CSV/TSV. Le parser analyse et construit l'arbre en "
             "moins de 1 seconde.",
             "L'organigramme s'affiche, auto-ajuste au viewport. Zoom "
-            "molette Ctrl pour voir les details. Chaque noeud porte code, "
+            "molette Ctrl pour voir les détails. Chaque noeud porte code, "
             "libelle, badge type ARS (G/I/D/P/Z).",
             "Deposer un ou plusieurs fichiers RPS/RAA dans la zone de dépôt "
-            "pour lancer l'analyse d'activite , les UM sans occurrence sont "
+            "pour lancer l'analyse d'activité , les UM sans occurrence sont "
             "signalees en rouge avec pastille clignotante.",
         ],
         options=(
@@ -1252,7 +1252,7 @@ FEATURES = [
             "- Badges de type ARS , toujours affiches (couleurs officielles).\n"
             "- Indent affichage , compact ou aere.\n\n"
             "Options d'export PDF ,\n\n"
-            "- Multi-pages , 1 page vue globale + 1 page par pole.\n"
+            "- Multi-pages , 1 page vue globale + 1 page par pôle.\n"
             "- Scaling auto pour tenir en A4.\n"
             "- Legende par defaut (5 types ARS).\n"
             "- Orientation portrait (defaut) ou paysage."
@@ -1262,23 +1262,23 @@ FEATURES = [
             "- Fichier CSV/TSV local.\n"
             "- Palette couleurs partagee avec Tableau de bord en direct.\n\n"
             "Structure alimente ,\n\n"
-            "- Analyse d'activite par UM , besoin de la liste des UM pour "
-            "detecter celles sans activite.\n"
-            "- Export PDF organigramme , consommable par chef de pole, ARS, "
+            "- Analyse d'activité par UM , besoin de la liste des UM pour "
+            "détecter celles sans activité.\n"
+            "- Export PDF organigramme , consommable par chef de pôle, ARS, "
             "audit.\n"
             "- Tableau de bord en direct , palette secteurs ARS pour pie chart."
         ),
         usecase_1=(
-            "Cas , chef de pole demande l'organigramme a jour de Fondation "
+            "Cas , chef de pôle demande l'organigramme à jour de Fondation "
             "Vallee pour son rapport annuel. Le TIM charge le fichier "
-            "structure, exporte le PDF , 3 pages (regionale + pole enfants "
-            "+ pole adolescents). Envoi par email, valide sans retouche."
+            "structure, exporte le PDF , 3 pages (régionale + pôle enfants "
+            "+ pôle adolescents). Envoi par email, valide sans retouche."
         ),
         usecase_2=(
-            "Cas , audit ARS, verification de la nomenclature. L'auditeur "
-            "demande quelles UM ont de l'activite en 2024. Le TIM charge la "
+            "Cas , audit ARS, vérification de la nomenclature. L'auditeur "
+            "demande quelles UM ont de l'activité en 2024. Le TIM charge la "
             "structure + les 12 RPS mensuels 2024. En 30 s, la liste des "
-            "UM sans activite apparait , 4 UM jamais utilisees, dont 2 "
+            "UM sans activité apparait , 4 UM jamais utilisees, dont 2 "
             "officiellement fermees. Reponse factuelle a l'auditeur, qui "
             "note l'outil dans son rapport."
         ),
@@ -1288,28 +1288,28 @@ FEATURES = [
             "- Rendu HTML+CSS initial , 200 ms.\n"
             "- Zoom + transform , 16 ms (60 fps).\n"
             "- Export PDF 3 pages , 1.2 s.\n\n"
-            "Pour tres grandes structures (> 1000 noeuds) , la profondeur "
+            "Pour très grandes structures (> 1000 noeuds) , la profondeur "
             "affichee est limitee a 6 niveaux par defaut pour lisibilite, "
-            "les niveaux inferieurs sont collapsibles."
+            "les niveaux inférieurs sont collapsibles."
         ),
         security=(
-            "La structure ne contient pas de donnees patient , pas de "
-            "precautions RGPD specifiques.\n\n"
-            "L'export PDF peut etre partage librement (pas d'identifiants "
-            "nominatifs). Le fichier structure lui-meme est public (publie "
+            "La structure ne contient pas de données patient , pas de "
+            "precautions RGPD spécifiques.\n\n"
+            "L'export PDF peut être partage librement (pas d'identifiants "
+            "nominatifs). Le fichier structure lui-même est public (publie "
             "dans le rapport annuel).\n\n"
-            "L'analyse d'activite par UM ne rapporte que des comptages "
+            "L'analyse d'activité par UM ne rapporte que des comptages "
             "agreges par UM , aucun IPP dans le rendu."
         ),
         troubleshooting=(
-            "Probleme , structure affiche 0 noeud apres selection.\n"
+            "Problème , structure affiche 0 noeud après sélection.\n"
             "Cause , format non reconnu (header incorrect). Solution , "
             "renommer les colonnes LEVEL/CODE/PARENT/LABEL ou utiliser le "
             "format indente.\n\n"
-            "Probleme , organigramme deborde du viewport.\n"
-            "Cause , structure tres large. Solution , bouton Ajuster en haut "
+            "Problème , organigramme deborde du viewport.\n"
+            "Cause , structure très large. Solution , bouton Ajuster en haut "
             "a droite.\n\n"
-            "Probleme , l'export PDF echoue.\n"
+            "Problème , l'export PDF échoue.\n"
             "Cause , composant PDF manquant sur le poste. Solution , "
             "contacter le support pour reinstallation "
             "(adam.beloucif@psysudparis.fr)."
@@ -1321,25 +1321,25 @@ FEATURES = [
             ("Combien de niveaux de profondeur sont supportes ?",
              "Jusqu'a 10, au-dela l'affichage devient illisible."),
             ("Le PDF est-il vectoriel ?",
-             "Oui, pas de raster. Qualite impression optimale meme agrandi."),
+             "Oui, pas de raster. Qualité impression optimale même agrandi."),
             ("Puis-je exporter en SVG ?",
              "Pas encore. L'organigramme est HTML+CSS pur, pas de SVG."),
         ],
         best_practices=(
             "1. Maintenir le fichier structure en version controlee (git). "
             "Chaque modification tracee.\n\n"
-            "2. Mettre a jour la structure des qu'une UM ouvre ou ferme "
-            "officiellement , l'analyse d'activite en depend.\n\n"
+            "2. Mettre à jour la structure des qu'une UM ouvre ou ferme "
+            "officiellement , l'analyse d'activité en depend.\n\n"
             "3. Exporter le PDF organigramme trimestriellement pour archive.\n\n"
-            "4. Partager le fichier structure avec le chef de pole en amont "
+            "4. Partager le fichier structure avec le chef de pôle en amont "
             "du rapport annuel pour validation."
         ),
         metrics=(
             "Metriques a suivre ,\n\n"
             "- Nombre total d'UM , typique 40-80 pour un CHS.\n"
             "- Profondeur max , 4-5 niveaux standard.\n"
-            "- Taux d'UM sans activite , cible 0 pourcent, investiguer sinon.\n"
-            "- Frequence de mise a jour structure , trimestrielle minimum.\n"
+            "- Taux d'UM sans activité , cible 0 pourcent, investiguer sinon.\n"
+            "- Fréquence de mise à jour structure , trimestrielle minimum.\n"
             "- Couverture type ARS , doit englober G+I+D+P+Z selon specialite."
         ),
         references=(
@@ -1355,30 +1355,30 @@ FEATURES = [
     # FEATURE 8 · ANALYSE D'ACTIVITE PAR UM (LA NOUVELLE FEATURE)
     # ══════════════════════════════════════════════════════════════════════
     mk(
-        title="Analyse d'activite par UM , detection des UM dormantes",
+        title="Analyse d'activité par UM , détection des UM dormantes",
         category="Exports avancés",
         tagline="Croiser structure + RPS/RAA pour reperer les unites inactives",
         purpose=(
             "Nouveaute V35. Une UM declaree dans la structure mais jamais "
-            "presente dans les fichiers ATIH sur une periode donnee est une "
+            "presente dans les fichiers ATIH sur une période donnée est une "
             "anomalie , soit elle a ferme et la structure n'a pas ete mise "
             "a jour, soit un recueil manque.\n\n"
-            "Cette fonctionnalité detecte automatiquement ces UM dormantes en "
+            "Cette fonctionnalité détecte automatiquement ces UM dormantes en "
             "croisant la structure chargee avec les fichiers RPS/RAA "
-            "deposes. Elle evite que des UM fantomes ne restent dans les "
+            "déposés. Elle evite que des UM fantomes ne restent dans les "
             "referentiels pendant des annees."
         ),
         prerequisites=(
             "Un fichier structure charge via la vue Structure (Ctrl+6). "
-            "Au moins une UM doit etre detectee dans la hierarchie (noeud "
+            "Au moins une UM doit être détectée dans la hierarchie (noeud "
             "feuille ou niveau UM explicite).\n\n"
             "Un ou plusieurs fichiers RPS, RAA, RPSA, R3A ou EDGAR , format "
             "texte latin-1 a largeur fixe. Noms conseillees avec date "
-            "(RPS_202410.txt) pour detection automatique de la periode."
+            "(RPS_202410.txt) pour détection automatique de la période."
         ),
         access=(
             "Accessible uniquement depuis la vue Structure (Ctrl+6) , "
-            "apparait comme une section 'Analyse d'activite par UM' sous "
+            "apparait comme une section 'Analyse d'activité par UM' sous "
             "l'organigramme, une fois le fichier structure charge.\n\n"
             "Pas de raccourci dedie , l'analyse n'a de sens qu'avec une "
             "structure charge en contexte."
@@ -1387,33 +1387,33 @@ FEATURES = [
             "3 zones ,\n\n"
             "1. Header , titre, description, bouton réinitialisation.\n\n"
             "2. Drop zone centrale , zone de drop HTML5 accessible clavier "
-            "(Tab, Entree). Support glisser-deposer ou clic ouvre dialog.\n\n"
-            "3. Zone de progression + resultats ,\n"
-            "   - 3 stat cards (UM actives, sans activite, couverture).\n"
-            "   - 2 jauges (couverture active + sans activite).\n"
-            "   - Liste des fichiers analyses avec format detecte.\n"
-            "   - Liste groupee par pole/secteur des UM inactives.\n"
+            "(Tab, Entree). Support glisser-déposer ou clic ouvre dialog.\n\n"
+            "3. Zone de progrèssion + resultats ,\n"
+            "   - 3 stat cards (UM actives, sans activité, couverture).\n"
+            "   - 2 jauges (couverture active + sans activité).\n"
+            "   - Liste des fichiers analyses avec format détecte.\n"
+            "   - Liste groupee par pôle/secteur des UM inactives.\n"
             "   - Bouton 'Exporter CSV' pour la liste inactive.\n"
             "   - Details collapsible , Top 10 UM les plus actives."
         ),
         workflow_steps=[
             "Charger un fichier structure via Ctrl+6. Parcourir "
             "l'organigramme pour valider que toutes les UM attendues sont "
-            "bien presentes. Descendre a la section Analyse d'activite.",
-            "Glisser-deposer un ou plusieurs fichiers RPS/RAA dans la drop "
+            "bien presentes. Descendre a la section Analyse d'activité.",
+            "Glisser-déposer un ou plusieurs fichiers RPS/RAA dans la drop "
             "zone, ou cliquer pour ouvrir le dialog. Multi-fichiers supporte. "
             "Le traitement est asynchrone (chunks 5000 lignes) pour ne pas "
             "geler l'interface.",
             "Lire les resultats , les UM en rouge avec pastille clignotante "
-            "sur l'arbre sont celles sans activite. Exporter la liste CSV "
-            "pour la transmettre au chef de pole. Si plusieurs UM "
-            "inactives font partie du meme secteur, investiguer en priorite.",
+            "sur l'arbre sont celles sans activité. Exporter la liste CSV "
+            "pour la transmettre au chef de pôle. Si plusieurs UM "
+            "inactives font partie du même secteur, investiguer en priorité.",
         ],
         options=(
             "Options ,\n\n"
             "- Nombre de fichiers simultanes , illimite en theorie, recommande "
             "< 20 pour lisibilite.\n\n"
-            "- Auto-detection format , par longueur de ligne (154 c = RPS, "
+            "- Auto-détection format , par longueur de ligne (154 c = RPS, "
             "96 c = RAA, etc.). Variantes anciennes supportees (P04 2021).\n\n"
             "- Export CSV , UTF-8 avec BOM pour Excel FR. Separateur ;.\n"
             "- Badge arbre , toggle on/off via Settings (on par defaut).\n\n"
@@ -1432,19 +1432,19 @@ FEATURES = [
             "bridge C#."
         ),
         usecase_1=(
-            "Cas , audit trimestriel. Le chef de pole veut savoir quelles UM "
-            "n'ont eu aucune activite au T3 2024. Le TIM charge la structure, "
-            "depose les 3 fichiers RPS mensuels (juillet, aout, septembre). "
+            "Cas , audit trimestriel. Le chef de pôle veut savoir quelles UM "
+            "n'ont eu aucune activité au T3 2024. Le TIM charge la structure, "
+            "dépose les 3 fichiers RPS mensuels (juillet, août, septembre). "
             "En 4 s, 5 UM apparaissent en rouge. Une est l'UHSA qui n'a "
             "pas encore ouvert, 4 sont des CATTP officiellement fermees "
-            "mais toujours dans le referentiel. Le TIM met a jour la "
-            "structure, le chef de pole valide."
+            "mais toujours dans le referentiel. Le TIM met à jour la "
+            "structure, le chef de pôle valide."
         ),
         usecase_2=(
-            "Cas , controle qualite avant transmission ARS. Le TIM suspecte "
+            "Cas , contrôle qualité avant transmission ARS. Le TIM suspecte "
             "un oubli de RAA dans le lot du mois. Il charge la structure + "
             "le RPS + le RAA. Le RAA revele 8 UM inactives alors qu'elles "
-            "apparaissent dans le RPS. Verification , le fichier RAA de "
+            "apparaissent dans le RPS. Vérification , le fichier RAA de "
             "l'UM CMP Enfants est manquant. Recupere aupres du service, "
             "ajoute au lot, re-traite , 0 UM inactive incongrue. Transmission "
             "DRUIDES complete."
@@ -1457,67 +1457,67 @@ FEATURES = [
             "- Rendu resultats , 150 ms.\n"
             "- Export CSV , 50 ms.\n\n"
             "Au-dela de 500 000 lignes par fichier, envisager un Web Worker "
-            "(prevu V36) pour deplacer le parsing hors du main thread. "
+            "(prévu V36) pour déplacer l'analyse hors du fil principal. "
             "Pour l'instant, les lots mensuels (< 150 000 lignes) sont "
             "traites en quelques secondes sans gel."
         ),
         security=(
             "Traitement 100 pourcent local dans le navigateur WebView2 , "
             "aucun envoi vers le serveur, aucune persistance SQLite.\n\n"
-            "Les fichiers deposes ne quittent pas la memoire du navigateur , "
-            "ils sont liberes quand l'utilisateur clique Réinitialisation ou ferme "
+            "Les fichiers déposés ne quittent pas la memoire du navigateur , "
+            "ils sont libérés quand l'utilisateur clique Réinitialisation ou ferme "
             "l'app.\n\n"
             "Le CSV exporte contient uniquement codes UM et libelles , pas "
-            "de donnees nominatives. Partageable sans restriction RGPD.\n\n"
-            "Pas d'journal d audit specifique , l'action est volontaire et "
+            "de données nominatives. Partageable sans restriction RGPD.\n\n"
+            "Pas d'journal d audit spécifique , l'action est volontaire et "
             "visible, pas de risque de fuite."
         ),
         troubleshooting=(
-            "Probleme , 'Aucune UM detectable' dans l'alerte.\n"
+            "Problème , 'Aucune UM detectable' dans l'alerte.\n"
             "Cause , le fichier structure ne contient pas de niveau UM "
-            "explicite ni de feuilles. Solution , verifier la colonne LEVEL "
+            "explicite ni de feuilles. Solution , vérifier la colonne LEVEL "
             "ou la profondeur de l'arbre.\n\n"
-            "Probleme , toutes les UM apparaissent inactives.\n"
+            "Problème , toutes les UM apparaissent inactives.\n"
             "Cause , aucun code UM ne correspond , probable desynchronisation "
             "entre nomenclature structure et fichiers ATIH. Solution , "
-            "verifier les codes (ex. 4001 vs 94I01 premier caractere).\n\n"
-            "Probleme , export CSV s'ouvre en Excel avec colonnes fusionnees.\n"
+            "verifier les codes (ex. 4001 vs 94I01 premier caractère).\n\n"
+            "Problème , export CSV s'ouvre en Excel avec colonnes fusionnees.\n"
             "Cause , BOM manquant ou mauvais separateur. Solution , utiliser "
-            "Donnees > Depuis du texte dans Excel pour forcer le parsing."
+            "Données > Depuis du texte dans Excel pour forcer l'analyse."
         ),
         faq=[
             ("Puis-je analyser des FICHSUP-PSY ?",
              "Pas encore , V35 couvre RPS/RAA/RPSA/R3A/EDGAR. FICHSUP-PSY "
-             "arrivera en V36 avec parsing specifique."),
-            ("La periode est-elle toujours detectee correctement ?",
+             "arrivera en V36 avec analyse spécifique."),
+            ("La période est-elle toujours détectée correctement ?",
              "Si les fichiers sont nommees AAAAMM ou MMAAAA, oui. Sinon, "
-             "l'alerte 'periode non detectee' s'affiche , renommer pour "
-             "benefice de la detection."),
+             "l'alerte 'période non détectée' s'affiche , renommer pour "
+             "benefice de la détection."),
             ("Puis-je analyser des UM d'autres etablissements ?",
              "Oui, charger le fichier structure de l'etablissement concerne. "
              "L'outil est generique."),
-            ("Combien de fichiers puis-je deposer simultanement ?",
+            ("Combien de fichiers puis-je déposer simultanement ?",
              "Illimite en theorie. Recommande < 20 pour eviter les pics RAM."),
         ],
         best_practices=(
-            "1. Lancer l'analyse trimestriellement au minimum , detecte les "
+            "1. Lancer l'analyse trimestriellement au minimum , détecte les "
             "UM qui se ferment silencieusement.\n\n"
             "2. Maintenir une correspondance stricte entre codes UM structure "
             "et codes UM dans les fichiers ATIH , sans cela, faux positifs.\n\n"
-            "3. Apres export CSV, partager avec le chef de pole pour "
+            "3. Après export CSV, partager avec le chef de pôle pour "
             "validation , il peut confirmer les fermetures officielles.\n\n"
-            "4. Toujours combiner RPS + RAA pour une couverture complete , "
+            "4. Toujours combiner RPS + RAA pour une couverture complète , "
             "certaines UM ambulatoires n'apparaissent que dans RAA."
         ),
         metrics=(
             "Metriques cles ,\n\n"
-            "- Taux de couverture d'activite , cible 100 pourcent en regime "
+            "- Taux de couverture d'activité , cible 100 pourcent en regime "
             "nominal, alerte < 95 pourcent.\n"
             "- Nombre d'UM inactives en moyenne , cible 0-2 par trimestre "
             "(turnover normal).\n"
             "- Duree moyenne d'analyse , cible < 10 s pour un lot mensuel.\n"
             "- Nombre de fichiers analyses par session , typique 3-12.\n"
-            "- Taux de detection periode automatique , cible > 90 pourcent "
+            "- Taux de détection période automatique , cible > 90 pourcent "
             "(depend du nommage des fichiers)."
         ),
         references=(
@@ -1539,22 +1539,22 @@ FEATURES = [
         tagline="Injecter des sources tiers et capturer les tableaux de bord",
         purpose=(
             "Deux fonctionnalites annexes souvent utilisees , Import CSV "
-            "permet d'injecter dans le MPI des donnees issues de systemes "
+            "permet d'injecter dans le MPI des données issues de systèmes "
             "tiers (editeur logiciel, partenaire GHT) sous forme de CSV. "
             "HTML vers PDF convertit les tableaux de bord BIQuery ou Looker Studio "
             "sauvegardes en HTML vers un PDF imprimable pour archivage.\n\n"
             "Ces outils couvrent les cas limites , tout n'est pas ATIH dans "
-            "le quotidien DIM, et les exports aux chefs de pole passent "
+            "le quotidien DIM, et les exports aux chefs de pôle passent "
             "souvent par PDF."
         ),
         prerequisites=(
             "Import CSV ,\n"
             "- Un CSV avec colonnes IPP, DDN au minimum. Separateur auto-"
-            "detecte (comma, semi-colon, tab). Encodage UTF-8 ou latin-1.\n\n"
+            "détecte (comma, semi-colon, tab). Encodage UTF-8 ou latin-1.\n\n"
             "HTML vers PDF ,\n"
             "- Un fichier fichier HTML local (pas d'URL). Les tableaux de bord enregistrés via "
             "Ctrl+S dans le navigateur sont compatibles.\n"
-            "- playwright-chromium installe (mode dev) ou fpdf2 seul (fallback)."
+            "- playwright-chromium installé (mode développement) ou fpdf2 seul (solution de repli)."
         ),
         access=(
             "Import CSV , Ctrl+5.\n\n"
@@ -1563,27 +1563,27 @@ FEATURES = [
         ),
         interface=(
             "Import CSV ,\n"
-            "- Bouton Selectionner CSV , dialog natif.\n"
+            "- Bouton Sélectionner CSV , dialog natif.\n"
             "- Apercu des 100 premieres lignes.\n"
-            "- Detection auto separateur, encodage, colonnes.\n"
+            "- Détection auto separateur, encodage, colonnes.\n"
             "- Bouton Importer , choix Fusion (ajouter au MPI existant) ou "
             "Remplacement.\n\n"
             "HTML vers PDF ,\n"
             "- Zone de drop pour HTML.\n"
-            "- Bouton Selectionner HTML.\n"
+            "- Bouton Sélectionner HTML.\n"
             "- Options , orientation paysage, nettoyage tableau de bord.\n"
             "- Bouton Convertir , dialog Enregistrer-Sous pour PDF cible."
         ),
         workflow_steps=[
             "Pour un Import CSV , preparer le CSV source (Excel > "
-            "Enregistrer-sous > CSV). Ouvrir Ctrl+5, selectionner le fichier, "
+            "Enregistrer-sous > CSV). Ouvrir Ctrl+5, sélectionner le fichier, "
             "valider l'apercu, choisir Fusion ou Remplacement, importer.",
-            "Pour HTML vers PDF , depuis BIQuery, Ctrl+S > page web complete, "
+            "Pour HTML vers PDF , depuis BIQuery, Ctrl+S > page web complète, "
             "sauver en local. Ouvrir l'onglet HTML vers PDF dans Sovereign OS, "
-            "deposer le HTML, choisir paysage + nettoyage tableau de bord, convertir.",
+            "déposer le HTML, choisir paysage + nettoyage tableau de bord, convertir.",
             "Verifier le resultat , MPI enrichi pour l'import, PDF ouvert "
             "en visualisation pour HTML. Pour le PDF, utiliser Adobe Reader "
-            "ou Foxit pour verifier la pagination.",
+            "ou Foxit pour vérifier la pagination.",
         ],
         options=(
             "Import CSV ,\n\n"
@@ -1602,13 +1602,13 @@ FEATURES = [
             "- Le MPI SQLite.\n"
             "- Les vues Tableau de bord, Identitovigilance, Exports (toutes).\n\n"
             "HTML vers PDF , standalone, pas d'integration MPI.\n\n"
-            "Les deux partagent le systeme de dialogs natifs (Enregistrer-Sous)."
+            "Les deux partagent le système de dialogs natifs (Enregistrer-Sous)."
         ),
         usecase_1=(
             "Cas , Fondation Vallee recoit un CSV de patients suivis par "
             "un partenaire GHT (Paul Guiraud) , ils veulent l'integrer au "
             "MPI pour vue parcours cross-etablissement. Import CSV en mode "
-            "Fusion , 1247 lignes ajoutees, 89 IPP deja connus fusionnes. "
+            "Fusion , 1247 lignes ajoutees, 89 IPP déjà connus fusionnes. "
             "Tableau de bord reflet la file active cross-etablissement."
         ),
         usecase_2=(
@@ -1629,25 +1629,25 @@ FEATURES = [
             "texte + tableaux)."
         ),
         security=(
-            "Import CSV , les donnees sont integrees au MPI (chiffre en "
-            "SQLite). Les regles RGPD s'appliquent automatiquement (audit "
+            "Import CSV , les données sont integrees au MPI (chiffre en "
+            "SQLite). Les règles RGPD s'appliquent automatiquement (audit "
             "log, anonymisation exports).\n\n"
-            "HTML vers PDF , le HTML source peut contenir des donnees "
-            "sensibles (tableau de bord BIQuery). Le PDF genere herite , ne pas "
-            "partager sans verification prealable. Le moteur Playwright "
-            "tourne en sandbox isolee , aucun acces reseau pendant la "
+            "HTML vers PDF , le HTML source peut contenir des données "
+            "sensibles (tableau de bord BIQuery). Le PDF génère herite , ne pas "
+            "partager sans vérification prealable. Le moteur Playwright "
+            "tourne en sandbox isolee , aucun accès réseau pendant la "
             "conversion."
         ),
         troubleshooting=(
-            "Import CSV , probleme , 'Encodage non detecte'.\n"
+            "Import CSV , problème , 'Encodage non détecte'.\n"
             "Solution , forcer UTF-8 ou latin-1 manuellement. Verifier que "
             "le CSV n'est pas un XLS renomme.\n\n"
-            "HTML vers PDF , probleme , 'Playwright indisponible'.\n"
+            "HTML vers PDF , problème , 'Playwright indisponible'.\n"
             "Solution , `playwright install chromium` une fois pour toutes. "
             "Alternative , accepter le fallback fpdf2 (moins fidele).\n\n"
-            "Probleme , PDF genere vide.\n"
+            "Problème , PDF génère vide.\n"
             "Cause , HTML source contient des iframes cross-origin. "
-            "Solution , aplatir le HTML (Ctrl+S > page web complete, non "
+            "Solution , aplatir le HTML (Ctrl+S > page web complète, non "
             "'seul HTML')."
         ),
         faq=[
@@ -1659,7 +1659,7 @@ FEATURES = [
              "la conversion. Les interactions post-capture sont perdues "
              "(le PDF est statique)."),
             ("Puis-je importer depuis une URL ?",
-             "Non par securite , uniquement fichiers locaux. Telecharger "
+             "Non par sécurité , uniquement fichiers locaux. Telecharger "
              "d'abord, puis importer."),
             ("Les imports CSV sont-ils reversibles ?",
              "Oui , Réinitialiser le registre efface tout. Pas de rollback granulaire."),
@@ -1670,18 +1670,18 @@ FEATURES = [
             "2. Pour les imports recurrents (mensuels), documenter le "
             "schema attendu dans un README partage.\n\n"
             "3. HTML vers PDF , toujours preferer le nettoyage tableau de bord "
-            "pour les exports aux chefs de pole , rendu plus propre.\n\n"
-            "4. Archiver les HTML sources + les PDF generes dans un dossier "
+            "pour les exports aux chefs de pôle , rendu plus propre.\n\n"
+            "4. Archiver les HTML sources + les PDF générés dans un dossier "
             "date pour tracabilite."
         ),
         metrics=(
             "Import CSV ,\n"
-            "- Taux de succes import , cible > 99 pourcent.\n"
+            "- Taux de succès import , cible > 99 pourcent.\n"
             "- Duree moyenne import , 80 ms par 1000 lignes.\n"
-            "- Taux de fusion , typique 15-30 pourcent de lignes deja connues.\n\n"
+            "- Taux de fusion , typique 15-30 pourcent de lignes déjà connues.\n\n"
             "HTML vers PDF ,\n"
-            "- Taux de succes Playwright , > 95 pourcent.\n"
-            "- Taille moyenne PDF genere , 200-800 Ko (paysage tableau de bord).\n"
+            "- Taux de succès Playwright , > 95 pourcent.\n"
+            "- Taille moyenne PDF génère , 200-800 Ko (paysage tableau de bord).\n"
             "- Duree moyenne conversion , 5 s."
         ),
         references=(
@@ -1697,21 +1697,21 @@ FEATURES = [
     # FEATURE 10 · ADMINISTRATION (securite, RGPD, raccourcis, support)
     # ══════════════════════════════════════════════════════════════════════
     mk(
-        title="Administration , securite, RGPD, raccourcis, support",
+        title="Administration , sécurité, RGPD, raccourcis, support",
         category="Aide",
         tagline="Tout ce que l'utilisateur doit savoir en transverse",
         purpose=(
-            "Section transverse , rappelle la posture de securite de "
+            "Section transverse , rappelle la posture de sécurité de "
             "l'application, les obligations RGPD, les raccourcis clavier "
-            "pour l'efficacite, le tutoriel integre pour se former, et "
+            "pour l'efficacite, le tutoriel intégré pour se former, et "
             "les canaux de support. Indispensable pour un TIM qui veut "
             "tirer pleinement parti de Sovereign OS DIM en conformite."
         ),
         prerequisites=(
-            "Aucun , ces informations sont disponibles sans aucune donnee "
-            "chargee. Accessibles des le premier lancement.\n\n"
-            "Pour le tutoriel integre (Ctrl+7) , aucune donnee requise, "
-            "un mode demonstration avec des donnees synthetiques est "
+            "Aucun , ces informations sont disponibles sans aucune donnée "
+            "chargee. Accèssibles des le premier lancement.\n\n"
+            "Pour le tutoriel intégré (Ctrl+7) , aucune donnée requise, "
+            "un mode demonstration avec des données synthetiques est "
             "disponible pour s'entrainer."
         ),
         access=(
@@ -1726,13 +1726,13 @@ FEATURES = [
             "surlignant chaque zone. Navigation precedent/suivant/fin.\n\n"
             "Manuel HTML (F1) , ouverture overlay plein-ecran, table des "
             "matieres cliquable, recherche Ctrl+F.\n\n"
-            "Raccourcis , 15 entrees listees, groupees par categorie "
-            "(navigation, actions, systeme).\n\n"
+            "Raccourcis , 15 entrees listees, groupees par catégorie "
+            "(navigation, actions, système).\n\n"
             "Support , carte avec email, lien GitHub Issues, version actuelle."
         ),
         workflow_steps=[
             "Au premier lancement , ouvrir Ctrl+7 pour suivre le tutoriel "
-            "en 7 etapes , c'est la methode la plus rapide pour se former. "
+            "en 7 etapes , c'est la méthode la plus rapide pour se former. "
             "Duree typique , 15 min.",
             "Pour une recherche ciblee dans la documentation , F1 ouvre le "
             "manuel HTML, Ctrl+F pour chercher un mot cle.\n\n"
@@ -1744,7 +1744,7 @@ FEATURES = [
         ],
         options=(
             "Tutoriel ,\n"
-            "- Mode demonstration , on/off , active des donnees synthetiques.\n"
+            "- Mode demonstration , on/off , active des données synthetiques.\n"
             "- Langue , francais (defaut), anglais (beta).\n"
             "- Vitesse , lent, normal, rapide.\n\n"
             "Manuel HTML ,\n"
@@ -1753,7 +1753,7 @@ FEATURES = [
             "- Export PDF du manuel , via F1 > Exporter."
         ),
         integration=(
-            "Ces outils sont transverses, pas d'integration specifique , "
+            "Ces outils sont transverses, pas d'integration spécifique , "
             "ils informent sur toutes les autres features.\n\n"
             "Le tutoriel alterne entre les vues pour montrer chacune , il "
             "navigue donc Ctrl+1, Ctrl+2, etc. automatiquement.\n\n"
@@ -1769,7 +1769,7 @@ FEATURES = [
         ),
         usecase_2=(
             "Cas , audit ARS demande les mesures RGPD. Le responsable ouvre "
-            "F1 > section Securite, exporte la page en PDF, joint au rapport "
+            "F1 > section Sécurité, exporte la page en PDF, joint au rapport "
             "d'audit. L'auditeur valide en 10 min au lieu d'un entretien d'1 h."
         ),
         performance=(
@@ -1778,27 +1778,27 @@ FEATURES = [
             "Logs support , ecriture asynchrone, aucun blocage UI."
         ),
         security=(
-            "Posture securite de l'application ,\n\n"
-            "- Aucune donnee envoyee sur internet , traitement 100 % "
+            "Posture sécurité de l'application ,\n\n"
+            "- Aucune donnée envoyee sur internet , traitement 100 % "
             "local sur le poste DIM.\n"
-            "- Aucun acces reseau exterieur , l'application fonctionne "
+            "- Aucun accès réseau extérieur , l'application fonctionne "
             "entierement hors-ligne, y compris le pont PHP.\n"
-            "- Toutes les donnees patient restent sur le poste DIM, "
+            "- Toutes les données patient restent sur le poste DIM, "
             "jamais dans le nuage informatique ni sur un serveur partagé.\n\n"
             "Conformite RGPD ,\n"
-            "- Journal d'audit art. 30 RGPD pour toutes les resolutions IDV.\n"
+            "- Journal d'audit art. 30 RGPD pour toutes les résolutions IDV.\n"
             "- Droit a l'effacement via le bouton Réinitialiser le registre.\n"
             "- Pseudonymisation IPP disponible pour les exports de recherche.\n"
-            "- Aucune telemétrie , l'editeur ne collecte aucune donnee d'usage."
+            "- Aucune telemétrie , l'editeur ne collecte aucune donnée d'usage."
         ),
         troubleshooting=(
-            "Probleme , tutoriel ne demarre pas.\n"
+            "Problème , tutoriel ne demarre pas.\n"
             "Cause , bulles CSS bloquees. Solution , rafraichir l'UI "
             "(Ctrl+Shift+R).\n\n"
-            "Probleme , manuel HTML affiche une erreur 404.\n"
+            "Problème , manuel HTML affiche une erreur 404.\n"
             "Cause , version incompleete (distribution incomplete). "
             "Solution , reinstaller.\n\n"
-            "Probleme , raccourci ne fonctionne pas.\n"
+            "Problème , raccourci ne fonctionne pas.\n"
             "Cause , conflit avec raccourci navigateur Windows (rare). "
             "Solution , ouvrir le panneau raccourcis et reparer."
         ),
@@ -1828,8 +1828,8 @@ FEATURES = [
             "- Taux de completion du tutoriel , cible > 90 pourcent des "
             "nouveaux TIM.\n"
             "- Nombre de bugs ouverts , cible < 5 en permanence.\n"
-            "- Temps moyen de resolution bug , cible < 7 jours.\n"
-            "- Frequence consultation manuel F1 , typique 3-10 fois par mois "
+            "- Temps moyen de résolution bug , cible < 7 jours.\n"
+            "- Fréquence consultation manuel F1 , typique 3-10 fois par mois "
             "par TIM.\n"
             "- Satisfaction support (NPS) , cible > 70."
         ),
@@ -2367,7 +2367,7 @@ def _workflow_diagram(pdf, steps_labels=("Etape 1", "Etape 2", "Etape 3")):
     pdf.set_xy(x0, y0 + card_h + 3)
     pdf.set_font(SANS, "I", 7.5)
     pdf.set_text_color(*SLATE_500)
-    pdf.cell(0, 4, "Diagramme , progression du mode opératoire en 3 etapes sequentielles",
+    pdf.cell(0, 4, "Diagramme , progrèssion du mode opératoire en 3 etapes sequentielles",
              new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(4)
 
@@ -2431,7 +2431,7 @@ def _integration_diagram(pdf, feature_name, consumers, producers):
     pdf.set_xy(x0, center_y + 38)
     pdf.set_font(SANS, "I", 7.5)
     pdf.set_text_color(*SLATE_500)
-    pdf.cell(0, 4, "Diagramme d'integration , flux de donnees entre modules",
+    pdf.cell(0, 4, "Diagramme d'integration , flux de données entre modules",
              new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(4)
 
@@ -2579,7 +2579,7 @@ def _feature_schema(pdf, feat_num):
         pdf.set_font(SANS, "B", 7)
         pdf.set_text_color(*GH_ERR)
         pdf.set_xy(cx + 2, cy)
-        pdf.cell(0, 4, "3 collisions detectees")
+        pdf.cell(0, 4, "3 collisions détectées")
         collisions = [
             ("IPP_042A7", "2", "19870415 (12x)  vs  19870514 (2x)"),
             ("IPP_019B2", "3", "20020301 (8x)   vs  20020103 (2x)  vs  20023001 (1x)"),
@@ -2716,8 +2716,8 @@ def _feature_schema(pdf, feat_num):
         # Structure · arbre
         nodes = [
             (cx + cw / 2 - 20, cy + 2, 40, 10, GH_NAVY, "Fondation Vallee"),
-            (cx + cw / 4 - 22, cy + 20, 44, 9, GH_TEAL, "Pole Infanto-juv"),
-            (cx + 3 * cw / 4 - 22, cy + 20, 44, 9, (249, 115, 22), "Pole Intersec"),
+            (cx + cw / 4 - 22, cy + 20, 44, 9, GH_TEAL, "Pôle Infanto-juv"),
+            (cx + 3 * cw / 4 - 22, cy + 20, 44, 9, (249, 115, 22), "Pôle Intersec"),
             (cx + 8, cy + 40, 30, 8, SLATE_100, "94I01"),
             (cx + 45, cy + 40, 30, 8, SLATE_100, "94I02"),
             (cx + cw - 45, cy + 40, 30, 8, SLATE_100, "94Z01"),
@@ -2761,7 +2761,7 @@ def _feature_schema(pdf, feat_num):
         pdf.set_font(SANS, "", 6.5)
         pdf.set_text_color(*SLATE_500)
         pdf.set_xy(cx + 5, cy + 15)
-        pdf.cell(cw - 10, 3, "7 fichiers , 50 802 lignes , periode 2024 , 3 mois", align="C")
+        pdf.cell(cw - 10, 3, "7 fichiers , 50 802 lignes , période 2024 , 3 mois", align="C")
         # Jauges
         pdf.set_fill_color(*GH_OK)
         pdf.rect(cx + 5, cy + 28, (cw - 10) * 0.83, 4, "F")
@@ -2775,7 +2775,7 @@ def _feature_schema(pdf, feat_num):
         pdf.set_font(SANS, "B", 7)
         pdf.set_text_color(*GH_ERR)
         pdf.set_xy(cx + 5, cy + 40)
-        pdf.cell(0, 3, "UM sans activite , 1")
+        pdf.cell(0, 3, "UM sans activité , 1")
         for i, (code, label) in enumerate([("4050", "Addictologie ado")]):
             by = cy + 45 + i * 8
             pdf.set_fill_color(255, 245, 248)
@@ -2980,7 +2980,7 @@ def build_pdf(output_path: str) -> str:
     try:
         from fpdf import FPDF
     except ImportError as e:  # pragma: no cover
-        print("fpdf2 non installe , pip install fpdf2>=2.8", file=sys.stderr)
+        print("fpdf2 non installé , pip install fpdf2>=2.8", file=sys.stderr)
         raise SystemExit(1) from e
 
     class Guide(FPDF):
@@ -3054,7 +3054,7 @@ def build_pdf(output_path: str) -> str:
         "Document destiné au technicien de l'information médicale, au "
         "médecin responsable du service d'information médicale et au "
         "chef de pôle. Chaque fonctionnalité du logiciel y est décrite "
-        "sur trois pages, qui expliquent successivement son utilité "
+        "sur trois pages, qui expliquent succèssivement son utilité "
         "dans la vie quotidienne, son mode d'emploi étape par étape, "
         "et les pièges à éviter. L'ensemble des références "
         "institutionnelles (Agence Technique de l'Information sur "
@@ -3616,7 +3616,7 @@ def build_pdf(output_path: str) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Genere le guide metier PDF (TIM, medecin DIM, chef de pole). "
+        description="Genere le guide metier PDF (TIM, medecin DIM, chef de pôle). "
                     "Pour le guide developpeur, utiliser generate_guide_dev.py."
     )
     default_output = os.path.join(ROOT, "Sovereign_OS_DIM_Guide.pdf")
