@@ -66,8 +66,8 @@
           icon: "database",
           title: "Aucun lot ATIH n'a encore été traité",
           body: "Le Master Patient Index est vide. Importer un lot via "
-              + "l'écran Modo Files (Ctrl+2) pour peupler les indicateurs.",
-          action: btn({ label: "Aller à Modo Files",
+              + "l'écran Sélection des fichiers (Ctrl+2) pour peupler les indicateurs.",
+          action: btn({ label: "Aller à Sélection des fichiers",
                         kind: "primary", icon: "folders" }),
         }));
       return;

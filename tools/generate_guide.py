@@ -125,7 +125,7 @@ def _register_fonts(pdf):
 # Si un screenshot est absent, fallback sur le mockup schematique.
 FEATURE_SCREENSHOTS = {
     0: "01_dashboard.png",           # 01 , Dashboard et MPI
-    1: "02_modo_files.png",          # 02 , Modo Files
+    1: "02_modo_files.png",          # 02 , Sélection des fichiers
     2: "03_idv.png",                 # 03 , Identitovigilance
     3: "04_pilot_csv.png",           # 04 , PMSI Pilot CSV
     4: "02_modo_files.png",          # 05 , Inspector + Preflight , se lance depuis Modo
@@ -231,8 +231,8 @@ FEATURES = [
             "Aucun. Le Dashboard s'affiche des l'ouverture de l'application, meme "
             "sans dossier ATIH selectionne (KPI a zero). Les donnees apparaissent "
             "progressivement au fil des traitements.\n\n"
-            "Pour des donnees peuplees , au moins un dossier ATIH ajoute via Modo "
-            "Files et un premier traitement lance. La duree d'un traitement depend "
+            "Pour des donnees peuplees , au moins un dossier ATIH ajoute via "
+            "Sélection des fichiers et un premier traitement lance. La duree d'un traitement depend "
             "du volume , 30 000 lignes par seconde en moyenne sur poste standard."
         ),
         access=(
@@ -256,7 +256,7 @@ FEATURES = [
         workflow_steps=[
             # 1
             "Ouvrir l'application et observer le Dashboard , si un MPI persiste "
-            "existe, les KPI sont peuples. Sinon, aller en Modo Files (Ctrl+2) pour "
+            "existe, les KPI sont peuples. Sinon, aller en Sélection des fichiers (Ctrl+2) pour "
             "ajouter un premier dossier ATIH. Le systeme detecte automatiquement "
             "les 23 formats PMSI supportes.",
             # 2
@@ -284,7 +284,7 @@ FEATURES = [
         ),
         integration=(
             "Le Dashboard est alimente par toutes les autres features ,\n\n"
-            "- Modo Files (Ctrl+2) alimente le comptage fichiers et lignes.\n"
+            "- Sélection des fichiers (Ctrl+2) alimente le comptage fichiers et lignes.\n"
             "- Identitovigilance (Ctrl+3) alimente le comptage collisions.\n"
             "- Inspector Terminal (F2) utilise le MPI pour decoder une ligne.\n"
             "- Preflight DRUIDES (F3) lit le MPI pour valider la coherence.\n"
@@ -329,7 +329,7 @@ FEATURES = [
         ),
         troubleshooting=(
             "Probleme , Dashboard affiche zero apres traitement.\n"
-            "Cause probable , Modo Files contient uniquement des fichiers INCONNU. "
+            "Cause probable , Sélection des fichiers contient uniquement des fichiers INCONNU. "
             "Solution , verifier le nommage ATIH attendu (RPS_AAAAMM*).\n\n"
             "Probleme , KPI collisions anormalement eleve (> 50 pourcent).\n"
             "Cause probable , annees de transition 2021 ou les formats IPP ont "
@@ -383,16 +383,16 @@ FEATURES = [
     # FEATURE 2 · MODO FILES
     # ══════════════════════════════════════════════════════════════════════
     mk(
-        title="Modo Files , selection et traitement des lots ATIH",
+        title="Sélection des fichiers , selection et traitement des lots ATIH",
         category="Batch",
         tagline="Scanner, identifier et traiter les 23 formats PMSI",
         purpose=(
-            "Modo Files est le point d'entree de toute analyse PMSI , c'est ici "
+            "Sélection des fichiers est le point d'entree de toute analyse PMSI , c'est ici "
             "que le TIM selectionne les dossiers contenant les fichiers ATIH "
             "transmis par les logiciels sources (CPage, DxCare) ou telecharges "
             "depuis e-PMSI. Le scan est recursif , les sous-dossiers annuels, "
             "mensuels ou par pole sont inclus automatiquement.\n\n"
-            "Sans Modo Files, rien ne peut etre traite , les autres vues "
+            "Sans Sélection des fichiers, rien ne peut etre traite , les autres vues "
             "(Identitovigilance, Preflight, Exports) consomment toutes le MPI "
             "construit a partir des fichiers ici selectionnes."
         ),
@@ -406,7 +406,7 @@ FEATURES = [
             "noms personnalises tant que l'extension est .txt."
         ),
         access=(
-            "Raccourci clavier , Ctrl+2. La vue Modo Files est l'onglet le plus "
+            "Raccourci clavier , Ctrl+2. La vue Sélection des fichiers est l'onglet le plus "
             "utilise par les TIM , elle reste cachee tant qu'aucun dossier n'est "
             "selectionne, avec un call-to-action central Ajouter un dossier.\n\n"
             "Apres ajout, la vue affiche , liste des dossiers actifs, compteur "
@@ -449,20 +449,20 @@ FEATURES = [
             "workers pour eviter la saturation du MPI SQLite."
         ),
         integration=(
-            "Modo Files alimente directement ,\n\n"
+            "Sélection des fichiers alimente directement ,\n\n"
             "- Le Dashboard (Ctrl+1) , KPI fichiers, lignes, formats.\n"
             "- Identitovigilance (Ctrl+3) , collisions detectees.\n"
             "- PMSI Pilot CSV (Ctrl+4) , sources pour les exports.\n"
             "- Inspector Terminal (F2) , fichier source pour le diag.\n"
             "- Preflight DRUIDES (F3) , lit la liste des fichiers a valider.\n\n"
-            "En amont, Modo Files ne depend que du systeme de fichiers , aucun "
+            "En amont, Sélection des fichiers ne depend que du systeme de fichiers , aucun "
             "appel a CPage, DxCare ou autre logiciel tiers."
         ),
         usecase_1=(
             "Cas , fin de trimestre, arrivee des 3 lots mensuels d'ATIH "
             "(juillet, aout, septembre). Le TIM cree un dossier D:/DIM/ATIH/2024/T3 "
             "contenant 3 sous-dossiers mensuels, y copie les fichiers recus par "
-            "email, puis n'ajoute que ce dossier T3 dans Modo Files. Le scan "
+            "email, puis n'ajoute que ce dossier T3 dans Sélection des fichiers. Le scan "
             "recursif detecte automatiquement les 27 fichiers repartis dans les "
             "3 sous-dossiers."
         ),
@@ -565,8 +565,8 @@ FEATURES = [
             "(regle majoritaire) ou manuelle (choix par le TIM)."
         ),
         prerequisites=(
-            "Un MPI construit via Modo Files. Sans MPI, la vue affiche un etat "
-            "vide avec un lien vers Modo Files.\n\n"
+            "Un MPI construit via Sélection des fichiers. Sans MPI, la vue affiche un etat "
+            "vide avec un lien vers Sélection des fichiers.\n\n"
             "Pour une resolution efficace , disposer d'au moins deux recueils "
             "distincts (ex. RPS + RAA ou RPS + FICHSUP-PSY) , la croisement "
             "augmente la probabilite de detecter les incoherences."
@@ -617,7 +617,7 @@ FEATURES = [
         ),
         integration=(
             "Identitovigilance consomme ,\n\n"
-            "- Le MPI construit par Modo Files.\n"
+            "- Le MPI construit par Sélection des fichiers.\n"
             "- Les metadonnees de fichiers (noms, annees) pour l'affichage.\n\n"
             "Identitovigilance alimente ,\n\n"
             "- PMSI Pilot CSV , les exports filtrent selon la resolution.\n"
@@ -734,7 +734,7 @@ FEATURES = [
             "chaque rejet coute en moyenne 3 jours de retard."
         ),
         prerequisites=(
-            "MPI traite via Modo Files + collisions resolues via Identitovigilance. "
+            "MPI traite via Sélection des fichiers + collisions resolues via Identitovigilance. "
             "Un warning s'affiche si des collisions ne sont pas resolues , "
             "l'export est possible mais non recommande.\n\n"
             "Un dossier cible accessible en ecriture , typiquement un partage "
@@ -895,13 +895,13 @@ FEATURES = [
             "une transmission a l'aveugle."
         ),
         prerequisites=(
-            "Inspector Terminal , un fichier ATIH identifie dans Modo Files. "
+            "Inspector Terminal , un fichier ATIH identifie dans Sélection des fichiers. "
             "Clic sur la ligne du fichier, touche F2, ou menu contextuel.\n\n"
             "Preflight DRUIDES , un MPI traite + au moins un fichier source "
             "disponible. Touche F3 depuis n'importe quelle vue."
         ),
         access=(
-            "Inspector Terminal , touche F2 depuis Modo Files apres avoir "
+            "Inspector Terminal , touche F2 depuis Sélection des fichiers apres avoir "
             "selectionne un fichier, ou clic direct sur une ligne du tableau.\n\n"
             "Preflight DRUIDES , touche F3 depuis n'importe ou, y compris "
             "Dashboard. L'ouverture en overlay plein-ecran."
@@ -947,7 +947,7 @@ FEATURES = [
         integration=(
             "Inspector et Preflight se completent ,\n\n"
             "- Preflight detecte les erreurs, Inspector les analyse en detail.\n"
-            "- Inspector peut etre ouvert depuis Modo Files, Identitovigilance "
+            "- Inspector peut etre ouvert depuis Sélection des fichiers, Identitovigilance "
             "(sur une ligne en collision), ou le rapport Preflight.\n"
             "- Preflight lit le MPI + les fichiers sources pour des "
             "validations cross-fichier (ex. chainage VID-HOSP).\n\n"
@@ -990,7 +990,7 @@ FEATURES = [
         troubleshooting=(
             "Probleme , Inspector n'ouvre pas un fichier.\n"
             "Cause , format INCONNU ou permissions refusees. Solution , "
-            "verifier l'identification dans Modo Files d'abord.\n\n"
+            "verifier l'identification dans Sélection des fichiers d'abord.\n\n"
             "Probleme , Preflight bloque a un validateur specifique (> 2 min).\n"
             "Cause , fichier corrompu en cours de validation. Solution , "
             "annuler, ouvrir le fichier dans Inspector pour identifier la ligne "
@@ -1059,7 +1059,7 @@ FEATURES = [
         ),
         prerequisites=(
             "MPI non vide. Si aucun traitement n'a ete fait, le Dashboard "
-            "Live affiche un etat vide avec call-to-action vers Modo Files.\n\n"
+            "Live affiche un etat vide avec call-to-action vers Sélection des fichiers.\n\n"
             "Recommande , 2 ecrans , Dashboard Live en plein-ecran sur le "
             "secondaire, travail principal sur le primaire."
         ),
@@ -1082,7 +1082,7 @@ FEATURES = [
         workflow_steps=[
             "Appuyer F4. L'overlay s'affiche. Les 4 graphes se rendent en "
             "moins d'une seconde. Les KPI sont calcules en parallele.",
-            "Pendant un traitement en arriere-plan (Modo Files), les graphes "
+            "Pendant un traitement en arriere-plan (Sélection des fichiers), les graphes "
             "se mettent a jour automatiquement toutes les 2 s. Utile pour "
             "observer la progression et detecter les anomalies immediatement.",
             "Pour presentation reunion , cliquer le bouton Exporter , un PDF "
@@ -1423,7 +1423,7 @@ FEATURES = [
         integration=(
             "Consommateurs ,\n\n"
             "- Structure (Ctrl+6) , fournit la liste des UM.\n"
-            "- Modo Files , fournit indirectement les fichiers (copie possible).\n\n"
+            "- Sélection des fichiers , fournit indirectement les fichiers (copie possible).\n\n"
             "Producteurs ,\n\n"
             "- CSV exporte consommable par Excel, LibreOffice, Python, BIQuery.\n"
             "- Badges sur l'arbre , visuels uniquement, pas de persistance.\n"
@@ -1882,13 +1882,13 @@ FEATURES = [
             "s'active automatiquement au démarrage de l'application, "
             "sans aucune action de l'utilisateur.\n\n"
             "Aucun menu ni onglet dédié , l'assistance se manifeste "
-            "directement dans les vues métier habituelles (Modo Files, "
+            "directement dans les vues métier habituelles (Sélection des fichiers, "
             "Identitovigilance, Inspector). Le TIM travaille comme "
             "d'habitude et bénéficie des suggestions sans friction."
         ),
         interface=(
             "L'assistant IA est invisible mais actif dans trois vues ,\n\n"
-            "1. Modo Files (Ctrl+2) , les fichiers non reconnus reçoivent "
+            "1. Sélection des fichiers (Ctrl+2) , les fichiers non reconnus reçoivent "
             "une suggestion de format probable avec un niveau de confiance. "
             "Le TIM valide ou corrige d'un clic.\n\n"
             "2. Identitovigilance (Ctrl+3) , chaque IPP suspect est "
@@ -1925,7 +1925,7 @@ FEATURES = [
         ),
         integration=(
             "Le module ML s'insère sans casser l'existant ,\n\n"
-            "- Modo Files (feature 2) , pré-classe avant le scan heuristique\n"
+            "- Sélection des fichiers (feature 2) , pré-classe avant le scan heuristique\n"
             "- Identitovigilance (feature 3) , score les collisions\n"
             "- Inspector Terminal , met en évidence les DDN suspectes\n"
             "- Preflight DRUIDES , prédit le risque de rejet avant upload\n"
@@ -1935,7 +1935,7 @@ FEATURES = [
         ),
         usecase_1=(
             "Cas typique , un TIM ouvre un dossier ATIH historique 2018 "
-            "non normalisé. Modo Files marque tous les fichiers INCONNU. "
+            "non normalisé. Sélection des fichiers marque tous les fichiers INCONNU. "
             "Avec le module ML, format_detector identifie automatiquement "
             "RPS P05 / RAA P09 / RHS M0B avec une confiance > 90 %. Le "
             "TIM valide d'un clic au lieu de fouiller la doc ATIH. Gain "
@@ -2259,7 +2259,7 @@ def _ui_mockup(pdf, highlight_zone=None):
     pdf.rect(x0, y0 + header_h, sidebar_w, h - header_h, "F")
     navs = [
         ("Ctrl+1", "Dashboard"),
-        ("Ctrl+2", "Modo Files"),
+        ("Ctrl+2", "Sélection des fichiers"),
         ("Ctrl+3", "Identitov."),
         ("Ctrl+4", "PMSI CSV"),
         ("Ctrl+5", "Import CSV"),
@@ -2539,7 +2539,7 @@ def _feature_schema(pdf, feat_num):
         pdf.cell(100, 4, "Repartition par format PMSI")
 
     elif feat_num == 2:
-        # Modo Files · liste de fichiers
+        # Sélection des fichiers · liste de fichiers
         pdf.set_fill_color(*GH_NAVY)
         pdf.rect(cx, cy, cw, 6, "F")
         pdf.set_font(SANS, "B", 6.5)
@@ -2830,7 +2830,7 @@ def _feature_schema(pdf, feat_num):
         # Administration · raccourcis clavier
         shortcuts = [
             ("Ctrl+1", "Dashboard"),
-            ("Ctrl+2", "Modo Files"),
+            ("Ctrl+2", "Sélection des fichiers"),
             ("Ctrl+3", "Identitovigilance"),
             ("Ctrl+4", "PMSI Pilot CSV"),
             ("Ctrl+5", "Import CSV"),

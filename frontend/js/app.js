@@ -5,7 +5,7 @@
  * Features:
  *   - Boot sequence with anime.js
  *   - Dashboard with Chart.js (format breakdown doughnut)
- *   - Modo Files with drag & drop + progress bar
+ *   - Sélection des fichiers with drag & drop + progress bar
  *   - Identitovigilance with search filter
  *   - PMSI Pilot CSV export with progress
  *   - Inspector terminal + sanitized .txt export
@@ -158,7 +158,7 @@
         twin:      { title: "Hospital Twin",    sub: "Simulation impact tarifaire DFA" },
         heatmap:   { title: "Heatmap géo",       sub: "Sectorisation 94 + 92 · file active" },
         pivot:     { title: "Tableaux croisés", sub: "Exploration ad hoc du MPI" },
-        modo:      { title: "Modo Files",       sub: "Ingestion & traitement batch" },
+        modo:      { title: "Sélection des fichiers",       sub: "Ingestion & traitement batch" },
         idv:       { title: "Identitovigilance", sub: "Master Patient Index — Résolution des collisions" },
         pilot:     { title: "PMSI Pilot CSV",   sub: "Export des données réconciliées" },
         csv:       { title: "Import CSV",       sub: "Visualiseur de fichiers CSV externes" },
@@ -1122,7 +1122,7 @@
                                 <h4 class="text-lg font-black text-gh-navy dark:text-blue-400 uppercase italic tracking-tighter mb-2 flex items-center gap-2">
                                     <i data-lucide="folders" class="w-4 h-4 text-gh-teal"></i> Ingestion des données
                                 </h4>
-                                <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Rendez-vous dans la section <strong>Modo Files</strong>. Vous pouvez y déposer vos dossiers contenant les fichiers ATIH (.txt) validés ou bruts. Le moteur reconnaît automatiquement 8 formats (RPS, RAA, VID-HOSP, etc.).</p>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Rendez-vous dans la section <strong>Sélection des fichiers</strong>. Vous pouvez y déposer vos dossiers contenant les fichiers ATIH (.txt) validés ou bruts. Le moteur reconnaît automatiquement 8 formats (RPS, RAA, VID-HOSP, etc.).</p>
                                 <div class="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl p-4 text-[11px] text-slate-600 dark:text-slate-300 font-mono border inline-flex items-center gap-2 transition-colors duration-500">
                                     <i data-lucide="info" class="w-4 h-4 text-gh-teal"></i> Astuce : Glissez-déposez le dossier racine "Années" directement.
                                 </div>
@@ -1179,7 +1179,7 @@
                         <h4 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><i data-lucide="keyboard" class="w-4 h-4"></i> Raccourcis Clavier</h4>
                         <div class="flex flex-wrap gap-4 text-[11px] text-slate-500 dark:text-slate-400">
                             <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">1</kbd> Dashboard</div>
-                            <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">2</kbd> Modo Files</div>
+                            <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">2</kbd> Sélection des fichiers</div>
                             <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">3</kbd> Identitovigilance</div>
                             <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">4</kbd> Export</div>
                             <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">5</kbd> Tutoriel</div>

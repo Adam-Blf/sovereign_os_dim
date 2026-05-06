@@ -14,11 +14,11 @@
       steps: [
         "Vue d'ensemble · nombre de fichiers chargés, lignes traitées, IPP uniques, collisions détectées.",
         "Graphiques Chart.js · répartition par format ATIH + par champ PMSI.",
-        "Raccourcis · Ctrl+2 = Modo Files · Ctrl+3 = Identitovigilance · Ctrl+4 = PMSI Pilot.",
+        "Raccourcis · Ctrl+2 = Sélection des fichiers · Ctrl+3 = Identitovigilance · Ctrl+4 = PMSI Pilot.",
       ],
     },
     modo: {
-      title: "Modo Files · Ingestion",
+      title: "Sélection des fichiers · Ingestion",
       steps: [
         "1. Cliquer sur « Sélectionner un dossier » · ouvrir un dossier PMSI (sous l'espace de travail).",
         "2. Le scan récursif identifie RPS, RAA, FICHSUP-PSY, VID-HOSP, FICUM-PSY, etc.",

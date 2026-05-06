@@ -115,7 +115,7 @@ MOCK_RESPONSES = {
 SCREENSHOTS = [
     # ── Vues classiques ─────────────────────────────────────────────────────
     {"name": "01_dashboard",       "title": "Dashboard · vue d'ensemble",            "nav": "nav-dashboard"},
-    {"name": "02_modo_files",      "title": "Modo Files · selection des fichiers ATIH","nav": "nav-modo"},
+    {"name": "02_modo_files",      "title": "Sélection des fichiers · selection des fichiers ATIH","nav": "nav-modo"},
     {"name": "03_idv",             "title": "Identitovigilance · collisions IPP / DDN","nav": "nav-idv"},
     {"name": "04_pilot_csv",       "title": "PMSI Pilot CSV · exports normalises",   "nav": "nav-pilot"},
     {"name": "05_csv_import",      "title": "Import CSV externe",                    "nav": "nav-csv"},

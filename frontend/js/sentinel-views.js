@@ -71,9 +71,9 @@
       icon: "shield",
       title: "Aucun lot ATIH soumis au scoring",
       body: "Le score est calculé à la demande sur les lignes réelles d'un lot. "
-          + "Importer un lot via Modo Files (Ctrl+2) puis cliquer sur 'Scorer "
+          + "Importer un lot via Sélection des fichiers (Ctrl+2) puis cliquer sur 'Scorer "
           + "ce lot' pour appeler /api/v2/ars/score-lot avec un échantillon.",
-      action: btn({ label: "Aller à Modo Files",
+      action: btn({ label: "Aller à Sélection des fichiers",
                     kind: "primary", icon: "folders" }),
     }));
   }
@@ -95,7 +95,7 @@
           icon: "check-circle",
           title: "Aucune ligne RPS/RAA dans le MPI",
           body: "Le validateur CeSPA s'applique aux lignes RPS (champ 23) et "
-              + "RAA (modalité 33). Importer un lot via Modo Files pour "
+              + "RAA (modalité 33). Importer un lot via Sélection des fichiers pour "
               + "déclencher la vérification.",
         }));
       return;
@@ -326,17 +326,17 @@
 
   async function renderModo() {
     // Lit les vraies stats MPI pour afficher l'état actuel
-    renderInto(sectionHead({ eyebrow: "Lot courant", title: "Modo Files",
+    renderInto(sectionHead({ eyebrow: "Lot courant", title: "Sélection des fichiers",
       meta: "Lecture du MPI…" }) + loadingState());
     const r = await api("/api/v2/idv/stats");
     if (!r.ok) {
-      renderInto(sectionHead({ eyebrow: "Lot courant", title: "Modo Files" })
-                 + apiOffline("Modo Files", r.status));
+      renderInto(sectionHead({ eyebrow: "Lot courant", title: "Sélection des fichiers" })
+                 + apiOffline("Sélection des fichiers", r.status));
       return;
     }
     const stats = r.data;
     if (!stats.total_ipp) {
-      renderInto(sectionHead({ eyebrow: "Lot courant", title: "Modo Files",
+      renderInto(sectionHead({ eyebrow: "Lot courant", title: "Sélection des fichiers",
         meta: "MPI vide" }) + emptyState({
         icon: "upload-cloud",
         title: "Aucun fichier ATIH n'a encore été ingéré",
@@ -348,7 +348,7 @@
       return;
     }
     renderInto(
-      sectionHead({ eyebrow: "Lot courant", title: "Modo Files",
+      sectionHead({ eyebrow: "Lot courant", title: "Sélection des fichiers",
         meta: `MPI · ${stats.total_ipp} IPP` }) +
       `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
         ${kpi({ label: "Total IPP", value: stats.total_ipp, accent: NAVY })}

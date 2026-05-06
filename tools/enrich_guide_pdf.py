@@ -42,7 +42,7 @@ from pypdf.generic import (
 
 FEATURE_TITLES = [
     "Dashboard et Master Patient Index",
-    "Modo Files · sélection et traitement",
+    "Sélection des fichiers · sélection et traitement",
     "Identitovigilance · résolution des collisions",
     "PMSI Pilot CSV · exports e-PMSI",
     "Inspector + Preflight DRUIDES",

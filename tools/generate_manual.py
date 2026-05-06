@@ -130,7 +130,7 @@ SECTIONS = [
                 [
                     "Dashboard : vue d'ensemble (fichiers traites, IPP uniques, "
                     "collisions, graphique par format).",
-                    "Modo Files : selection des dossiers a traiter en lot.",
+                    "Sélection des fichiers : selection des dossiers a traiter en lot.",
                     "Identitovigilance : liste des collisions IPP / DDN et "
                     "outil de resolution.",
                     "PMSI Pilot CSV : export CSV normalise pour e-PMSI.",
@@ -151,7 +151,7 @@ SECTIONS = [
     (
         "Workflow standard (traiter un lot de fichiers)",
         [
-            ("h", "1. Ouvrir Modo Files"),
+            ("h", "1. Ouvrir Sélection des fichiers"),
             (
                 "p",
                 "Cliquez sur Ajouter un dossier et pointez le repertoire "
@@ -258,7 +258,7 @@ SECTIONS = [
                 [
                     "Relancer un traitement sans quitter : bouton Reset dans "
                     "le Dashboard pour repartir d'un MPI vide.",
-                    "Inspector ligne par ligne : dans Modo Files, clic droit "
+                    "Inspector ligne par ligne : dans Sélection des fichiers, clic droit "
                     "sur un fichier -> Inspecter permet de voir les 3000 "
                     "premieres lignes avec leur statut (OK, COLLISION, "
                     "FILTERED, ERROR) et la raison d'un rejet eventuel.",
