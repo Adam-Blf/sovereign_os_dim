@@ -3021,7 +3021,7 @@ def build_pdf(output_path: str) -> str:
     pdf.cell(0, 14, "SOVEREIGN OS DIM", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.set_font(SANS, "", TYPE["h1"])
     pdf.set_text_color(*SLATE_700)
-    pdf.cell(0, 10, "Guide métier · station PMSI",
+    pdf.cell(0, 10, "Guide d'utilisation",
              new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(SPACE["lg"])
     pdf.set_draw_color(*GH_TEAL)
@@ -3030,39 +3030,46 @@ def build_pdf(output_path: str) -> str:
     pdf.ln(SPACE["lg"])
     pdf.set_font(SANS, "", TYPE["h3"])
     pdf.set_text_color(*SLATE_500)
-    pdf.cell(0, 7, f"Version 36.0  ·  {total_feats} fonctionnalités  ·  guide métier",
+    pdf.cell(0, 7, f"Version 37.0  ·  {total_feats} fonctionnalités",
              new_x="LMARGIN", new_y="NEXT", align="C")
-    pdf.cell(0, 7, "GHT Psy Sud Paris  ·  Fondation Vallée + Paul Guiraud",
+    pdf.cell(0, 7,
+             "Groupement Hospitalier de Territoire Psychiatrie Sud Paris",
+             new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 7,
+             "Fondation Vallée et Groupe Hospitalier Paul Guiraud",
              new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(20)
     pdf.set_font(SANS, "I", TYPE["body"])
     pdf.set_text_color(*SLATE_400)
-    pdf.cell(0, 5, f"Généré le {date.today().strftime('%d / %m / %Y')}",
+    pdf.cell(0, 5, f"Édition du {date.today().strftime('%d / %m / %Y')}",
              new_x="LMARGIN", new_y="NEXT", align="C")
-    pdf.cell(0, 5, "Adam Beloucif  ·  adam.beloucif@psysudparis.fr",
+    pdf.cell(0, 5, "Auteur · Adam Beloucif  ·  adam.beloucif@psysudparis.fr",
              new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(15)
     pdf.set_font(SANS, "", TYPE["small"])
     pdf.set_text_color(*SLATE_500)
     pdf.multi_cell(
         0, 5,
-        "Guide de consultation quotidienne pour le TIM, le médecin DIM et "
-        "le chef de pôle. Chaque fonctionnalité est documentée en 3 pages "
-        "orientées métier · à quoi ça sert, comment l'utiliser, dépannage. "
-        "Toutes les références ATIH et ARS sont vérifiées sur les sources "
-        "officielles (atih.sante.fr, iledefrance.ars.sante.fr, légifrance).",
-        align="C",
-        new_x="LMARGIN",
-        new_y="NEXT",
+        "Document destiné au technicien de l'information médicale, au "
+        "médecin responsable du service d'information médicale et au "
+        "chef de pôle. Chaque fonctionnalité du logiciel y est décrite "
+        "sur trois pages · son utilité dans la vie quotidienne, son "
+        "mode d'emploi étape par étape, et les pièges à éviter. "
+        "L'ensemble des références institutionnelles (Agence Technique "
+        "de l'Information sur l'Hospitalisation, Agence Régionale de "
+        "Santé, textes réglementaires) a été vérifié sur les sources "
+        "officielles. Tous les sigles sont expliqués à leur première "
+        "apparition, dans une page de lexique située au début du guide.",
+        align="C", new_x="LMARGIN", new_y="NEXT",
     )
     pdf.ln(SPACE["md"])
-    # Bandeau gold ROI métier
     pdf.set_fill_color(*GH_GOLD)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font(SANS, "B", TYPE["small"])
-    pdf.cell(0, 7, "  Réforme financière PSY · sécurisation 2029 = 0 %  ·  "
-                   "qualité PMSI = levier ROI direct",
-             new_x="LMARGIN", new_y="NEXT", fill=True, align="C")
+    pdf.cell(0, 7,
+        "  Réforme du financement de la psychiatrie · garantie de "
+        "dotation à zéro pour cent en 2029  ",
+        new_x="LMARGIN", new_y="NEXT", fill=True, align="C")
 
     # ══════ SOMMAIRE ══════
     pdf.add_page()
@@ -3090,35 +3097,226 @@ def build_pdf(output_path: str) -> str:
 
     # ══════ BLOC INTRODUCTION ══════
     pdf.add_page()
-    _page_header(pdf, LOGO_PATH, "Introduction métier", "Introduction", 0, total_feats)
+    _page_header(pdf, LOGO_PATH, "Introduction du guide",
+                 "Introduction", 0, total_feats)
     _page_title(pdf, 1, "À qui s'adresse ce guide")
     _body_text(pdf,
-               "Ce guide a trois lecteurs cibles · le TIM (technicien "
-               "d'information médicale) qui traite les lots ATIH au "
-               "quotidien, le médecin DIM qui valide la qualité PMSI "
-               "avant transmission ARS, et le chef de pôle qui pilote "
-               "l'activité via les tableaux de bord.")
+        "Ce document s'adresse à trois familles de lecteurs travaillant "
+        "ensemble dans un hôpital de psychiatrie. La première est "
+        "l'équipe technique du service d'information médicale, que "
+        "l'on appelle plus brièvement le service DIM (Département "
+        "d'Information Médicale). Au sein de cette équipe, le "
+        "technicien de l'information médicale, dont le sigle est TIM, "
+        "saisit chaque jour les données de soins. Le deuxième lecteur "
+        "est le médecin responsable du service, appelé médecin DIM, "
+        "qui valide la qualité de ces données avant que l'établissement "
+        "ne les envoie à l'État. Le troisième lecteur est le chef de "
+        "pôle, c'est-à-dire le responsable d'un grand secteur de "
+        "soins de l'hôpital, qui suit l'activité globale grâce aux "
+        "tableaux de bord disponibles dans le logiciel.")
     _body_text(pdf,
-               "Usage recommandé · consulter la feature pertinente "
-               "quand le besoin se présente. Les KPI métier (gains de "
-               "temps, scores qualité, ROI DFA) figurent dans chaque "
-               "section. Pour le détail technique (architecture, "
-               "API, dépendances), se reporter au README GitHub.")
+        "Le guide est volontairement rédigé en français courant, en "
+        "expliquant chaque sigle à sa première apparition. Il propose "
+        "pour chaque fonctionnalité une description du contexte "
+        "métier, le mode d'emploi pas à pas, les pièges à éviter et "
+        "les indicateurs de réussite à surveiller. Pour les détails "
+        "purement informatiques (organisation du code source, "
+        "interfaces de programmation, dépendances logicielles), un "
+        "guide développeur séparé est fourni dans le même dépôt.")
 
-    # Bandeau · contexte stratégique 2025-2029
-    _subheading(pdf, "Contexte 2025-2029 · pourquoi cet outil maintenant")
-    _alert(pdf, "metier",
-           "DRUIDES PSY déployé en M1 2025 · réforme tarifaire à 8 "
-           "compartiments · sécurisation prolongée 2026 (97,5 %) → "
-           "2029 (0 %). Plus aucun filet de sécurité après 2028 · "
-           "chaque point de chaînage manquant ou DP absent = perte DFA directe.")
+    _subheading(pdf, "Lexique des sigles utilisés dans ce guide")
+    _body_text(pdf,
+        "ATIH · Agence Technique de l'Information sur l'Hospitalisation, "
+        "organisme public français qui définit les formats officiels "
+        "des données hospitalières. Son siège est à Lyon.")
+    _body_text(pdf,
+        "ARS · Agence Régionale de Santé, autorité publique régionale "
+        "qui valide les transmissions des hôpitaux. L'agence "
+        "Île-de-France couvre les départements 75, 77, 78, 91, 92, "
+        "93, 94 et 95.")
+    _body_text(pdf,
+        "DIM · Département d'Information Médicale, service interne à "
+        "l'hôpital chargé du traitement administratif et statistique "
+        "des soins.")
+    _body_text(pdf,
+        "TIM · Technicien de l'Information Médicale, agent du service "
+        "DIM qui prépare et corrige les fichiers transmis à l'État.")
+    _body_text(pdf,
+        "Médecin DIM · médecin responsable du service DIM, seul "
+        "habilité à accéder aux données nominatives sans dérogation "
+        "particulière (article L. 6113-7 du Code de la santé publique).")
+    _body_text(pdf,
+        "PMSI · Programme de Médicalisation des Systèmes d'Information, "
+        "système national de comptage et de description médicale des "
+        "soins, mis en place en France depuis le début des années 1980. "
+        "Il sert à financer les hôpitaux en fonction de leur activité.")
+    _body_text(pdf,
+        "RIM-P · Recueil d'Informations Médicalisé pour la Psychiatrie, "
+        "version du PMSI applicable aux hôpitaux psychiatriques.")
+    _body_text(pdf,
+        "RPS · Recueil pour Psychiatrie de Séquence, fichier qui "
+        "contient les données d'une période d'hospitalisation à temps "
+        "complet d'un patient.")
+    _body_text(pdf,
+        "RAA · Résumé d'Activité Ambulatoire, fichier qui contient "
+        "les actes effectués sans hospitalisation, par exemple en "
+        "consultation ou à domicile.")
+    _body_text(pdf,
+        "RPSA · Résumé Anonyme du RPS, version dépersonnalisée du "
+        "RPS qui est transmise à l'agence régionale de santé.")
+    _body_text(pdf,
+        "DRUIDES · Dispositif de Remontée Unifiée et Intégrée des "
+        "Données des Établissements de Santé, logiciel officiel de "
+        "transmission, déployé en psychiatrie au mois de janvier 2025.")
+    _body_text(pdf,
+        "e-PMSI · portail web de l'Agence Technique de l'Information "
+        "sur l'Hospitalisation où les hôpitaux déposent leurs fichiers "
+        "et consultent leurs indicateurs de qualité.")
+    _body_text(pdf,
+        "MAGIC · logiciel obligatoire qui anonymise les données "
+        "patient avant transmission. La version 5.12.0.0 est "
+        "obligatoire pour toute la campagne 2026.")
+    _body_text(pdf,
+        "IPP · Identifiant Permanent du Patient, numéro unique "
+        "attribué à un patient lors de son premier passage à l'hôpital "
+        "et conservé pour toute la vie.")
+    _body_text(pdf,
+        "DDN · Date De Naissance, exprimée au format année-mois-jour "
+        "dans les fichiers ATIH.")
+    _body_text(pdf,
+        "FINESS · Fichier National des Établissements Sanitaires et "
+        "Sociaux, base de l'État qui attribue à chaque hôpital un "
+        "numéro à neuf chiffres.")
 
-    _subheading(pdf, "Légende des bandeaux")
-    _alert(pdf, "info", "Information générale ou contexte utile.")
-    _alert(pdf, "ok", "Bonne pratique validée, à privilégier.")
-    _alert(pdf, "warn", "Point d'attention · impact sur la qualité ou la conformité.")
-    _alert(pdf, "err", "Erreur à éviter absolument · impact critique sur la transmission e-PMSI.")
-    _alert(pdf, "metier", "Indicateur métier · gain de temps, ROI ou impact DFA.")
+    pdf.add_page()
+    _page_header(pdf, LOGO_PATH, "Lexique (suite)", "Introduction", 0, total_feats)
+    _page_title(pdf, 2, "Lexique des sigles · suite")
+
+    _body_text(pdf,
+        "MPI · Master Patient Index, traduit en français par registre "
+        "central des patients. Il s'agit d'une base de données interne "
+        "au logiciel qui regroupe pour chaque patient toutes les "
+        "informations connues à son sujet, dans tous les fichiers "
+        "envoyés à l'État.")
+    _body_text(pdf,
+        "Identitovigilance · vigilance sur l'identité du patient. "
+        "Le mot désigne l'ensemble des actions menées pour s'assurer "
+        "qu'un même patient n'a qu'une seule fiche, et qu'aucune "
+        "fiche ne mélange deux personnes.")
+    _body_text(pdf,
+        "Collision · cas où deux fiches d'un même patient affichent "
+        "des informations différentes (par exemple deux dates de "
+        "naissance), conséquence d'une erreur de saisie ou d'un "
+        "changement de format historique.")
+    _body_text(pdf,
+        "DAS · Diagnostic Associé Significatif, maladie ou trouble "
+        "présent chez le patient mais qui n'est pas la raison "
+        "principale de l'hospitalisation.")
+    _body_text(pdf,
+        "DP · Diagnostic Principal, raison principale qui a justifié "
+        "l'hospitalisation, codée selon la Classification Internationale "
+        "des Maladies dixième révision (sigle CIM-10).")
+    _body_text(pdf,
+        "DAF · Dotation Annuelle de Financement, mode de financement "
+        "historique des hôpitaux psychiatriques publics, en cours de "
+        "remplacement par un modèle à huit compartiments.")
+    _body_text(pdf,
+        "DFA · Délégation Financière Anticipée, partie du financement "
+        "qui dépend directement du nombre de patients suivis dans "
+        "l'année. Représente quinze pour cent du budget psy national.")
+    _body_text(pdf,
+        "DQC · Dotation Qualité du Codage, partie du financement "
+        "(deux pour cent) qui dépend de la qualité de remplissage "
+        "des fichiers transmis.")
+    _body_text(pdf,
+        "GHT · Groupement Hospitalier de Territoire, ensemble "
+        "d'hôpitaux qui mutualisent leurs services. Le groupement "
+        "Sud Paris regroupe la Fondation Vallée à Villejuif et le "
+        "Groupe Hospitalier Paul Guiraud à Villejuif et Clamart.")
+    _body_text(pdf,
+        "CeSPA · Centre de Soins Post-Aigus, nouvelle structure "
+        "psychiatrique créée par l'arrêté du 4 juillet 2025. Elle "
+        "remplace les anciens centres de post-cure. Elle accueille "
+        "les patients dont l'état ne permet pas le retour immédiat "
+        "à domicile après une hospitalisation à temps complet.")
+    _body_text(pdf,
+        "CATTG · Centre d'Activités Thérapeutiques et de Temps de "
+        "Groupe, nouvelle structure ambulatoire créée par le même "
+        "arrêté de 2025. Elle remplace les anciens centres d'accueil "
+        "thérapeutique à temps partiel, dont le sigle était CATTP.")
+    _body_text(pdf,
+        "RGPD · Règlement Général sur la Protection des Données, "
+        "règlement européen entré en vigueur en 2018, qui encadre "
+        "le traitement des données personnelles, dont les données "
+        "de santé.")
+    _body_text(pdf,
+        "FicUM · Fichier des Unités Médicales, fichier obligatoire "
+        "depuis janvier 2025 qui décrit toutes les unités de soins "
+        "actives de l'hôpital. Chaque unité doit y figurer pour que "
+        "ses patients soient pris en compte dans les transmissions.")
+    _body_text(pdf,
+        "SQLite · technologie de base de données légère, gérée "
+        "comme un simple fichier sur l'ordinateur, sans serveur. "
+        "Le registre central des patients du logiciel l'utilise pour "
+        "se souvenir des données entre deux ouvertures.")
+    _body_text(pdf,
+        "Apprentissage automatique · branche de l'intelligence "
+        "artificielle où un programme apprend à reconnaître des "
+        "schémas en analysant beaucoup d'exemples. Trois petits "
+        "programmes de ce type sont embarqués dans le logiciel.")
+    _body_text(pdf,
+        "Tableau de bord · écran qui regroupe les principaux "
+        "indicateurs sous forme de cartes chiffrées et de graphiques.")
+
+    pdf.add_page()
+    _page_header(pdf, LOGO_PATH, "Contexte 2025-2029", "Introduction", 0, total_feats)
+    _page_title(pdf, 3, "Pourquoi un nouvel outil maintenant")
+
+    _body_text(pdf,
+        "Trois changements majeurs convergent au moment où ce guide "
+        "est rédigé. Premièrement, en janvier 2025, le logiciel "
+        "officiel de transmission des données psychiatriques a "
+        "changé · l'ancien système, appelé Pivoine et le contrôle "
+        "qualité Visual, ont été remplacés par un nouveau logiciel "
+        "unique appelé DRUIDES. Tout établissement psychiatrique "
+        "doit donc adapter ses procédures.")
+    _body_text(pdf,
+        "Deuxièmement, le mode de financement des hôpitaux "
+        "psychiatriques publics a été refondu en 2022 sous la forme "
+        "d'un modèle dit à huit compartiments. Une période de "
+        "sécurisation prolongée a été annoncée par la Direction "
+        "Générale de l'Offre de Soins en septembre 2025. Cette "
+        "sécurisation garantit aux établissements 97,5 pour cent de "
+        "leur dotation de référence en 2026, 95 pour cent en 2027, "
+        "90 pour cent en 2028, et zéro pour cent à partir de 2029. "
+        "Autrement dit, à compter de 2029, chaque erreur dans les "
+        "transmissions se traduira directement en perte financière "
+        "pour l'hôpital. La pression sur la qualité des données va "
+        "donc croître très fortement entre 2027 et 2029.")
+    _body_text(pdf,
+        "Troisièmement, l'arrêté du 4 juillet 2025 a redéfini les "
+        "structures de soins en psychiatrie. Les anciens centres "
+        "d'accueil thérapeutique à temps partiel laissent place aux "
+        "centres d'activités thérapeutiques et de temps de groupe. "
+        "Les centres de post-cure deviennent des centres de soins "
+        "post-aigus. Trois grands modes de prise en charge sont "
+        "désormais reconnus · le temps complet (hospitalisation), "
+        "le temps partiel (hôpital de jour), et l'ambulatoire "
+        "(consultations et soins à domicile, codifié par la "
+        "modalité 33).")
+    _body_text(pdf,
+        "Sovereign OS DIM est l'outil interne mis au point pour "
+        "absorber ces trois évolutions sans dépendre des éditeurs "
+        "commerciaux dont les coûts de licence et les délais de "
+        "mise à jour sont parfois incompatibles avec les contraintes "
+        "budgétaires d'un hôpital public.")
+
+    _subheading(pdf, "Légende des bandeaux colorés utilisés dans ce guide")
+    _alert(pdf, "info", "Information générale ou rappel de contexte.")
+    _alert(pdf, "ok", "Bonne pratique validée par l'équipe DIM, à privilégier.")
+    _alert(pdf, "warn", "Point d'attention pouvant impacter la qualité ou la conformité réglementaire.")
+    _alert(pdf, "err", "Erreur à éviter absolument · risque de rejet lors de l'envoi à l'agence régionale de santé.")
+    _alert(pdf, "metier", "Indicateur métier · gain de temps, retour sur investissement ou impact financier.")
 
     # ══════ RENDU DE CHAQUE FEATURE · 3 PAGES CHACUNE ══════
     for i, feat in enumerate(FEATURES, start=1):
@@ -3134,23 +3332,23 @@ def build_pdf(output_path: str) -> str:
 
     # ══════ GALERIE · 16 VUES SENTINEL V36 (4 thumbnails par page) ══════
     sentinel_gallery = [
-        ("01_dashboard.png",   "Dashboard · MPI",                "Vue d'ensemble · 4 KPI + donut formats"),
-        ("08_cockpit.png",     "Cockpit chef DIM",                "Tableau exécutif mensuel · file active 12 mois"),
-        ("09_health.png",      "Health monitor",                  "Supervision système · 7 vérifications"),
-        ("10_ars.png",         "Sentinel ARS",                    "Prédicteur de rejet DRUIDES · score par lot"),
-        ("11_cespa.png",       "CeSPA / CATTG",                   "Conformité réforme 4 juillet 2025"),
-        ("12_diff.png",        "Diff lots mensuels",              "Anti-régression M+1 vs M · 14 indicateurs"),
-        ("13_cim.png",         "CimSuggester",                    "IA codage CIM-10 · LLM Ollama local"),
-        ("14_lstm.png",        "Prédicteur DMS",                  "LSTM par groupe diagnostique CIM-10"),
-        ("15_cluster.png",     "Clustering UMAP",                 "6 archétypes patients · UMAP+HDBSCAN"),
-        ("16_twin.png",        "Hospital Twin",                   "Simulation impact tarifaire DFA"),
-        ("17_heatmap.png",     "Heatmap géographique",            "File active par secteur ARS"),
-        ("18_pivot.png",       "Tableaux croisés",                "Exploration ad hoc · pivot drag-drop"),
-        ("02_modo_files.png",  "Modo Files",                      "Sélection + traitement des lots ATIH"),
-        ("03_idv.png",         "Identitovigilance",               "Résolution des collisions IPP / DDN"),
-        ("19_rgpd.png",        "RGPD command center",             "DPO panel · audit art. 30"),
-        ("20_audit.png",       "Audit chain",                     "Traçabilité immutable SHA-256"),
-        ("21_workflow.png",    "Workflows DIM",                   "TIM → MIM → Préflight → ARS"),
+        ("01_dashboard.png",   "Tableau de bord principal",        "Quatre indicateurs clés et répartition par format"),
+        ("08_cockpit.png",     "Tableau de bord du chef de pôle",  "Vue mensuelle · suivi de la file active sur douze mois"),
+        ("09_health.png",      "Surveillance technique",            "Sept vérifications de l'état du système"),
+        ("10_ars.png",         "Sentinelle de transmission",        "Prédicteur de rejet, note attribuée à chaque lot"),
+        ("11_cespa.png",       "Validateur des nouvelles structures", "Conformité avec l'arrêté du 4 juillet 2025"),
+        ("12_diff.png",        "Comparaison de deux mois",          "Détection des écarts inhabituels d'un mois à l'autre"),
+        ("13_cim.png",         "Suggesteur de codes maladies",      "Aide au codage par intelligence artificielle locale"),
+        ("14_lstm.png",        "Prédicteur de durée de séjour",     "Estimation par grand groupe de diagnostics"),
+        ("15_cluster.png",     "Regroupement de profils patients",  "Six archétypes identifiés à partir du registre"),
+        ("16_twin.png",        "Simulation financière",             "Projection de l'impact d'une amélioration de codage"),
+        ("17_heatmap.png",     "Carte de chaleur géographique",     "Patients suivis par code postal"),
+        ("18_pivot.png",       "Tableaux croisés",                  "Exploration libre des données du registre"),
+        ("02_modo_files.png",  "Sélection de fichiers",              "Choix et traitement des lots de données"),
+        ("03_idv.png",         "Vigilance sur l'identité du patient", "Résolution des conflits de fiches patient"),
+        ("19_rgpd.png",        "Centre de conformité RGPD",         "Tableau de bord du délégué à la protection des données"),
+        ("20_audit.png",       "Journal d'audit chaîné",            "Traçabilité immuable de toutes les actions"),
+        ("21_workflow.png",    "Pipeline de validation",            "Technicien, médecin, contrôle, transmission"),
     ]
 
     for page_idx in range(0, len(sentinel_gallery), 4):
@@ -3161,11 +3359,13 @@ def build_pdf(output_path: str) -> str:
         _page_title(pdf, page_idx // 4 + 1,
                     f"Galerie des écrans · {page_idx + 1}/{len(sentinel_gallery)}")
         _body_text(pdf,
-                   "Aperçu visuel des vues principales du logiciel SovereignOS DIM "
-                   "V36 · refonte design Sentinel pilotée par le chef de pôle. Chaque "
-                   "vue est accessible depuis la sidebar · les vues IA et métier "
-                   "exploitent les modèles XGBoost embarqués (format_detector, "
-                   "collision_risk, ddn_validity).")
+            "Aperçu visuel des écrans principaux du logiciel. Chaque "
+            "vignette présente une fonction du logiciel telle qu'elle "
+            "apparaît à l'écran en utilisation réelle. Toutes ces vues "
+            "sont accessibles à partir de la barre latérale gauche, en "
+            "un seul clic. Les écrans qui s'appuient sur l'intelligence "
+            "artificielle utilisent des programmes embarqués dans le "
+            "logiciel · aucun envoi de données patient vers internet.")
         # Grille 2 × 2
         cell_w, cell_h = 88, 60
         gap_x, gap_y = 8, 12
@@ -3194,52 +3394,86 @@ def build_pdf(output_path: str) -> str:
             pdf.set_text_color(*SLATE_500)
             pdf.cell(cell_w, 4, sub, new_x="LMARGIN", new_y="NEXT")
 
-    # ══════ PAGE ROADMAP · OUTILS PROPOSÉS V37+ ══════
+    # ══════ PAGE FEUILLE DE ROUTE · MODULES À VENIR ══════
     pdf.add_page()
-    _page_header(pdf, LOGO_PATH, "Roadmap métier", "Roadmap", total_feats, total_feats)
-    _page_title(pdf, 12, "Modules futurs · feuille de route 2026-2027")
+    _page_header(pdf, LOGO_PATH, "Feuille de route", "Feuille de route",
+                 total_feats, total_feats)
+    _page_title(pdf, 12, "Modules à venir · plan 2026 et 2027")
     _body_text(pdf,
-               "Huit chantiers identifiés en discussion avec l'équipe DIM "
-               "du GHT Psy Sud Paris. Chaque proposition affiche son "
-               "objectif métier et le gain estimé. Les priorités sont "
-               "reéévaluées après chaque release.")
+        "Cette page présente les huit chantiers identifiés avec l'équipe "
+        "du service d'information médicale du groupement hospitalier "
+        "Sud Paris. Chaque chantier est décrit par son objectif et le "
+        "bénéfice attendu pour les soignants ou pour la qualité des "
+        "transmissions à l'État. L'ordre de priorité est revu chaque "
+        "trimestre, en concertation avec le médecin responsable du "
+        "service et le chef de pôle.")
 
     proposals = [
-        ("Sentinel ARS · prédicteur de rejet DRUIDES",
-         "Score chaque lot avant upload · probabilité de rejet sur 15 "
-         "validateurs réglementaires. Évite les allers-retours TIM ↔ ARS.",
-         "Gain estimé · 6-10 h TIM / mois (étab. 800 lits)."),
-        ("CimSuggester live · IA de codage CIM-10 in-app",
-         "Propose un DP probable à partir des DAS et actes saisis. "
-         "Fournisseur LLM configurable (Ollama local ou API cloud).",
-         "Référence · 1 470 € / RSS recodé (étude OPTIC, CHRU Tours)."),
-        ("Cockpit chef DIM · tableau de bord exécutif",
-         "Vue mensuelle · file active, taux chaînage, % DP codé, score "
-         "DQC, alerte sur écart > 2 % vs mois N-1. Export PDF / Excel.",
-         "Gain · 4-8 h chef DIM / mois (vs 1-2 h avec IA)."),
-        ("Audit DRUIDES temps réel",
-         "Stream API DRUIDES · alerte instantanée sur rejet d'un fichier, "
-         "diagnostic pré-mâché côté Sovereign OS. Déclencheur Teams optionnel.",
-         "Gain · -50 % du temps de réaction sur incident transmission."),
-        ("CeSPA / CATTG validator (réforme 4 juillet 2025)",
-         "Contrôle automatique des nouveaux modes · refus immédiat des "
-         "anciens codes ateliers thérapeutiques, validation CeSPA + CATTG, "
-         "validation modalité 33 (soins à domicile).",
-         "Conformité · 100 % des RPS / RAA 2026 alignés sur le décret."),
-        ("Sentinel INS · qualité de l'identité Ségur",
-         "Score le taux d'IPP avec INS qualifiée · suivi de la montée en "
-         "charge nationale (cible Ségur). Détecte les ratés de matching.",
-         "Indicateur Ségur · cible 100 % d'IPP avec INS validée fin 2027."),
-        ("Connecteur SNDS local",
-         "Préparation des extractions PMSI au format Health Data Hub · "
-         "pseudonymisation automatique, validation k ≥ 5, vérification "
-         "MR-007 conformité.",
-         "Bénéfice recherche · facilite les projets de recherche du chef de pôle."),
-        ("Hospital Twin · simulation impact tarifaire",
-         "Simule l'impact financier d'une amélioration de codage sur la "
-         "DFA · projection mois N+1, N+3, N+12. Aide à prioriser les "
-         "actions qualité PMSI.",
-         "ROI · arbitrage stratégique sur les actions DIM à mener en priorité."),
+        ("Sentinelle de transmission",
+         "Examine chaque lot de fichiers avant son envoi à l'agence "
+         "régionale de santé. Le module passe au crible quinze "
+         "contrôles réglementaires et signale les risques de rejet "
+         "avant la transmission. Cela évite les allers-retours entre "
+         "le technicien et l'agence régionale.",
+         "Gain estimé · six à dix heures de travail économisées chaque "
+         "mois pour un hôpital de huit cents lits."),
+        ("Suggesteur de codes maladies",
+         "Propose un diagnostic principal probable à partir des "
+         "diagnostics associés et des actes déjà saisis par le médecin. "
+         "Le module utilise un programme d'intelligence artificielle "
+         "installé localement, sans envoi de données vers internet.",
+         "Référence · une étude scientifique du centre hospitalier "
+         "universitaire régional de Tours, publiée en 2022, montre un "
+         "gain moyen de 1 470 euros par séjour dont le codage est "
+         "amélioré."),
+        ("Tableau de bord du chef de pôle",
+         "Vue mensuelle qui regroupe le nombre de patients suivis, le "
+         "taux de chaînage entre fichiers, le pourcentage de "
+         "diagnostics principaux renseignés, et le score de qualité "
+         "du codage. Une alerte visuelle se déclenche si un "
+         "indicateur dévie de plus de deux pour cent par rapport au "
+         "mois précédent.",
+         "Gain · quatre à huit heures économisées chaque mois sur "
+         "le travail de reporting du chef de pôle."),
+        ("Surveillance temps réel des transmissions",
+         "Le logiciel se connecte au système officiel de l'État pour "
+         "recevoir les rejets en temps réel. Lorsqu'un fichier est "
+         "refusé, un diagnostic préparé apparaît immédiatement dans "
+         "Sovereign OS, ce qui évite au technicien de chercher la "
+         "cause manuellement.",
+         "Gain · réduction de moitié du temps nécessaire pour "
+         "réagir à un incident de transmission."),
+        ("Validateur des nouvelles structures de soins",
+         "Contrôle automatique de la conformité avec l'arrêté du 4 "
+         "juillet 2025 · refus des anciens codes des ateliers "
+         "thérapeutiques, acceptation des nouveaux centres CeSPA et "
+         "CATTG, prise en charge de la modalité 33 pour les soins à "
+         "domicile.",
+         "Conformité · cent pour cent des fichiers RPS et RAA de la "
+         "campagne 2026 alignés sur le décret."),
+        ("Suivi de l'identité nationale de santé",
+         "Mesure la part des patients pour lesquels l'identité "
+         "nationale de santé, mise en place dans le cadre du programme "
+         "Ségur de la santé, est qualifiée. Détecte les patients pour "
+         "lesquels la procédure de vérification a échoué.",
+         "Cible · cent pour cent des patients dotés d'une identité "
+         "nationale de santé qualifiée d'ici fin 2027."),
+        ("Préparation pour la recherche médicale",
+         "Aide les chercheurs à extraire des données pour leurs "
+         "études · pseudonymisation automatique, vérification que "
+         "chaque profil concerne au moins cinq personnes (règle dite "
+         "de l'anonymat de groupe), conformité avec la méthodologie "
+         "de référence numéro sept de la Commission Nationale de "
+         "l'Informatique et des Libertés.",
+         "Bénéfice · facilite les travaux de recherche du chef de "
+         "pôle et des médecins du service."),
+        ("Simulation financière",
+         "Calcule l'impact financier d'une amélioration de la qualité "
+         "du codage sur le financement de l'hôpital. Projette le "
+         "résultat sur le mois suivant, sur le trimestre, et sur "
+         "l'année. Aide à prioriser les actions de qualité.",
+         "Bénéfice · arbitrage stratégique sur les actions à mener "
+         "en priorité par l'équipe d'information médicale."),
     ]
 
     for i, (title, desc, gain) in enumerate(proposals, start=1):
@@ -3272,45 +3506,79 @@ def build_pdf(output_path: str) -> str:
     _page_title(pdf, 13, "Support, crédits, licence")
     _subheading(pdf, "Contact support")
     _body_text(pdf,
-               "Email direct · adam.beloucif@psysudparis.fr (alternance "
-               "Fondation Vallée jusqu'en septembre 2027). "
-               "GitHub Issues · https://github.com/Adam-Blf/sovereign_os_dim/issues.")
-    _subheading(pdf, "Références ATIH et ARS")
+        "Adresse électronique directe pour toute question fonctionnelle "
+        "ou demande d'assistance · adam.beloucif@psysudparis.fr. Cette "
+        "adresse correspond à la période d'alternance de l'auteur au "
+        "sein de la Fondation Vallée, prévue jusqu'en septembre 2027. "
+        "Toute anomalie peut également être signalée publiquement sur "
+        "le suivi des incidents du dépôt en ligne · "
+        "https://github.com/Adam-Blf/sovereign_os_dim/issues.")
+    _subheading(pdf, "Références institutionnelles · Agence Technique de l'Information sur l'Hospitalisation")
     _body_text(pdf,
-               "ATIH · 117 boulevard Marius-Vivier-Merle, 69003 Lyon · "
-               "DG Nathalie Fourcade depuis le 6 janvier 2025. Plateforme "
-               "e-PMSI · https://www.epmsi.atih.sante.fr. "
-               "Notice technique 2026 · ATIH-294-9-2025 du 21 novembre 2025.")
+        "L'Agence Technique de l'Information sur l'Hospitalisation est "
+        "l'organisme public qui définit les formats officiels des "
+        "données hospitalières en France. Son siège se situe au 117 "
+        "boulevard Marius-Vivier-Merle, dans le troisième arrondissement "
+        "de Lyon. La direction générale est assurée par Madame Nathalie "
+        "Fourcade depuis le 6 janvier 2025. Le site officiel par lequel "
+        "les hôpitaux déposent leurs fichiers s'appelle e-PMSI, "
+        "accessible à l'adresse https://www.epmsi.atih.sante.fr. La "
+        "notice technique applicable à la campagne 2026 porte la "
+        "référence ATIH-294-9-2025 et a été publiée le 21 novembre 2025.")
+    _subheading(pdf, "Références institutionnelles · Agence Régionale de Santé d'Île-de-France")
     _body_text(pdf,
-               "ARS Île-de-France · Immeuble Le Curve, 13 rue du Landy, "
-               "93200 Saint-Denis · 01 44 02 00 00 · DG Denis Robin "
-               "depuis le 10 avril 2024. Délégation départementale 94 · "
-               "25 chemin des Bassins, 94010 Créteil Cedex · 01 49 81 86 04. "
-               "Datalogue · https://datalogue.iledefrance.ars.sante.fr.")
-    _subheading(pdf, "GHT Psy Sud Paris")
+        "L'Agence Régionale de Santé d'Île-de-France est l'autorité "
+        "publique chargée de valider les transmissions de tous les "
+        "hôpitaux de la région. Son siège est situé dans l'immeuble Le "
+        "Curve, au 13 rue du Landy, à Saint-Denis (code postal 93200). "
+        "Le standard téléphonique est le 01 44 02 00 00. La direction "
+        "générale est assurée par Monsieur Denis Robin depuis le 10 "
+        "avril 2024. La délégation départementale du Val-de-Marne, "
+        "qui couvre le territoire du groupement hospitalier de Sud "
+        "Paris, se trouve au 25 chemin des Bassins à Créteil Cedex "
+        "(code postal 94010). Le numéro direct de cette délégation est "
+        "le 01 49 81 86 04. Le portail de données régionales s'appelle "
+        "Datalogue, accessible à l'adresse "
+        "https://datalogue.iledefrance.ars.sante.fr.")
+    _subheading(pdf, "Le Groupement Hospitalier de Territoire de Psychiatrie Sud Paris")
     _body_text(pdf,
-               "Convention validée par l'ARS IDF le 1er juillet 2016, "
-               "signée en janvier 2017. Établissement support · GH Fondation "
-               "Vallée - Paul Guiraud (FINESS 940140049, 54 avenue de la "
-               "République, 94800 Villejuif Cedex). Membre fondateur · EPS "
-               "Erasme. 100 % psychiatrie · 1,3 M habitants couverts · "
-               "37 000 patients en file active · 741 lits · budget 260 M€.")
-    _subheading(pdf, "Crédits")
+        "La convention constitutive du groupement a été validée par "
+        "l'Agence Régionale de Santé d'Île-de-France le 1er juillet "
+        "2016, puis signée par les deux établissements membres en "
+        "janvier 2017. L'établissement de référence du groupement est "
+        "le Groupe Hospitalier Fondation Vallée et Paul Guiraud, dont "
+        "le numéro national d'identification est 940140049. Son adresse "
+        "administrative est le 54 avenue de la République, à Villejuif "
+        "Cedex (code postal 94800). L'autre membre fondateur est "
+        "l'Établissement Public de Santé Erasme, situé à Antony. Le "
+        "groupement est dédié à la psychiatrie, et couvre une "
+        "population d'environ 1,3 million d'habitants. Il assure le "
+        "suivi de quelque 37 000 patients chaque année, dispose de 741 "
+        "lits d'hospitalisation, et fonctionne avec un budget de "
+        "260 millions d'euros par an.")
+    _subheading(pdf, "Auteur et collaboration")
     _body_text(pdf,
-               "Conception et développement · Adam Beloucif, M1 Data "
-               "Engineering EFREI, alternant TIM Fondation Vallée GHT Sud "
-               "Paris. Développé en collaboration avec l'équipe DIM du GHT "
-               "Psy Sud Paris dans le cadre d'une alternance 2025-2027.")
-    _subheading(pdf, "Licence")
+        "Conception et développement · Adam Beloucif, étudiant en "
+        "première année de master en ingénierie des données à l'École "
+        "Française d'Électronique et d'Informatique (EFREI), alternant "
+        "au sein du service d'information médicale de la Fondation "
+        "Vallée. Le logiciel a été développé en collaboration directe "
+        "avec l'équipe du service, dans le cadre d'une alternance "
+        "couvrant la période 2025-2027.")
+    _subheading(pdf, "Licence d'utilisation")
     _body_text(pdf,
-               "Logiciel libre · utilisation, modification et redistribution "
-               "autorisées pour tout établissement de santé sous réserve de "
-               "conservation des mentions de paternité. Pour toute question "
-               "sur l'usage dans un autre GHT, contacter le support.")
+        "Le logiciel est distribué sous licence libre. L'utilisation, "
+        "la modification et la redistribution sont autorisées pour "
+        "tout établissement de santé, sous réserve de conserver les "
+        "mentions de paternité du code original. Pour toute question "
+        "concernant l'usage du logiciel au sein d'un autre groupement "
+        "hospitalier ou d'un autre établissement, il est recommandé "
+        "de contacter directement l'auteur via l'adresse électronique "
+        "indiquée plus haut.")
     _alert(pdf, "info",
-           "Fin du guide métier. Version la plus récente sur "
-           "https://github.com/Adam-Blf/sovereign_os_dim · "
-           "release publiée tous les trimestres.")
+        "Fin du guide métier. La version la plus récente est "
+        "publiée sur https://github.com/Adam-Blf/sovereign_os_dim · "
+        "une nouvelle édition paraît à chaque fin de trimestre.")
 
     abs_out = os.path.abspath(output_path)
     os.makedirs(os.path.dirname(abs_out) or ".", exist_ok=True)
