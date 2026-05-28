@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign OS DIM</title>
+
+    <!-- Bibliothèques de Grade Industriel -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Urbanist"', 'Inter', 'sans-serif'], mono: ['"JetBrains Mono"', 'monospace'] },
+                    colors: {
+                        gh: {
+                            navy: '#253e80', teal: '#0c7db6', error: '#E11D48', success: '#10B981',
+                            warning: '#F59E0B', terminal: '#020617', slate: '#F1F5F9', border: '#E2E8F0'
+                        }
+                    },
+                    boxShadow: {
+                        'quantum': '0 25px 70px rgba(37, 62, 128, 0.15)',
+                        'neon': '0 0 25px rgba(16, 185, 129, 0.2)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="css/design-tokens.css">
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        /* Reset typographique de base · le reste vit dans design-tokens.css */
+        body {
+            background-color: var(--slate-50);
+            color: var(--slate-900);
+            overflow: hidden;
+            font-family: var(--font-sans);
+            font-size: var(--text-body);
+            letter-spacing: -0.005em;
+            font-feature-settings: "ss01", "cv11";
+        }
+
+        .dark body {
+            background-color: var(--slate-900);
+            color: var(--slate-100);
+        }
+    </style>
+</head>
+
+<body
+    class="flex h-screen w-screen font-sans select-none overflow-hidden bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-500">
+
+    <!-- BOOT SCREEN · épuré, identité Sovereign OS DIM unifiée -->
+    <div id="boot-overlay"
+        class="fixed inset-0 z-[9999] bg-gh-terminal flex flex-col items-center justify-center text-white transition-all duration-700">
+        <div class="text-center w-full max-w-xl px-8 relative z-10 animate-fade-in flex flex-col items-center">
+            <div id="boot-logo-box" class="relative inline-block mb-8">
+                <div class="w-28 h-28 bg-white rounded-3xl flex items-center justify-center shadow-2xl overflow-hidden border border-white/10">
+                    <i data-lucide="shield-check" class="w-14 h-14 text-gh-navy"></i>
+                    <div class="scanner-bar"></div>
+                </div>
+                <div class="absolute -bottom-2 -right-2 w-9 h-9 bg-gh-success rounded-full border-4 border-gh-terminal flex items-center justify-center shadow-lg">
+                    <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+                </div>
+            </div>
+
+            <p class="eyebrow text-gh-teal/80 mb-3">Station DIM · GHT Sud Paris</p>
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-2 leading-tight">
+                Sovereign OS DIM
+            </h1>
+            <p class="text-blue-200/60 text-sm font-medium mb-12 max-w-sm">
+                Traitement local des fichiers ATIH · 100&nbsp;% offline · RGPD-safe
+            </p>
+
+            <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden mb-6">
+                <div class="h-full bg-gh-teal w-0 shadow-[0_0_30px_#10B981]" id="boot-progress-bar"></div>
+            </div>
+
+            <div id="boot-status-text"
+                class="font-mono text-[10px] text-blue-200/50 uppercase tracking-[0.25em] h-6">
+                Synchronisation du moteur de réconciliation MPI&nbsp;…
+            </div>
+
+            <button id="btn-ignite"
+                class="hidden w-full py-4 mt-8 bg-gh-teal text-white rounded-xl font-bold uppercase text-sm tracking-wider shadow-lg hover:bg-teal-600 transition-all active:scale-[0.98]">
+                Accéder au poste DIM
+            </button>
+        </div>
+    </div>
+
+    <!-- UI ROOT -->
+    <div id="app-root" class="hidden flex h-full w-full opacity-0 transition-opacity duration-1000 relative z-10">
+
+        <!-- SIDEBAR · navigation principale, identité Sovereign OS DIM -->
+        <aside class="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50 shadow-md no-print transition-colors duration-300">
+            <!-- Brand -->
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                <div class="w-12 h-12 shrink-0 bg-gh-navy rounded-xl p-3 text-white shadow-md">
+                    <i data-lucide="fingerprint" class="w-full h-full"></i>
+                </div>
+                <div>
+                    <p class="font-extrabold text-gh-navy dark:text-blue-400 text-lg tracking-tight leading-tight">
+                        Sovereign OS DIM
+                    </p>
+                    <p class="text-[11px] font-semibold text-gh-teal uppercase tracking-wider mt-0.5">
+                        GHT Sud Paris
+                    </p>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 py-6 space-y-1 overflow-y-auto custom-scroll">
+                <div class="px-6 pt-2 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
+                    Contrôle
+                </div>
+                <button id="nav-dashboard"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="layout-grid" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <span class="font-semibold text-sm">Dashboard</span>
+                </button>
+                <button id="nav-cockpit"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="trending-up" class="w-5 h-5 text-gh-teal"></i>
+                    <span class="font-semibold text-sm">Cockpit chef DIM</span>
+                </button>
+                <button id="nav-health"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="activity" class="w-5 h-5 text-gh-teal"></i>
+                    <span class="font-semibold text-sm">Health monitor</span>
+                </button>
+
+                <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
+                    Métier DIM
+                </div>
+                <button id="nav-ars"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="shield" class="w-5 h-5 text-gh-warning"></i>
+                    <span class="font-semibold text-sm">Sentinel ARS</span>
+                </button>
+                <button id="nav-cespa"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="check-circle" class="w-5 h-5 text-gh-success"></i>
+                    <span class="font-semibold text-sm">CeSPA / CATTG</span>
+                </button>
+                <button id="nav-diff"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="git-compare" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <span class="font-semibold text-sm">Diff lots mensuels</span>
+                </button>
+
+                <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
+                    ML & IA local
+                </div>
+                <button id="nav-cim"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="brain" class="w-5 h-5 text-gh-teal"></i>
+                    <span class="font-semibold text-sm">CimSuggester</span>
+                </button>
+                <button id="nav-lstm"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="trending-up" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <span class="font-semibold text-sm">Prédicteur DMS</span>
+                </button>
+                <button id="nav-cluster"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="layers" class="w-5 h-5 text-gh-teal"></i>
+                    <span class="font-semibold text-sm">Clustering UMAP</span>
+                </button>
+
+                <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
+                    Données & Analytics
+                </div>
+                <button id="nav-twin"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="database" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <span class="font-semibold text-sm">Hospital Twin</span>
+                </button>
+                <button id="nav-heatmap"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="globe" class="w-5 h-5 text-gh-teal"></i>
+                    <span class="font-semibold text-sm">Heatmap géo</span>
+                </button>
+                <button id="nav-pivot"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="table-2" class="w-5 h-5 text-gh-success"></i>
+                    <span class="font-semibold text-sm">Tableaux croisés</span>
+                </button>
+
+                <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
+                    Gestion Batch
+                </div>
+                <button id="nav-modo"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="folders" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <span class="font-semibold text-sm">Sélection des fichiers</span>
+                    <span id="badge-files-total"
+                        class="hidden absolute right-6 bg-gh-navy text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+                </button>
+                <button id="nav-idv"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="users-2" class="w-5 h-5 text-gh-warning"></i>
+                    <span class="font-semibold text-sm">Identitovigilance</span>
+                    <span id="badge-idv-conflict"
+                        class="hidden absolute right-6 bg-gh-error text-white text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">0</span>
+                </button>
+
+                <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
+                    Exports
+                </div>
+                <button id="nav-pilot"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="file-down" class="w-5 h-5 text-gh-teal"></i>
+                    <span class="font-semibold text-sm">PMSI Pilot CSV</span>
+                </button>
+                <button id="nav-csv"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="table-2" class="w-5 h-5 text-gh-success"></i>
+                    <span class="font-semibold text-sm">Import CSV</span>
+                </button>
+                <button id="nav-structure"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="git-branch" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <span class="font-semibold text-sm">Structure</span>
+                </button>
+
+                <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
+                    Sécurité & Ops
+                </div>
+                <button id="nav-rgpd"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="fingerprint" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <span class="font-semibold text-sm">RGPD</span>
+                </button>
+                <button id="nav-audit"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="history" class="w-5 h-5 text-gh-teal"></i>
+                    <span class="font-semibold text-sm">Audit chain</span>
+                </button>
+                <button id="nav-workflow"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="workflow" class="w-5 h-5 text-gh-success"></i>
+                    <span class="font-semibold text-sm">Workflows</span>
+                </button>
+
+                <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
+                    Aide
+                </div>
+                <button id="nav-tuto"
+                    class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
+                    <i data-lucide="book-open" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <span class="font-semibold text-sm">Tutoriel</span>
+                </button>
+            </nav>
+
+            <!-- Footer · profil opérateur -->
+            <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="w-10 h-10 rounded-lg bg-gh-navy text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                        DIM
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-bold text-gh-navy dark:text-white truncate">
+                            Opérateur DIM
+                        </p>
+                        <p class="text-[10px] font-semibold text-gh-success uppercase tracking-wider mt-0.5 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-gh-success animate-ping"></span>
+                            Station active
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN · zone principale d'affichage des vues -->
+        <main class="flex-1 flex flex-col min-w-0 bg-slate-100/60 dark:bg-[#0B1120] relative overflow-hidden transition-colors duration-300">
+            <!-- Header · titre de vue + horloge + actions -->
+            <header class="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0 no-print transition-colors duration-300">
+                <div>
+                    <h2 id="view-title-main"
+                        class="text-2xl font-extrabold text-gh-navy dark:text-white tracking-tight leading-tight transition-colors duration-300">
+                        Chargement&nbsp;…
+                    </h2>
+                    <p id="view-subtitle-main"
+                        class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase mt-1 tracking-[0.18em]">
+                        Station DIM · GHT Sud Paris
+                    </p>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="flex flex-col items-end">
+                        <span id="os-clock"
+                            class="text-2xl font-bold text-gh-navy dark:text-blue-400 font-mono tracking-tight transition-colors duration-300">00:00:00</span>
+                        <span class="text-[10px] font-semibold text-gh-teal uppercase tracking-[0.2em] mt-0.5">
+                            Connecté
+                        </span>
+                    </div>
+                    <button id="btn-theme-toggle"
+                        class="p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 hover:text-gh-navy dark:hover:text-blue-400 transition active:scale-95">
+                        <i id="icon-theme" data-lucide="moon" class="w-5 h-5"></i>
+                    </button>
+                    <button id="btn-reset"
+                        class="p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 hover:text-gh-error transition active:scale-95">
+                        <i data-lucide="power" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Viewport · vues injectées par app.js -->
+            <div id="os-viewport" class="flex-1 overflow-auto p-8 custom-scroll relative bg-slate-50/50 dark:bg-transparent">
+                <!-- Vues injectées dynamiquement par app.js -->
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL : RÉCONCILIATION INTERACTIVE (PIVOT) -->
+    <div id="reconciliation-modal"
+        class="fixed inset-0 z-[8000] hidden flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 sm:p-8 animate-fade-in no-print">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-5xl w-full max-w-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 p-8 sm:p-12 text-center relative">
+            <button id="btn-close-idv-modal"
+                class="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                <i data-lucide="x" class="w-6 h-6 text-slate-400 dark:text-slate-500"></i>
+            </button>
+            <div
+                class="w-20 h-20 bg-gh-warning text-white rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-md collision-pulse">
+                <i data-lucide="alert-triangle" class="w-10 h-10"></i>
+            </div>
+            <h3 class="text-3xl sm:text-4xl font-black text-gh-navy dark:text-blue-400 uppercase tracking-tighter mb-4 italic leading-tight">
+                Conflit d'Identité Détecté
+            </h3>
+            <p class="text-slate-500 dark:text-slate-400 text-lg sm:text-xl mb-8 font-semibold italic leading-relaxed">
+                L'IPP <span id="idv-modal-ipp" class="text-gh-error font-black">00000</span> possède plusieurs dates de naissance. Quelle date est la référence canonique ?
+            </p>
+
+            <div id="idv-options-container" class="grid grid-cols-1 gap-4 mb-8">
+                <!-- Boutons générés dynamiquement par app.js -->
+            </div>
+
+            <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black italic">
+                Sentinel réinjectera cette date pivot dans l'intégralité du batch et les exports CSV.
+            </p>
+        </div>
+    </div>
+
+    <!-- TERMINAL INSPECTOR -->
+    <div id="inspector-modal"
+        class="fixed inset-0 z-[8500] hidden flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 sm:p-8 animate-fade-in no-print leading-none">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-5xl w-full max-w-screen-xl h-[85vh] flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 leading-none">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 leading-none">
+                <div class="flex items-center gap-4 leading-none italic">
+                    <div class="p-4 bg-gh-terminal text-gh-error rounded-xl shadow-md relative overflow-hidden">
+                        <i data-lucide="microscope" class="w-6 h-6 relative z-10 leading-none"></i>
+                        <div class="scanner-bar"></div>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-gh-navy dark:text-blue-400 uppercase text-2xl tracking-tighter leading-none italic mb-1"
+                            id="ins-file-name">Neural Deep-Scan</h3>
+                        <p
+                            class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 italic leading-none">
+                            <i data-lucide="shield-check" class="w-4 h-4 text-gh-teal"></i> Matrix Validation System
+                        </p>
+                    </div>
+                </div>
+                <button id="btn-close-inspector"
+                    class="w-10 h-10 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-all text-slate-400 dark:text-slate-500 leading-none">
+                    <i data-lucide="x" class="w-6 h-6 leading-none"></i>
+                </button>
+            </div>
+ 
+            <div class="flex-1 overflow-hidden flex flex-col bg-slate-950 text-blue-100/70 relative font-mono leading-none">
+                <div class="flex items-center justify-between px-6 py-3 bg-white/5 border-b border-white/5 italic">
+                    <div class="flex gap-8 leading-none">
+                        <span
+                            class="text-xs font-black text-gh-success uppercase flex items-center gap-2 leading-none italic">
+                            <i data-lucide="filter" class="w-4 h-4 leading-none"></i> Auto-Repair Logic : ON
+                        </span>
+                        <span
+                            class="text-xs font-black text-blue-400 uppercase flex items-center gap-2 leading-none italic">
+                            <i data-lucide="database" class="w-4 h-4 leading-none"></i> REFS_2018-2025_ATIH
+                        </span>
+                    </div>
+                    <span class="text-xs opacity-40 font-black tracking-widest uppercase italic leading-none"
+                        id="ins-session-id">SID_000000</span>
+                </div>
+                <div id="ins-terminal-body" class="flex-1 overflow-auto p-6 space-y-4 custom-scroll italic">
+                    <!-- Logs générés dynamiquement -->
+                </div>
+            </div>
+ 
+            <div
+                class="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-end gap-6 shrink-0 items-center no-print italic leading-none">
+                <div class="flex-1 flex gap-8 text-xs font-black uppercase text-slate-400 dark:text-slate-500">
+                    <div>Scan Lines : <span class="text-gh-navy dark:text-blue-400 font-mono" id="ins-metrics-total">0</span></div>
+                    <div>Anomalies : <span class="text-gh-error font-mono" id="ins-metrics-err">0</span></div>
+                </div>
+                <button id="btn-close-inspector-2"
+                    class="px-4 py-2 text-slate-400 dark:text-slate-500 font-bold uppercase text-[10px] tracking-widest hover:text-gh-navy dark:hover:text-blue-400 transition-all italic leading-none">
+                    Quitter
+                </button>
+                <button id="btn-export-sanitized"
+                    class="px-6 py-3 bg-gh-navy dark:bg-blue-600 text-white rounded-xl font-black uppercase text-xs tracking-wider shadow-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-all flex items-center gap-2 transform active:scale-95 leading-none">
+                    <i data-lucide="download-cloud" class="w-4 h-4 text-gh-success leading-none"></i>
+                    Exporter Flux Purifié (.txt)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="os-toast" class="fixed bottom-14 right-14 hidden animate-slide-up z-[9500] leading-none">
+        <div
+            class="glass-panel px-16 py-10 rounded-[5rem] shadow-6xl flex items-center gap-12 border-2 border-white/60 ring-2 ring-gh-navy/5 leading-none italic">
+            <div id="toast-icon-container" class="p-8 bg-gh-navy text-white rounded-[3rem] shadow-4xl leading-none">
+                <i data-lucide="zap" class="w-12 h-12"></i>
+            </div>
+            <div class="leading-none">
+                <p id="toast-title-text"
+                    class="font-black text-gh-navy uppercase text-[12px] tracking-[0.5em] leading-none mb-4 italic">
+                    Sovereign Alert</p>
+                <p id="toast-msg-text"
+                    class="text-4xl font-semibold text-slate-500 tracking-tighter leading-tight italic decoration-gh-teal decoration-8">
+                    Batch Finalisé.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/bridge-shim.js"></script>
+    <script src="js/sentinel-helpers.js"></script>
+    <script src="js/sentinel-views.js"></script>
+    <script src="js/cockpit-view.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/tuto-overlay.js"></script>
+    <script src="js/preflight-view.js"></script>
+    <script src="js/htmlpdf-view.js"></script>
+    <script src="js/dashboard-live.js"></script>
+</body>
+
+</html>
