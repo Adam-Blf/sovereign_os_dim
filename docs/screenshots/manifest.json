@@ -1,0 +1,112 @@
+[
+  {
+    "name": "01_dashboard",
+    "title": "Dashboard · vue d'ensemble",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\01_dashboard.png"
+  },
+  {
+    "name": "02_modo_files",
+    "title": "Sélection des fichiers · selection des fichiers ATIH",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\02_modo_files.png"
+  },
+  {
+    "name": "03_idv",
+    "title": "Identitovigilance · collisions IPP / DDN",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\03_idv.png"
+  },
+  {
+    "name": "04_pilot_csv",
+    "title": "PMSI Pilot CSV · exports normalises",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\04_pilot_csv.png"
+  },
+  {
+    "name": "05_csv_import",
+    "title": "Import CSV externe",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\05_csv_import.png"
+  },
+  {
+    "name": "06_structure",
+    "title": "Structure · arborescence polaire",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\06_structure.png"
+  },
+  {
+    "name": "08_cockpit",
+    "title": "Cockpit chef DIM · tableau executif",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\08_cockpit.png"
+  },
+  {
+    "name": "09_health",
+    "title": "Health monitor · supervision technique",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\09_health.png"
+  },
+  {
+    "name": "10_ars",
+    "title": "Sentinel ARS · predicteur de rejet",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\10_ars.png"
+  },
+  {
+    "name": "11_cespa",
+    "title": "CeSPA / CATTG · conformite reforme 2025",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\11_cespa.png"
+  },
+  {
+    "name": "12_diff",
+    "title": "Diff lots mensuels · anti-regression",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\12_diff.png"
+  },
+  {
+    "name": "13_cim",
+    "title": "CimSuggester · LLM Ollama local",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\13_cim.png"
+  },
+  {
+    "name": "14_lstm",
+    "title": "Predicteur DMS · LSTM par groupe CIM-10",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\14_lstm.png"
+  },
+  {
+    "name": "15_cluster",
+    "title": "Clustering UMAP · 6 archetypes patients",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\15_cluster.png"
+  },
+  {
+    "name": "16_twin",
+    "title": "Hospital Twin · simulation DFA",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\16_twin.png"
+  },
+  {
+    "name": "17_heatmap",
+    "title": "Heatmap geographique · sectorisation",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\17_heatmap.png"
+  },
+  {
+    "name": "18_pivot",
+    "title": "Tableaux croises ad hoc",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\18_pivot.png"
+  },
+  {
+    "name": "19_rgpd",
+    "title": "RGPD command center · DPO panel",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\19_rgpd.png"
+  },
+  {
+    "name": "20_audit",
+    "title": "Audit chain · tracabilite SHA-256",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\20_audit.png"
+  },
+  {
+    "name": "21_workflow",
+    "title": "Workflows DIM · TIM > MIM > ARS",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\21_workflow.png"
+  },
+  {
+    "name": "07_structure_activity",
+    "title": "Analyse d'activite par UM",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\07_structure_activity.png"
+  },
+  {
+    "name": "08_tuto",
+    "title": "Tutoriel integre",
+    "path": "C:\\Users\\adamb\\sovereign_os_dim\\docs\\screenshots\\08_tuto.png"
+  }
+]
