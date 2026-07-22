@@ -32,6 +32,9 @@ VERSION_FILE = ROOT / "VERSION"
 # Fichiers à patcher et pattern à remplacer.
 # Le pattern est une regex qui capture le token de version existant.
 # Tous les sites référencent la forme "V##.#" OU "V##" (boot screen sans .0).
+# Templates disponibles dans replacement_template : {v} = "V37.3",
+# {vshort} = "V37", {vnum} = "37.3" (sans le prefixe V, pour les sites qui
+# suivent la convention semver nue comme API_VERSION ou pyproject.toml).
 TARGETS = [
     # (chemin_relatif, regex_pattern, replacement_template)
     # Le template utilise {v} pour la version complète (V35.0)
@@ -60,6 +63,12 @@ TARGETS = [
     ("frontend/js/app.js", r"SOVEREIGN OS V\d+\.\d+", "SOVEREIGN OS {v}"),
     ("frontend/js/app.js", r"Sentinel V\d+\.\d+", "Sentinel {v}"),
     ("frontend/js/app.js", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
+    # Dossier DSI - oublie lors des bumps precedents, cause de drift
+    ("docs/documentation_securite_dsi.md", r"Sovereign OS DIM \(V\d+\.\d+\)", "Sovereign OS DIM ({v})"),
+    # API_VERSION expose via get_health() - oublie lors des bumps precedents
+    ("backend/interfaces/_sentinel.py", r'API_VERSION = "\d+\.\d+"', 'API_VERSION = "{vnum}"'),
+    # pyproject.toml - jusque-la bumpe a la main, oublie une fois par le passe
+    ("pyproject.toml", r'version = "\d+\.\d+\.0"', 'version = "{vnum}.0"'),
 ]
 
 
@@ -109,12 +118,13 @@ def sync(new_version: str | None = None, check: bool = False) -> int:
         VERSION_FILE.write_text(new_version + "\n", encoding="utf-8", newline="\n")
     version = read_version()
     vshort = short_version(version)
+    vnum = version[1:] if version.startswith("V") else version  # "V37.3" -> "37.3"
 
     total_changes = 0
     desynced_files = []
     for rel, pattern, repl in TARGETS:
         path = ROOT / rel
-        rendered = repl.replace("{v}", version).replace("{vshort}", vshort)
+        rendered = repl.replace("{v}", version).replace("{vshort}", vshort).replace("{vnum}", vnum)
         n, _ = patch_file(path, pattern, rendered, dry_run=check)
         if n > 0:
             if check:

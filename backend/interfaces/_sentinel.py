@@ -24,8 +24,8 @@ from backend.quality import audit, workflow
 _BOOT_TS = time.time()
 OPERATOR = os.environ.get("SOVEREIGN_OPERATOR", "DIM_OPERATOR")
 OLLAMA_BASE = os.environ.get("OLLAMA_BASE", "")
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2:8b")
-API_VERSION = "37.2"
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "sovereign-cim")
+API_VERSION = "37.3"
 
 
 def _ml_models_loaded() -> dict[str, bool]:

@@ -1,7 +1,7 @@
 # Dossier de Présentation Fonctionnelle et Technique
 ### Conformité SI et Sécurité Informatique - Station PMSI
-**Projet :** Sovereign OS DIM (V37.2)  
-**Date :** 24 avril 2026  
+**Projet :** Sovereign OS DIM (V37.3)  
+**Date :** synchronisée automatiquement avec la version du projet (`scripts/sync_version.py`)  
 **Émetteur :** Apprenti Ingénieur PMSI, Département de l'Information Médicale (DIM)  
 **Destinataires :** Direction des Systèmes d'Information (DSI), Département de l'Information Médicale (DIM), Direction des Ressources Numériques (DSN)  
 **Établissement :** GHT Psy Sud Paris (GH Paul Guiraud / Fondation Vallée / EPS Erasme)  
