@@ -3,6 +3,8 @@
 # ==============================================================================
 #  Application desktop 100% locale : aucun serveur HTTP, aucune socket.
 #  Le frontend parle a Python via le pont in-process de pywebview.
+#  Voir requirements-train.txt pour les dependances d'entrainement LoRA du
+#  CimSuggester (torch/transformers/peft) - jamais installees ici, dev-only.
 # ==============================================================================
 
 # Core - Fenetre native desktop avec frontend web
