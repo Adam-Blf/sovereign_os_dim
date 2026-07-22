@@ -57,7 +57,7 @@
               <i data-lucide="${c.ok ? "check" : "minus"}" style="width:14px;height:14px;"></i>
             </span>
             <span style="flex:1;font-size:13px;font-weight:600;color:var(--text-body-color);">${c.label}</span>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;
+            <span style="font-family:'Consolas',monospace;font-size:11px;
                 color:var(--text-muted-color);font-weight:600;">${c.value}</span>
           </div>`).join("") }));
   }
@@ -110,7 +110,7 @@
           return `<div style="display:grid;grid-template-columns:100px 1fr auto;
               gap:14px;align-items:center;padding:10px 0;
               ${i < d.rules.length - 1 ? `border-bottom:1px solid var(--border-item);` : ""}">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;
+            <span style="font-family:'Consolas',monospace;font-size:11px;
                 font-weight:700;color:var(--text-primary);">${rule.code}</span>
             <span style="font-size:12px;color:var(--text-secondary);">${rule.label}</span>
             ${statusPill(`${rule.ok}/${rule.total}`, color)}
@@ -155,10 +155,10 @@
                 text-transform:uppercase;">État</th>
           </tr></thead><tbody>
           ${rows.map(row => `<tr style="border-top:1px solid var(--border-item);">
-            <td style="padding:10px 14px;font-family:'Urbanist';
+            <td style="padding:10px 14px;font-family:'Montserrat';
                 font-weight:600;color:var(--text-body-color);">${row.indicator}</td>
             <td style="padding:10px 14px;text-align:right;
-                font-family:'JetBrains Mono',monospace;font-weight:700;
+                font-family:'Consolas',monospace;font-weight:700;
                 color:var(--text-primary);">${row.current.toLocaleString("fr-FR")}</td>
             <td style="padding:10px 14px;">${statusPill("Nouveau", TEAL)}</td>
           </tr>`).join("")}</tbody></table>` }));
@@ -261,9 +261,9 @@
                 <div style="width:${s.confidence * 100}%;height:100%;background:${TEAL};"></div>
               </div>
             </div>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:18px;
+            <span style="font-family:'Consolas',monospace;font-size:18px;
                 font-weight:800;color:${SUCCESS};">+ ${fr(s.impact_eur)} €</span>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;
+            <span style="font-family:'Consolas',monospace;font-size:11px;
                 color:var(--text-muted-color);">conf. ${(s.confidence * 100).toFixed(0)} %</span>
           </div>`).join("") }));
   }
@@ -300,7 +300,7 @@
             <div style="background:${colorOf(s.intensity)}22;
                 border:2px solid ${colorOf(s.intensity)};border-radius:12px;
                 padding:18px 14px;">
-              <div style="font-family:'JetBrains Mono',monospace;font-size:14px;
+              <div style="font-family:'Consolas',monospace;font-size:14px;
                   font-weight:800;color:var(--text-primary);">${s.code}</div>
               <div style="font-size:24px;font-weight:800;
                   color:${colorOf(s.intensity)};margin-top:4px;
@@ -401,7 +401,7 @@
         ].map((r, i) => `
           <div style="display:flex;gap:14px;padding:10px 0;
               ${i < 3 ? `border-bottom:1px solid var(--border-item);` : ""}">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;
+            <span style="font-family:'Consolas',monospace;font-size:11px;
                 font-weight:800;color:${TEAL};min-width:90px;">${r[0]}</span>
             <span style="font-size:12px;color:var(--text-secondary);flex:1;">${r[1]}</span>
           </div>`).join("")}` }));
@@ -436,16 +436,16 @@
               ${i < events.length - 1 ? `border-bottom:1px solid var(--border-item);` : ""}
               display:grid;grid-template-columns:180px 120px 200px 1fr 80px;
               gap:14px;align-items:center;">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;
+            <span style="font-family:'Consolas',monospace;font-size:11px;
                 color:var(--text-muted-color);">${e.ts.slice(0, 19).replace("T", " ")}</span>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;
+            <span style="font-family:'Consolas',monospace;font-size:11px;
                 font-weight:700;color:var(--text-primary);">${e.who}</span>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;
+            <span style="font-family:'Consolas',monospace;font-size:11px;
                 font-weight:700;color:${TEAL};">${e.action}</span>
             <span style="font-size:12px;color:var(--text-secondary);
                 overflow:hidden;text-overflow:ellipsis;
                 white-space:nowrap;">${e.target || "-"}</span>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;
+            <span style="font-family:'Consolas',monospace;font-size:9px;
                 color:var(--text-muted-color);">${e.sha256.slice(0, 8)}…</span>
           </div>`).join("") }));
   }
@@ -491,10 +491,10 @@
           <div style="display:grid;grid-template-columns:120px 1fr 110px 90px;
               gap:14px;align-items:center;padding:12px 0;
               ${i < items.length - 1 ? `border-bottom:1px solid var(--border-item);` : ""}">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:13px;
+            <span style="font-family:'Consolas',monospace;font-size:13px;
                 font-weight:700;color:var(--text-primary);">${it.ipp}</span>
             <span style="font-size:13px;color:var(--text-body-color);">${it.label}</span>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;
+            <span style="font-family:'Consolas',monospace;font-size:11px;
                 color:var(--text-muted-color);">${it.owner}</span>
             ${statusPill(it.stage, TEAL)}
           </div>`).join("");

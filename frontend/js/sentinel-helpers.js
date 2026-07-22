@@ -104,7 +104,7 @@
     const c = FMT_KIND[kind] || FMT_KIND.TRANS;
     return `<span style="display:inline-flex;align-items:center;gap:5px;
         padding:3px 9px;border-radius:999px;background:${c.bg};color:${c.fg};
-        font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+        font-family:'Consolas',monospace;font-size:10px;font-weight:700;
         letter-spacing:0.02em;">
       <span style="width:5px;height:5px;border-radius:999px;background:${c.fg};"></span>${label}
     </span>`;

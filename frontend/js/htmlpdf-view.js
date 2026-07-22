@@ -36,10 +36,10 @@
       <div style="position:fixed; z-index:9999; top:50%; left:50%; transform:translate(-50%,-50%);
                   width:min(640px,92vw); background:#F8FAFC; color:#0F172A;
                   border-radius:24px; box-shadow:0 20px 60px rgba(0,0,0,.4);
-                  font-family:'Urbanist',sans-serif; overflow:hidden;">
+                  font-family:'Montserrat',sans-serif; overflow:hidden;">
         <header style="padding:1.5rem 2rem;
                        background:linear-gradient(135deg,#7C3AED 0%,#EC4899 100%); color:#fff;">
-          <div style="font-family:'JetBrains Mono',monospace; font-size:10px;
+          <div style="font-family:'Consolas',monospace; font-size:10px;
                       letter-spacing:0.4em; text-transform:uppercase; opacity:0.8;">HTML → PDF</div>
           <h2 style="font-size:1.5rem; font-weight:900; font-style:italic; letter-spacing:-0.02em;
                      text-transform:uppercase; margin:0.25rem 0 0;">Conversion dashboard</h2>
@@ -61,13 +61,13 @@
             Paysage + nettoyage dashboard (recommandé pour BIQuery, Looker Studio)
           </label>
           <div id="htmlpdf-status" style="margin-top:1rem; min-height:24px; font-size:13px;
-                                          font-family:'JetBrains Mono',monospace;"></div>
+                                          font-family:'Consolas',monospace;"></div>
         </div>
         <footer style="padding:1rem 2rem; background:#F1F5F9; display:flex;
                        justify-content:flex-end; gap:0.75rem;">
           <button id="htmlpdf-close" style="border:0; background:#CBD5E1; color:#0F172A;
                  padding:0.5rem 1.2rem; border-radius:999px; cursor:pointer;
-                 font-family:'JetBrains Mono',monospace; letter-spacing:0.1em;">FERMER</button>
+                 font-family:'Consolas',monospace; letter-spacing:0.1em;">FERMER</button>
         </footer>
       </div>
     `;

@@ -93,9 +93,9 @@
         position:fixed; z-index:9999; top:50%; left:50%; transform:translate(-50%,-50%);
         width:min(560px, 92vw); max-height:80vh; overflow:auto;
         background:#ffffff; color:#0F172A; border-radius:24px;
-        box-shadow:0 20px 60px rgba(0,0,0,0.4); padding:2.5rem; font-family:'Urbanist',sans-serif;
+        box-shadow:0 20px 60px rgba(0,0,0,0.4); padding:2.5rem; font-family:'Montserrat',sans-serif;
         border:1px solid #E2E8F0;">
-        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.3em;
+        <div style="font-family:'Consolas',monospace; font-size:10px; letter-spacing:0.3em;
                     color:#0c7db6; text-transform:uppercase; margin-bottom:0.5rem;">Aide contextuelle</div>
         <h2 style="font-size:1.75rem; font-weight:900; font-style:italic; letter-spacing:-0.02em;
                    text-transform:uppercase; margin:0 0 1.25rem; color:#253e80;">${t.title}</h2>
@@ -107,7 +107,7 @@
           <span>F1 ou ? pour rouvrir · Esc pour fermer</span>
           <button id="tuto-close" style="border:0; background:#253e80; color:#fff; padding:0.5rem 1rem;
                                           border-radius:999px; cursor:pointer;
-                                          font-family:'JetBrains Mono',monospace; letter-spacing:0.1em;">FERMER</button>
+                                          font-family:'Consolas',monospace; letter-spacing:0.1em;">FERMER</button>
         </div>
       </div>
       <div id="tuto-backdrop" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998;"></div>
@@ -140,7 +140,7 @@
       position:fixed; z-index:9997; right:24px; bottom:24px; width:52px; height:52px;
       border-radius:50%; border:0; cursor:pointer;
       background:linear-gradient(135deg, #253e80 0%, #0c7db6 100%); color:white;
-      font-family:'Urbanist',sans-serif; font-size:24px; font-weight:800;
+      font-family:'Montserrat',sans-serif; font-size:24px; font-weight:800;
       box-shadow:0 8px 20px rgba(0,0,138,0.35); transition:transform 0.2s;
     `;
     btn.addEventListener("mouseenter", () => btn.style.transform = "scale(1.1)");

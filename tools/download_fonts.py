@@ -1,44 +1,48 @@
+"""Télécharge les polices Montserrat utilisées par le projet.
+
+Deux destinations :
+- tools/fonts/     : variantes R/B/I/BI pour les générateurs PDF (fpdf2)
+- frontend/fonts/  : graisses 400-900 auto-hébergées par l'interface
+  (aucun CDN : le frontend doit fonctionner 100% hors-ligne)
+
+Source : depot officiel JulietaUla/Montserrat (licence OFL).
+Idempotent : les fichiers déjà présents ne sont pas retéléchargés.
+"""
+
 import os
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FONT_DIR = os.path.join(HERE, "fonts")
-os.makedirs(FONT_DIR, exist_ok=True)
+BASE = "https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf"
 
-# Plus Jakarta Sans de tokotype/PlusJakartaSans (master)
-# JetBrains Mono de JetBrains/JetBrainsMono (master ou main)
-FONTS = {
-    "PlusJakartaSans-Regular.ttf": "https://github.com/tokotype/PlusJakartaSans/raw/master/fonts/ttf/PlusJakartaSans-Regular.ttf",
-    "PlusJakartaSans-Bold.ttf": "https://github.com/tokotype/PlusJakartaSans/raw/master/fonts/ttf/PlusJakartaSans-Bold.ttf",
-    "PlusJakartaSans-Italic.ttf": "https://github.com/tokotype/PlusJakartaSans/raw/master/fonts/ttf/PlusJakartaSans-Italic.ttf",
-    "PlusJakartaSans-BoldItalic.ttf": "https://github.com/tokotype/PlusJakartaSans/raw/master/fonts/ttf/PlusJakartaSans-BoldItalic.ttf",
-    "JetBrainsMono-Regular.ttf": "https://github.com/JetBrains/JetBrainsMono/raw/master/fonts/ttf/JetBrainsMono-Regular.ttf",
-    "JetBrainsMono-Bold.ttf": "https://github.com/JetBrains/JetBrainsMono/raw/master/fonts/ttf/JetBrainsMono-Bold.ttf",
-    "JetBrainsMono-Italic.ttf": "https://github.com/JetBrains/JetBrainsMono/raw/master/fonts/ttf/JetBrainsMono-Italic.ttf",
-    "JetBrainsMono-BoldItalic.ttf": "https://github.com/JetBrains/JetBrainsMono/raw/master/fonts/ttf/JetBrainsMono-BoldItalic.ttf",
-    # Montserrat de JulietaUla/Montserrat (OFL), variantes statiques
-    "Montserrat-Regular.ttf": "https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/Montserrat-Regular.ttf",
-    "Montserrat-Bold.ttf": "https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/Montserrat-Bold.ttf",
-    "Montserrat-Italic.ttf": "https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/Montserrat-Italic.ttf",
-    "Montserrat-BoldItalic.ttf": "https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/Montserrat-BoldItalic.ttf",
+TARGETS = {
+    os.path.join(HERE, "fonts"): [
+        "Montserrat-Regular.ttf",
+        "Montserrat-Bold.ttf",
+        "Montserrat-Italic.ttf",
+        "Montserrat-BoldItalic.ttf",
+    ],
+    os.path.join(HERE, "..", "frontend", "fonts"): [
+        "Montserrat-Regular.ttf",
+        "Montserrat-Medium.ttf",
+        "Montserrat-SemiBold.ttf",
+        "Montserrat-Bold.ttf",
+        "Montserrat-ExtraBold.ttf",
+        "Montserrat-Black.ttf",
+    ],
 }
 
-for name, url in FONTS.items():
-    dest = os.path.join(FONT_DIR, name)
-    if os.path.exists(dest):
-        print(f"[OK] {name} déjà présent.")
-        continue
-    print(f"Téléchargement de {name} depuis {url}...")
-    try:
-        urllib.request.urlretrieve(url, dest)
-        print(f"[OK] {name} téléchargé.")
-    except Exception as e:
-        print(f"[ERREUR] Tentative master échouée pour {name}: {e}")
-        # fallback sur la branche main si master échoue
-        fallback_url = url.replace("/master/", "/main/")
-        print(f"Tentative de téléchargement depuis {fallback_url}...")
+for font_dir, names in TARGETS.items():
+    os.makedirs(font_dir, exist_ok=True)
+    for name in names:
+        dest = os.path.join(font_dir, name)
+        if os.path.exists(dest):
+            print(f"[OK] {name} déjà présent dans {os.path.relpath(font_dir, HERE)}.")
+            continue
+        url = f"{BASE}/{name}"
+        print(f"Téléchargement de {name}...")
         try:
-            urllib.request.urlretrieve(fallback_url, dest)
-            print(f"[OK] {name} téléchargé (branche main).")
-        except Exception as e2:
-            print(f"[ERREUR COMPLÈTE] Impossible de télécharger {name}: {e2}")
+            urllib.request.urlretrieve(url, dest)  # nosec B310 - URL https fixe
+            print(f"[OK] {name} téléchargé.")
+        except OSError as e:
+            print(f"[ERREUR] {name} : {e}")

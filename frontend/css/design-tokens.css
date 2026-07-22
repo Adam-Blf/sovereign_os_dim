@@ -35,8 +35,8 @@
   --terminal:     #020617;
 
   /* ── Typographie · 7 niveaux fixes, jamais de tailles ad-hoc ── */
-  --font-sans:    "Urbanist", "Inter", system-ui, sans-serif;
-  --font-mono:    "JetBrains Mono", "Consolas", monospace;
+  --font-sans:    "Montserrat", system-ui, sans-serif;
+  --font-mono:    "Consolas", monospace;
   --text-display: 2.5rem;    /* 40px · titres de page principaux */
   --text-h1:      1.875rem;  /* 30px · titres de section */
   --text-h2:      1.5rem;    /* 24px · sous-titres */

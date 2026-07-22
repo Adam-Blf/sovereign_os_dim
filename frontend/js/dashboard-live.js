@@ -59,12 +59,12 @@
       <div style="position:fixed; z-index:9999; top:5vh; left:5vw; width:90vw; height:90vh;
                   background:#F8FAFC; color:#0F172A; border-radius:24px;
                   box-shadow:0 20px 60px rgba(0,0,0,.4); display:flex; flex-direction:column;
-                  overflow:hidden; font-family:'Urbanist',sans-serif;">
+                  overflow:hidden; font-family:'Montserrat',sans-serif;">
         <header style="padding:1.5rem 2rem;
                        background:linear-gradient(135deg,#F59E0B 0%,#F97316 100%); color:#fff;
                        display:flex; justify-content:space-between; align-items:center;">
           <div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:10px;
+            <div style="font-family:'Consolas',monospace; font-size:10px;
                         letter-spacing:0.4em; text-transform:uppercase; opacity:0.8;">Live Stats</div>
             <h2 style="font-size:1.75rem; font-weight:900; font-style:italic; letter-spacing:-0.02em;
                        text-transform:uppercase; margin:0.25rem 0 0;">Dashboard · Analytics</h2>
@@ -72,10 +72,10 @@
           <div style="display:flex; gap:0.75rem;">
             <button id="dashlive-refresh" style="border:0; background:rgba(255,255,255,0.25); color:#fff;
                    padding:0.5rem 1.2rem; border-radius:999px; cursor:pointer;
-                   font-family:'JetBrains Mono',monospace; letter-spacing:0.1em;">RAFRAÎCHIR</button>
+                   font-family:'Consolas',monospace; letter-spacing:0.1em;">RAFRAÎCHIR</button>
             <button id="dashlive-close" style="border:0; background:rgba(255,255,255,0.2); color:#fff;
                    padding:0.5rem 1.2rem; border-radius:999px; cursor:pointer;
-                   font-family:'JetBrains Mono',monospace; letter-spacing:0.1em;">FERMER</button>
+                   font-family:'Consolas',monospace; letter-spacing:0.1em;">FERMER</button>
           </div>
         </header>
         <div id="dashlive-kpis" style="padding:1rem 2rem; background:#ffffff;
@@ -101,7 +101,7 @@
           <div class="dashlive-card">
             <h3 style="margin:0 0 1rem; font-size:13px; text-transform:uppercase; letter-spacing:0.1em; color:#475569;">
               Top 10 IPP · nombre d'observations</h3>
-            <div id="dashlive-top-ipp" style="font-family:'JetBrains Mono',monospace; font-size:12px;"></div>
+            <div id="dashlive-top-ipp" style="font-family:'Consolas',monospace; font-size:12px;"></div>
           </div>
         </div>
       </div>

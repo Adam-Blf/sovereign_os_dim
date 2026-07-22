@@ -61,12 +61,12 @@
       <div style="position:fixed; z-index:9999; top:5vh; left:5vw; width:90vw; height:90vh;
                   background:#F8FAFC; color:#0F172A; border-radius:24px;
                   box-shadow:0 20px 60px rgba(0,0,0,.4); display:flex; flex-direction:column;
-                  overflow:hidden; font-family:'Urbanist',sans-serif;">
+                  overflow:hidden; font-family:'Montserrat',sans-serif;">
         <header style="padding:1.5rem 2rem; border-bottom:1px solid #E2E8F0;
                        display:flex; justify-content:space-between; align-items:center;
                        background:linear-gradient(135deg,#253e80 0%,#0c7db6 100%); color:#fff;">
           <div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:10px;
+            <div style="font-family:'Consolas',monospace; font-size:10px;
                         letter-spacing:0.4em; text-transform:uppercase; opacity:0.7;">Preflight</div>
             <h2 style="font-size:1.75rem; font-weight:900; font-style:italic; letter-spacing:-0.02em;
                        text-transform:uppercase; margin:0.25rem 0 0;">DRUIDES · Findings</h2>
@@ -74,11 +74,11 @@
           <div style="display:flex; gap:0.75rem;">
             <button id="preflight-run" style="border:0; background:#10B981; color:#fff;
                    padding:0.6rem 1.2rem; border-radius:999px; cursor:pointer;
-                   font-family:'JetBrains Mono',monospace; letter-spacing:0.1em; font-weight:700;">
+                   font-family:'Consolas',monospace; letter-spacing:0.1em; font-weight:700;">
               LANCER</button>
             <button id="preflight-close" style="border:0; background:rgba(255,255,255,0.2); color:#fff;
                    padding:0.6rem 1.2rem; border-radius:999px; cursor:pointer;
-                   font-family:'JetBrains Mono',monospace; letter-spacing:0.1em;">FERMER</button>
+                   font-family:'Consolas',monospace; letter-spacing:0.1em;">FERMER</button>
           </div>
         </header>
         <div id="preflight-filters" style="padding:1rem 2rem; border-bottom:1px solid #E2E8F0;
@@ -110,7 +110,7 @@
       const s = SEV_STYLE[sev];
       return `<button data-sev="${sev}" style="
         border:0; padding:0.4rem 0.9rem; border-radius:999px; cursor:pointer;
-        font-family:'JetBrains Mono',monospace; letter-spacing:0.1em; font-size:11px; font-weight:700;
+        font-family:'Consolas',monospace; letter-spacing:0.1em; font-size:11px; font-weight:700;
         background:${active ? s.bg : '#E2E8F0'}; color:${active ? s.fg : '#475569'};
         opacity:${counts[sev] === 0 ? 0.4 : 1}; transition:all .15s;">
         ${s.label} · ${counts[sev] || 0}</button>`;
@@ -122,7 +122,7 @@
       ${chip('Warning', state.filter === 'Warning')}
       ${chip('Info', state.filter === 'Info')}
       <button data-sev="" style="border:0; padding:0.4rem 0.9rem; border-radius:999px; cursor:pointer;
-              font-family:'JetBrains Mono',monospace; letter-spacing:0.1em; font-size:11px;
+              font-family:'Consolas',monospace; letter-spacing:0.1em; font-size:11px;
               background:${state.filter === null ? '#253e80' : '#E2E8F0'};
               color:${state.filter === null ? '#fff' : '#475569'};">TOUT · ${state.findings.length}</button>
       <input id="preflight-search" placeholder="Filtre code/message..." value="${escapeHtml(state.search)}"
@@ -150,7 +150,7 @@
 
     if (filtered.length === 0) {
       grid.innerHTML = `<div style="padding:3rem; text-align:center; color:#64748B;
-                             font-family:'JetBrains Mono',monospace;">
+                             font-family:'Consolas',monospace;">
         ${state.findings.length === 0
           ? 'Cliquer sur LANCER pour exécuter le preflight · nécessite un scan préalable.'
           : 'Aucun finding correspond aux filtres.'}
@@ -174,14 +174,14 @@
           return `<tr style="border-bottom:1px solid #E2E8F0;">
             <td style="padding:0.5rem 0.8rem;">
               <span style="background:${s.bg}; color:${s.fg}; padding:2px 8px;
-                           border-radius:4px; font-size:10px; font-family:'JetBrains Mono',monospace;
+                           border-radius:4px; font-size:10px; font-family:'Consolas',monospace;
                            letter-spacing:0.1em;">${s.label}</span></td>
-            <td style="padding:0.5rem 0.8rem; font-family:'JetBrains Mono',monospace; font-size:12px;">
+            <td style="padding:0.5rem 0.8rem; font-family:'Consolas',monospace; font-size:12px;">
               ${escapeHtml(f.Code || '')}</td>
             <td style="padding:0.5rem 0.8rem;">${escapeHtml(f.Message || '')}
               ${f.FixHint ? `<div style="font-size:11px; color:#64748B; margin-top:2px;">
                 💡 ${escapeHtml(f.FixHint)}</div>` : ''}</td>
-            <td style="padding:0.5rem 0.8rem; font-family:'JetBrains Mono',monospace;
+            <td style="padding:0.5rem 0.8rem; font-family:'Consolas',monospace;
                        font-size:11px; color:#64748B;" title="${escapeHtml(f.SourceFile || '')}">
               ${escapeHtml(fname)}</td>
             <td style="padding:0.5rem 0.8rem; text-align:right; color:#64748B;">

@@ -129,7 +129,7 @@
               background:${isLast ? NAVY : TEAL};border-radius:4px 4px 0 0;
               opacity:${isLast ? 1 : 0.55};"></div>
           <span style="font-size:10px;color:${slate[500]};
-              font-weight:600;font-family:'JetBrains Mono',monospace;">
+              font-weight:600;font-family:'Consolas',monospace;">
             M-${months.length - i - 1}
           </span>
         </div>`;
@@ -144,9 +144,9 @@
         ${last ? "" : `border-bottom:1px solid ${slate[100]};`}">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:12px;font-weight:700;color:${slate[800]};
-            font-family:'JetBrains Mono',monospace;">Secteur ${a.sector}</span>
+            font-family:'Consolas',monospace;">Secteur ${a.sector}</span>
         <span style="font-size:13px;font-weight:800;color:${color};
-            font-family:'JetBrains Mono',monospace;">${sign}${Math.abs(a.delta_pct).toFixed(1)} %</span>
+            font-family:'Consolas',monospace;">${sign}${Math.abs(a.delta_pct).toFixed(1)} %</span>
       </div>
       <div style="font-size:11px;color:${slate[500]};margin-top:2px;">${a.label}</div>
     </div>`;

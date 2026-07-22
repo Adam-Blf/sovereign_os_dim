@@ -358,7 +358,7 @@
 .terminal {
     background: #020617;
     color: #94A3B8;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Consolas', monospace;
     border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -555,7 +555,7 @@ kbd {
     display: inline-block;
     padding: 2px 6px;
     font-size: 10px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Consolas', monospace;
     background: #F1F5F9;
     border: 1px solid #E2E8F0;
     border-radius: 4px;
@@ -569,7 +569,7 @@ kbd {
     width: 100%;
     border-collapse: collapse;
     font-size: 11px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Consolas', monospace;
 }
 
 .csv-table th {
@@ -827,7 +827,7 @@ kbd {
 }
 
 .org-code {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Consolas', monospace;
     font-weight: 800;
     font-size: 12px;
     color: #253e80;
@@ -890,7 +890,7 @@ kbd {
 
 /* Badge type de secteur ARS (G/I/D/P/Z) - petit pill coloré à droite du code */
 .org-sector-badge {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Consolas', monospace;
     font-size: 9px;
     font-weight: 900;
     padding: 2px 6px;
