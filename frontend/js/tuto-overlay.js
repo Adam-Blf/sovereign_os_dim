@@ -1,8 +1,8 @@
 /*
- * tuto-overlay.js · contextual help modal per view.
+ * tuto-overlay.js - contextual help modal per view.
  * Injects a floating "?" button in the top-right of the page.
  * Clicking it opens a tuto card whose content matches the current view.
- * Keyboard shortcut · F1 ou "?"
+ * Keyboard shortcut - F1 ou "?"
  */
 (function () {
   if (window.__tutoOverlayLoaded) return;
@@ -12,31 +12,31 @@
     dashboard: {
       title: "Tableau de bord",
       steps: [
-        "Vue d'ensemble · nombre de fichiers chargés, lignes traitées, IPP uniques, collisions détectées.",
-        "Graphiques Chart.js · répartition par format ATIH + par champ PMSI.",
-        "Raccourcis · Ctrl+2 = Sélection des fichiers · Ctrl+3 = Identitovigilance · Ctrl+4 = PMSI Pilot.",
+        "Vue d'ensemble - nombre de fichiers chargés, lignes traitées, IPP uniques, collisions détectées.",
+        "Graphiques Chart.js - répartition par format ATIH + par champ PMSI.",
+        "Raccourcis - Ctrl+2 = Sélection des fichiers - Ctrl+3 = Identitovigilance - Ctrl+4 = PMSI Pilot.",
       ],
     },
     modo: {
-      title: "Sélection des fichiers · Ingestion",
+      title: "Sélection des fichiers - Ingestion",
       steps: [
-        "1. Cliquer sur « Sélectionner un dossier » · ouvrir un dossier PMSI (sous l'espace de travail).",
+        "1. Cliquer sur « Sélectionner un dossier » - ouvrir un dossier PMSI (sous l'espace de travail).",
         "2. Le scan récursif identifie RPS, RAA, FICHSUP-PSY, VID-HOSP, FICUM-PSY, etc.",
         "3. « Scanner & Traiter » lance le parsing parallèle + construit le MPI.",
         "4. Les logs temps réel remontent via /api/logs.",
       ],
     },
     idv: {
-      title: "Identitovigilance · MPI",
+      title: "Identitovigilance - MPI",
       steps: [
         "Un IPP associé à plusieurs DDN = collision.",
-        "Auto-résolution · la DDN la plus fréquente devient pivot. Cliquer « Auto-résoudre ».",
-        "Résolution manuelle · sélectionner la bonne DDN dans la colonne « options ».",
+        "Auto-résolution - la DDN la plus fréquente devient pivot. Cliquer « Auto-résoudre ».",
+        "Résolution manuelle - sélectionner la bonne DDN dans la colonne « options ».",
         "La DDN pivot est injectée dans l'export CSV et la purification .txt.",
       ],
     },
     pilot: {
-      title: "PMSI Pilot · Export CSV",
+      title: "PMSI Pilot - Export CSV",
       steps: [
         "Export du MPI avec DDN pivot injectée, colonnes IPP / DDN_PIVOT / DDN_OBSERVATIONS / SOURCE_FILES.",
         "Séparateur `;` par défaut, compatible Excel FR.",
@@ -47,7 +47,7 @@
     csv: {
       title: "Import CSV/Excel",
       steps: [
-        "Drop d'un .csv ou .xlsx · prévisualisation 100 premières lignes.",
+        "Drop d'un .csv ou .xlsx - prévisualisation 100 premières lignes.",
         "Détection auto du séparateur CSV (;, tab, pipe).",
         "Pour .xlsx, tous les feuillets sont listés avec nombre de lignes/colonnes.",
       ],
@@ -56,24 +56,24 @@
       title: "Structure hospitalière",
       steps: [
         "Charger un fichier de structure CSV/TSV (LEVEL;CODE;PARENT;LABEL).",
-        "Arbre expand/collapse · type ARS détecté automatiquement (G/I/D/P/Z).",
-        "Propagation du type aux UM enfants · héritage secteur visible en couleur.",
+        "Arbre expand/collapse - type ARS détecté automatiquement (G/I/D/P/Z).",
+        "Propagation du type aux UM enfants - héritage secteur visible en couleur.",
       ],
     },
     preflight: {
       title: "Preflight DRUIDES",
       steps: [
-        "Lance 13 validateurs sur les fichiers scannés · FINESS, DDN, chaînage VID-HOSP, NIR, FicUM, FICHSUP, séquences RPS, mode légal, DP, sectorisation, doublons, année.",
+        "Lance 13 validateurs sur les fichiers scannés - FINESS, DDN, chaînage VID-HOSP, NIR, FicUM, FICHSUP, séquences RPS, mode légal, DP, sectorisation, doublons, année.",
         "Les findings sont triés par sévérité (Blocker > Error > Warning > Info).",
         "Chaque finding renvoie code, ligne, format, hint de correction.",
-        "Objectif · zéro erreur DRUIDES avant upload e-PMSI.",
+        "Objectif - zéro erreur DRUIDES avant upload e-PMSI.",
       ],
     },
     tuto: {
       title: "Tutoriel complet",
       steps: [
         "Vue dédiée avec le guide opérationnel long.",
-        "Pour générer un PDF imprimable · appel `api.open_manual()` puis `api.html_to_pdf(path)`.",
+        "Pour générer un PDF imprimable - appel `api.open_manual()` puis `api.html_to_pdf(path)`.",
       ],
     },
   };
@@ -104,7 +104,7 @@
         </ol>
         <div style="margin-top:1.5rem; display:flex; justify-content:space-between; align-items:center;
                     font-size:0.75rem; color:#64748B;">
-          <span>F1 ou ? pour rouvrir · Esc pour fermer</span>
+          <span>F1 ou ? pour rouvrir - Esc pour fermer</span>
           <button id="tuto-close" style="border:0; background:#253e80; color:#fff; padding:0.5rem 1rem;
                                           border-radius:999px; cursor:pointer;
                                           font-family:'Consolas',monospace; letter-spacing:0.1em;">FERMER</button>

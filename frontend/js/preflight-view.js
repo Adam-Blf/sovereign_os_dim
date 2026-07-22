@@ -1,5 +1,5 @@
 /*
- * preflight-view.js · Preflight DRUIDES findings grid overlay.
+ * preflight-view.js - Preflight DRUIDES findings grid overlay.
  * Injects a button in the bottom-right stack (below the "?" help button)
  * that opens a full-screen panel showing all validator findings from
  * /api/validate, filterable by severity and code. No app.js modifications.
@@ -40,14 +40,14 @@
   async function runValidation() {
     try {
       if (!window.pywebview?.api?.validate_preflight) {
-        alert('API non disponible · bridge pas démarré ?');
+        alert('API non disponible - bridge pas démarré ?');
         return;
       }
       const r = await window.pywebview.api.validate_preflight();
       state.findings = r.findings || [];
       renderPanel();
     } catch (e) {
-      alert('Erreur preflight · ' + e.message);
+      alert('Erreur preflight - ' + e.message);
     }
   }
 
@@ -69,7 +69,7 @@
             <div style="font-family:'Consolas',monospace; font-size:10px;
                         letter-spacing:0.4em; text-transform:uppercase; opacity:0.7;">Preflight</div>
             <h2 style="font-size:1.75rem; font-weight:900; font-style:italic; letter-spacing:-0.02em;
-                       text-transform:uppercase; margin:0.25rem 0 0;">DRUIDES · Findings</h2>
+                       text-transform:uppercase; margin:0.25rem 0 0;">DRUIDES - Findings</h2>
           </div>
           <div style="display:flex; gap:0.75rem;">
             <button id="preflight-run" style="border:0; background:#10B981; color:#fff;
@@ -113,7 +113,7 @@
         font-family:'Consolas',monospace; letter-spacing:0.1em; font-size:11px; font-weight:700;
         background:${active ? s.bg : '#E2E8F0'}; color:${active ? s.fg : '#475569'};
         opacity:${counts[sev] === 0 ? 0.4 : 1}; transition:all .15s;">
-        ${s.label} · ${counts[sev] || 0}</button>`;
+        ${s.label} - ${counts[sev] || 0}</button>`;
     };
 
     filters.innerHTML = `
@@ -124,7 +124,7 @@
       <button data-sev="" style="border:0; padding:0.4rem 0.9rem; border-radius:999px; cursor:pointer;
               font-family:'Consolas',monospace; letter-spacing:0.1em; font-size:11px;
               background:${state.filter === null ? '#253e80' : '#E2E8F0'};
-              color:${state.filter === null ? '#fff' : '#475569'};">TOUT · ${state.findings.length}</button>
+              color:${state.filter === null ? '#fff' : '#475569'};">TOUT - ${state.findings.length}</button>
       <input id="preflight-search" placeholder="Filtre code/message..." value="${escapeHtml(state.search)}"
              style="flex:1; min-width:200px; padding:0.4rem 0.8rem; border-radius:8px;
                     border:1px solid #CBD5E1; font-family:inherit;">
@@ -152,7 +152,7 @@
       grid.innerHTML = `<div style="padding:3rem; text-align:center; color:#64748B;
                              font-family:'Consolas',monospace;">
         ${state.findings.length === 0
-          ? 'Cliquer sur LANCER pour exécuter le preflight · nécessite un scan préalable.'
+          ? 'Cliquer sur LANCER pour exécuter le preflight - nécessite un scan préalable.'
           : 'Aucun finding correspond aux filtres.'}
       </div>`;
       return;

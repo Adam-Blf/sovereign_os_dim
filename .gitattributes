@@ -1,7 +1,7 @@
-# Default · normalize line endings to LF in the repo, checkout native
+# Default - normalize line endings to LF in the repo, checkout native
 * text=auto eol=lf
 
-# Text files · explicit LF
+# Text files - explicit LF
 *.py text eol=lf
 *.js text eol=lf
 *.mjs text eol=lf
@@ -17,12 +17,12 @@
 *.php text eol=lf
 *.sh text eol=lf
 
-# Windows-only scripts · keep CRLF
+# Windows-only scripts - keep CRLF
 *.bat text eol=crlf
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
 
-# Binary · never touch
+# Binary - never touch
 *.png binary
 *.jpg binary
 *.jpeg binary

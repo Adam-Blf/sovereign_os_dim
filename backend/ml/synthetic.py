@@ -1,23 +1,23 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
- backend/ml/synthetic.py · Générateur de données ATIH synthétiques
+ backend/ml/synthetic.py - Générateur de données ATIH synthétiques
 ═══════════════════════════════════════════════════════════════════════════════
 
 Produit un dataset fidèle aux specifications ATIH des 25 dernières années
 (2000-2026), couvrant les 23 formats actifs et leurs variantes historiques
 (RPS P03 → P05, RAA P03 → P06, RHS S03 → SMR, RPSS H02 → H06, RSS v005 → v013).
 
-Pourquoi synthétique · les vrais fichiers PMSI sont protégés par le secret
+Pourquoi synthétique - les vrais fichiers PMSI sont protégés par le secret
 hospitalier (RGPD + L.1110-4 CSP). Les caractéristiques exploitées par les
 modèles (longueur de ligne, position IPP/DDN, distribution annuelle) sont
 toutes publiques - voir notice technique ATIH.
 
-Usage ·
+Usage -
     from backend.ml.synthetic import generate_dataset
     df = generate_dataset(n_samples=50_000, seed=42)
     df.to_parquet("backend/ml/data/synthetic_train.parquet")
 
-Reproductibilité · seed obligatoire pour fixer numpy + random.
+Reproductibilité - seed obligatoire pour fixer numpy + random.
 ═══════════════════════════════════════════════════════════════════════════════
 """
 
@@ -32,10 +32,10 @@ import pandas as pd
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SPÉCIFICATIONS ATIH · une entrée par (format × version active)
+# SPÉCIFICATIONS ATIH - une entrée par (format × version active)
 # ─────────────────────────────────────────────────────────────────────────────
-# Source · notice technique ATIH 2024-2026 + guide méthodologique PSY
-# Champs · longueur de ligne en chars, position IPP (start, len),
+# Source - notice technique ATIH 2024-2026 + guide méthodologique PSY
+# Champs - longueur de ligne en chars, position IPP (start, len),
 # position DDN (start, len), année d'introduction, année d'obsolescence (ou None).
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -44,8 +44,8 @@ import pandas as pd
 class FormatSpec:
     """Spécification d'un format ATIH à un instant donné."""
 
-    name: str  # ex · "RPS"
-    version: str  # ex · "P05"
+    name: str  # ex - "RPS"
+    version: str  # ex - "P05"
     field: str  # MCO, SMR, HAD, PSY, transversal
     line_length: int  # longueur exacte de la ligne (chars)
     ipp_start: int  # position de début IPP (0-indexed)
@@ -57,18 +57,18 @@ class FormatSpec:
     weight: float = 1.0  # poids de tirage (fréquence relative)
 
 
-# Catalogue des variantes connues · positions vérifiées sur format-pmsi.fr
+# Catalogue des variantes connues - positions vérifiées sur format-pmsi.fr
 # et lespmsi.com (cf docs/research/pmsi_formats_history.md).
 #
-# Pondération · GHT Sud Paris est un GHT 100 % psychiatrie (Paul Guiraud +
+# Pondération - GHT Sud Paris est un GHT 100 % psychiatrie (Paul Guiraud +
 # Fondation Vallée), donc PSY ~80 % du mix. Les variantes historiques sont
 # conservées pour entraîner le modèle sur 25 ans de PMSI (2000-2026).
 #
-# Convention positions · 0-indexed dans le code Python (specs ATIH = 1-indexed,
+# Convention positions - 0-indexed dans le code Python (specs ATIH = 1-indexed,
 # soustraire 1 pour traduire). IPP None = pas d'IPP dans ce format (cas MCO
 # RSS standard, FICHSUP, anonymes).
 ATIH_SPECS: list[FormatSpec] = [
-    # ── PSY · RIM-P · double FINESS pos 0-8 + 9-17, format pos 18-20, IPP 21-40, DDN 41-48 ────
+    # ── PSY - RIM-P - double FINESS pos 0-8 + 9-17, format pos 18-20, IPP 21-40, DDN 41-48 ────
     FormatSpec("RPS", "P03", "PSY", 138, 21, 20, 41, 8, 2006, 2010, 0.8),
     FormatSpec("RPS", "P05", "PSY", 152, 21, 20, 41, 8, 2010, 2017, 2.5),
     FormatSpec("RPS", "P07", "PSY", 152, 21, 20, 41, 8, 2015, 2017, 1.0),
@@ -92,7 +92,7 @@ ATIH_SPECS: list[FormatSpec] = [
     FormatSpec(
         "VID-IPP-PSY", "I00A", "PSY", 106, 80, 13, 15, 8, 2020, None, 1.0
     ),  # ddn DDMMYYYY pos 16-23 (1-idx)
-    # ── HAD · format pos 0-2 (unique !), FINESS jur 3-11 + géo 12-20, IPP 21-40, DDN 61-68 ────
+    # ── HAD - format pos 0-2 (unique !), FINESS jur 3-11 + géo 12-20, IPP 21-40, DDN 61-68 ────
     FormatSpec("RPSS", "H01", "HAD", 150, 21, 20, 61, 8, 2005, 2007, 0.10),
     FormatSpec("RPSS", "H02", "HAD", 160, 21, 20, 61, 8, 2007, 2010, 0.10),
     FormatSpec("RPSS", "H03", "HAD", 190, 21, 20, 61, 8, 2010, 2014, 0.10),
@@ -101,7 +101,7 @@ ATIH_SPECS: list[FormatSpec] = [
     FormatSpec("RPSS", "H17", "HAD", 195, 21, 20, 61, 8, 2014, 2019, 0.10),
     FormatSpec("RAPSS", "H0B", "HAD", 195, 21, 20, 61, 8, 2019, None, 0.30),
     FormatSpec("RPSS", "H1B", "HAD", 200, 21, 20, 61, 8, 2019, None, 0.20),
-    # ── SSR / SMR · sans IPP, RHS non-grp FINESS 0-8 token 9-11, grp filler+token 10-12 ─────
+    # ── SSR / SMR - sans IPP, RHS non-grp FINESS 0-8 token 9-11, grp filler+token 10-12 ─────
     FormatSpec("RHS", "M05", "SMR", 159, None, None, 59, 8, 2008, 2010, 0.10),
     FormatSpec("RHS", "M06", "SMR", 168, None, None, 67, 8, 2010, 2013, 0.10),
     FormatSpec("RHS", "M09", "SMR", 168, None, None, 67, 8, 2013, 2017, 0.15),
@@ -112,7 +112,7 @@ ATIH_SPECS: list[FormatSpec] = [
     FormatSpec("RHS", "M0C", "SMR", 173, None, None, 67, 8, 2022, 2025, 0.20),
     FormatSpec("RHS", "M0D", "SMR", 173, None, None, 68, 8, 2025, None, 0.30),
     FormatSpec("RHS", "M1D", "SMR", 190, None, None, 81, 8, 2025, None, 0.15),  # grouped
-    # ── MCO · sans IPP standard, token 9-11 (10-12 1-idx), FINESS 15-23 (grp) / 0-8 (022+) ─
+    # ── MCO - sans IPP standard, token 9-11 (10-12 1-idx), FINESS 15-23 (grp) / 0-8 (022+) ─
     FormatSpec("RSS", "115", "MCO", 192, None, None, 77, 8, 2010, 2011, 0.10),  # grouped DDMMYYYY
     FormatSpec("RSS", "117", "MCO", 192, None, None, 77, 8, 2013, 2016, 0.20),  # grouped
     FormatSpec("RSS", "119", "MCO", 192, None, None, 77, 8, 2019, 2020, 0.15),  # grouped + Nature séjour
@@ -124,7 +124,7 @@ ATIH_SPECS: list[FormatSpec] = [
     FormatSpec("RSA", "220", "MCO", 223, None, None, None, None, 2013, 2025, 0.20),  # anonymisé
     FormatSpec("FICHCOMP-MO", "v06", "MCO", 105, None, None, None, None, 2013, None, 0.20),
     FormatSpec("FICHCOMP-DMI", "v02", "MCO", 92, None, None, None, None, 2013, None, 0.15),
-    # ── Transversal · VID-HOSP token pos 48-51 (49-52 1-idx), NIR 0-12 ───────
+    # ── Transversal - VID-HOSP token pos 48-51 (49-52 1-idx), NIR 0-12 ───────
     FormatSpec("VID-HOSP", "V009", "transversal", 312, 0, 13, 19, 8, 2013, 2017, 0.30),  # NIR pos 1-13
     FormatSpec("VID-HOSP", "V012", "transversal", 353, 0, 13, 19, 8, 2018, 2021, 0.40),
     FormatSpec("VID-HOSP", "V014", "transversal", 466, 0, 13, 19, 8, 2022, 2025, 1.00),  # 466 chars exact
@@ -142,7 +142,7 @@ ATIH_SPECS: list[FormatSpec] = [
 
 
 def _random_ipp(rng: random.Random) -> str:
-    """IPP synthétique · 8 chars numériques."""
+    """IPP synthétique - 8 chars numériques."""
     return f"{rng.randint(0, 99_999_999):08d}"
 
 
@@ -200,7 +200,7 @@ def _build_line(spec: FormatSpec, rng: random.Random, inject_ddn_error: bool = F
     """
     Construit une ligne plausible et retourne (line, ddn_valid_label).
 
-    Conformité ATIH ·
+    Conformité ATIH -
     - Token de format inséré à la position correcte selon le champ
     - IPP inséré uniquement si spec.ipp_start est défini (pas dans MCO RSS, anonymes, FICHCOMP)
     - DDN format YYYYMMDD partout SAUF VID-IPP-PSY (DDMMYYYY)
@@ -216,7 +216,7 @@ def _build_line(spec: FormatSpec, rng: random.Random, inject_ddn_error: bool = F
             if pos + i < spec.line_length:
                 line_chars[pos + i] = c
 
-    # 2. FINESS · injecté à des positions plausibles selon le champ
+    # 2. FINESS - injecté à des positions plausibles selon le champ
     finess = f"{rng.randint(100_000_000, 999_999_999):09d}"
     if spec.field == "PSY" and spec.name in ("RPS", "RAA"):
         # FINESS jur pos 0-8, FINESS géo pos 9-17
@@ -237,13 +237,13 @@ def _build_line(spec: FormatSpec, rng: random.Random, inject_ddn_error: bool = F
             if 12 + i < spec.line_length:
                 line_chars[12 + i] = c
     elif spec.field in ("MCO", "SMR") and spec.name in ("RSS", "RHS", "RSA"):
-        # Non-grouped · FINESS pos 0-8 · Grouped · FINESS pos 15-23
+        # Non-grouped - FINESS pos 0-8 - Grouped - FINESS pos 15-23
         is_grouped = (spec.name == "RSS" and not spec.version.startswith("0")) or (
             spec.name == "RHS" and spec.version.startswith("M1")
         )
         finess_pos = 15 if is_grouped else 0
         if is_grouped and spec.name == "RHS":
-            # Grouped RHS · filler 10 chars + token pos 10 + FINESS pos 13
+            # Grouped RHS - filler 10 chars + token pos 10 + FINESS pos 13
             finess_pos = 13
         for i, c in enumerate(finess):
             if finess_pos + i < spec.line_length:
@@ -275,7 +275,7 @@ def _build_line(spec: FormatSpec, rng: random.Random, inject_ddn_error: bool = F
             if spec.ddn_start + i < spec.line_length:
                 line_chars[spec.ddn_start + i] = c
 
-    # 5. Noise plausible sur le reste · majoritairement digits, qq espaces
+    # 5. Noise plausible sur le reste - majoritairement digits, qq espaces
     for i in range(spec.line_length):
         if line_chars[i] == " ":
             if rng.random() < 0.65:
@@ -285,7 +285,7 @@ def _build_line(spec: FormatSpec, rng: random.Random, inject_ddn_error: bool = F
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# DATASET COMPLET · features pour les 3 modèles
+# DATASET COMPLET - features pour les 3 modèles
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -293,7 +293,7 @@ def _line_features(line: str, hint_field: str = "") -> dict:
     """
     Extrait des features numériques d'une ligne brute.
     Utilisées pour entraîner format_detector. Couvre les tokens
-    discriminants ATIH connus · HAD pos 0-2, MCO/SMR pos 9-11,
+    discriminants ATIH connus - HAD pos 0-2, MCO/SMR pos 9-11,
     PSY pos 18-20 (après double FINESS), VID-HOSP pos 48-51.
     """
     n = len(line)
@@ -301,13 +301,13 @@ def _line_features(line: str, hint_field: str = "") -> dict:
     spaces = sum(c == " " for c in line)
     alpha = sum(c.isalpha() for c in line)
 
-    # Tokens · 1 si présent et structurellement plausible
+    # Tokens - 1 si présent et structurellement plausible
     tok_had = line[0:3] if n >= 3 else ""
     tok_mco_smr = line[9:12] if n >= 12 else ""
     tok_psy = line[18:21] if n >= 21 else ""
     tok_vid = line[48:52] if n >= 52 else ""
 
-    # Bracket de longueur · catégorise pour le modèle
+    # Bracket de longueur - catégorise pour le modèle
     if n <= 100:
         len_bucket = 0
     elif n <= 150:
@@ -329,7 +329,7 @@ def _line_features(line: str, hint_field: str = "") -> dict:
         "digits_ratio": digits / max(n, 1),
         "spaces_ratio": spaces / max(n, 1),
         "alpha_ratio": alpha / max(n, 1),
-        # ── Tokens HAD (pos 0-2) · `H01`-`H1B` ──────────────────────────────
+        # ── Tokens HAD (pos 0-2) - `H01`-`H1B` ──────────────────────────────
         "tok_had_starts_H": int(tok_had.startswith("H")),
         "tok_had_H0X": int(tok_had.startswith("H0") and len(tok_had) == 3),
         "tok_had_H1X": int(tok_had.startswith("H1") and len(tok_had) == 3),
@@ -337,14 +337,14 @@ def _line_features(line: str, hint_field: str = "") -> dict:
         "tok_starts_M": int(tok_mco_smr.startswith("M")),  # SMR
         "tok_starts_digit": int(bool(tok_mco_smr) and tok_mco_smr[0].isdigit()),  # MCO 0XX/1XX/2XX
         "tok_2digit_first": int(tok_mco_smr[:2].isdigit()) if len(tok_mco_smr) >= 2 else 0,
-        # ── Tokens PSY (pos 18-20) · `P03`-`P14` ────────────────────────────
+        # ── Tokens PSY (pos 18-20) - `P03`-`P14` ────────────────────────────
         "tok_psy_starts_P": int(tok_psy.startswith("P")),
         "tok_psy_P0X": int(tok_psy.startswith("P0")),
         "tok_psy_P1X": int(tok_psy.startswith("P1")),
         # ── Tokens VID-HOSP/IPP (pos 48-51) ─────────────────────────────────
         "tok_vid_starts_V": int(tok_vid.startswith("V")),
         "tok_vid_starts_I": int(tok_vid.startswith("I")),
-        # ── Double FINESS test (PSY signature) · pos 0-8 + 9-17 numériques ──
+        # ── Double FINESS test (PSY signature) - pos 0-8 + 9-17 numériques ──
         "double_finess_psy": int(n >= 18 and line[0:9].strip().isdigit() and line[9:18].strip().isdigit()),
         # ── Filler 10 chars en tête (RSS/RHS grouped) ───────────────────────
         "leading_filler_10": int(n >= 10 and line[0:10].strip() == ""),
@@ -354,7 +354,7 @@ def _line_features(line: str, hint_field: str = "") -> dict:
         "ddn_at_61_yyyy": _has_year(line, 61),
         "ddn_at_67_yyyy": _has_year(line, 67),
         "ddn_at_77_yyyy": _has_year(line, 77),
-        # ── IPP signatures · 20 chars numériques à pos 21 ou 22 (1-idx) ─────
+        # ── IPP signatures - 20 chars numériques à pos 21 ou 22 (1-idx) ─────
         "ipp_at_21_numeric": _has_digits(line, 21, 20),
     }
 
@@ -380,7 +380,7 @@ def _has_digits(line: str, pos: int, length: int) -> int:
 
 
 def _mpi_features(rng: random.Random, has_collision: bool) -> dict:
-    """Features niveau MPI · pour collision_risk."""
+    """Features niveau MPI - pour collision_risk."""
     if has_collision:
         return {
             "ipp_freq": rng.randint(2, 12),  # IPP avec plusieurs DDN
@@ -409,14 +409,14 @@ def generate_dataset(
     """
     Construit un DataFrame complet avec features et labels pour les 3 modèles.
 
-    Colonnes ·
-      - feat_* · features numériques pour les modèles
-      - label_format · classe (ex 'RPS_P05')
-      - label_collision · 0/1
-      - label_ddn_valid · 0/1
-      - meta_field, meta_year · pour stratification éventuelle
+    Colonnes -
+      - feat_* - features numériques pour les modèles
+      - label_format - classe (ex 'RPS_P05')
+      - label_collision - 0/1
+      - label_ddn_valid - 0/1
+      - meta_field, meta_year - pour stratification éventuelle
 
-    Pondération · les formats actifs récents (RPS P05, RSS v013, etc.) sont
+    Pondération - les formats actifs récents (RPS P05, RSS v013, etc.) sont
     sur-représentés via FormatSpec.weight, comme dans la réalité 2024-2026.
     """
     rng = random.Random(seed)
@@ -450,7 +450,7 @@ def generate_dataset(
 
 
 def main() -> None:  # pragma: no cover
-    """CLI · python -m backend.ml.synthetic"""
+    """CLI - python -m backend.ml.synthetic"""
     import argparse
     import os
 
@@ -460,15 +460,15 @@ def main() -> None:  # pragma: no cover
     p.add_argument("--out", default="backend/ml/data/synthetic_train.parquet")
     args = p.parse_args()
 
-    print(f"[ML] Génération de {args.samples:,} échantillons synthétiques · seed={args.seed}")
+    print(f"[ML] Génération de {args.samples:,} échantillons synthétiques - seed={args.seed}")
     df = generate_dataset(n_samples=args.samples, seed=args.seed)
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     df.to_parquet(args.out, index=False)
-    print(f"[ML] OK · {args.out} · {len(df):,} lignes · {len(df.columns)} colonnes")
-    print(f"      Formats distincts · {df['label_format'].nunique()}")
-    print(f"      Collisions · {df['label_collision'].mean():.1%}")
-    print(f"      DDN invalides · {(1 - df['label_ddn_valid']).mean():.1%}")
+    print(f"[ML] OK - {args.out} - {len(df):,} lignes - {len(df.columns)} colonnes")
+    print(f"      Formats distincts - {df['label_format'].nunique()}")
+    print(f"      Collisions - {df['label_collision'].mean():.1%}")
+    print(f"      DDN invalides - {(1 - df['label_ddn_valid']).mean():.1%}")
 
 
 if __name__ == "__main__":  # pragma: no cover

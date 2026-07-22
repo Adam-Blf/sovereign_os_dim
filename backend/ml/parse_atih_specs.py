@@ -1,11 +1,11 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
- backend/ml/parse_atih_specs.py · Parser des specs Excel officielles ATIH 2026
+ backend/ml/parse_atih_specs.py - Parser des specs Excel officielles ATIH 2026
 ═══════════════════════════════════════════════════════════════════════════════
 
 Lit les classeurs Excel publiés par l'ATIH (formats_psy_2026, formats_mco_2026,
 formats_smr_2026, formats_had_2026, et leurs variantes anonymes/visual) et
-extrait pour chaque format ·
+extrait pour chaque format -
 
   - Nom du recueil (RPS, RAA, FICHSUP-PSY, ...)
   - Secteur (DAF / ex-OQN / les deux)
@@ -14,7 +14,7 @@ extrait pour chaque format ·
 
 Ces specs réelles remplacent les estimations dans synthetic.py.
 
-Usage ·
+Usage -
     python -m backend.ml.parse_atih_specs --src C:/Users/adamb/Downloads \\
         --out backend/ml/data/atih_specs_2026.json
 ═══════════════════════════════════════════════════════════════════════════════
@@ -105,7 +105,7 @@ def _detect_field_from_filename(path: str) -> str:
 
 def _parse_length_line(text: str) -> tuple[int, str]:
     """
-    Extrait la longueur de base et la formule d'extension depuis ·
+    Extrait la longueur de base et la formule d'extension depuis -
         'Nombre de caract�res attendus pour un enregistrement = 154 + (8*nDA) + (23*nZA)'
     Retourne (154, '+ (8*nDA) + (23*nZA)').
     """
@@ -135,11 +135,11 @@ def _is_field_header_row(row: tuple) -> bool:
 def _parse_field_row(row: tuple, header_offset: int) -> FieldSpec | None:
     """
     Parse une ligne de champ. Le header peut commencer par 'Libell�' (col 0)
-    ou avoir une colonne fantôme avant. On laisse parler les valeurs · si
+    ou avoir une colonne fantôme avant. On laisse parler les valeurs - si
     c'est un int, c'est probablement Taille / Début / Fin.
     """
     cells = list(row)
-    # Trouver les 3 premiers entiers consécutifs · taille, debut, fin
+    # Trouver les 3 premiers entiers consécutifs - taille, debut, fin
     label = None
     nums = []
     for i, c in enumerate(cells):
@@ -149,14 +149,14 @@ def _parse_field_row(row: tuple, header_offset: int) -> FieldSpec | None:
             label = c.strip()
     if len(nums) < 3 or not label:
         return None
-    # taille / début / fin · les 3 premiers entiers
+    # taille / début / fin - les 3 premiers entiers
     size, start, end = nums[0][1], nums[1][1], nums[2][1]
-    # Type · 1 cellule string courte après 'fin'
+    # Type - 1 cellule string courte après 'fin'
     type_ = ""
     type_idx = nums[2][0] + 1
     if type_idx < len(cells) and isinstance(cells[type_idx], str) and len(cells[type_idx].strip()) <= 4:
         type_ = cells[type_idx].strip()
-    # Required · cellule contenant 'O' / 'F' / 'C'
+    # Required - cellule contenant 'O' / 'F' / 'C'
     required = ""
     for c in cells[type_idx + 1 :]:
         if isinstance(c, str) and c.strip() in ("O", "F", "C", "Oui", "Non"):
@@ -204,7 +204,7 @@ def _parse_sheet(ws, file_field: str, source_file: str) -> FormatSpec2026 | None
             header_row_idx = i
             break
     if header_row_idx is None:
-        # Pas de tableau détecté · on retourne quand même la spec basique
+        # Pas de tableau détecté - on retourne quand même la spec basique
         return FormatSpec2026(
             name=name,
             field=file_field,
@@ -246,7 +246,7 @@ def parse_workbook(path: str) -> list[FormatSpec2026]:
             if spec and (spec.base_length > 0 or spec.fields):
                 out.append(spec)
         except Exception as e:  # pragma: no cover
-            print(f"[WARN] {os.path.basename(path)}::{sheet} · {e}")
+            print(f"[WARN] {os.path.basename(path)}::{sheet} - {e}")
     return out
 
 
@@ -270,12 +270,12 @@ def main() -> None:  # pragma: no cover
         print(f"[ERR] Aucun fichier formats_*_2026*.xlsx dans {args.src}")
         raise SystemExit(1)
 
-    print(f"[ATIH] {len(files)} fichiers a traiter ·")
+    print(f"[ATIH] {len(files)} fichiers a traiter -")
     all_specs: list[dict[str, Any]] = []
     for f in files:
         specs = parse_workbook(f)
         psy_count = sum(1 for s in specs if s.field == "PSY")
-        print(f"  {os.path.basename(f):<40} · {len(specs)} formats ({psy_count} PSY)")
+        print(f"  {os.path.basename(f):<40} - {len(specs)} formats ({psy_count} PSY)")
         for s in specs:
             d = asdict(s)
             d["fields"] = [asdict(fld) for fld in s.fields]
@@ -295,7 +295,7 @@ def main() -> None:  # pragma: no cover
     print(f"        {n_with_length} avec longueur de base detectee")
     print(f"        {n_with_ipp} avec position IPP detectee")
     print(f"        {n_with_ddn} avec position DDN detectee")
-    print(f"        sortie · {args.out}")
+    print(f"        sortie - {args.out}")
 
 
 if __name__ == "__main__":  # pragma: no cover

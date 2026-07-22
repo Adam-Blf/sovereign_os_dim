@@ -9,7 +9,7 @@ on:
 
 jobs:
   python:
-    name: Python · pytest + bandit
+    name: Python - pytest + bandit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
         run: python -m bandit -r backend/ -ll
 
   frontend:
-    name: Frontend · Node.js tests
+    name: Frontend - Node.js tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -56,7 +56,7 @@ jobs:
         run: node tests/frontend/test_activity_analysis.mjs
 
   deps:
-    name: Dependencies · CVE audit
+    name: Dependencies - CVE audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -74,7 +74,7 @@ jobs:
         continue-on-error: true
 
   lint:
-    name: Lint · ruff
+    name: Lint - ruff
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

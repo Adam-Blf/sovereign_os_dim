@@ -1,26 +1,26 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
- backend/ml/extract_safe_features.py · Extraction de features ATIH SAFE
+ backend/ml/extract_safe_features.py - Extraction de features ATIH SAFE
 ═══════════════════════════════════════════════════════════════════════════════
 
 Lit des vrais fichiers PMSI sur le poste DIM et n'écrit qu'un CSV de
-features structurelles · longueur de ligne, ratios de classes de caractères
+features structurelles - longueur de ligne, ratios de classes de caractères
 à des positions clés, présence de patterns DDN. AUCUN IPP, AUCUNE DDN
 en clair, AUCUN NIR ne quitte le fichier source.
 
-Usage strict ·
+Usage strict -
   - Le script tourne sur le poste DIM uniquement (jamais en CI)
   - Le CSV de sortie est versionnable (zéro PII)
   - Le format est inféré du nom de fichier (regex), pas du contenu
   - Le contenu de chaque ligne est inspecté sans être stocké
 
-Conformité ·
-  - L. 1110-4 CSP (secret professionnel) · pas d'extraction nominative
-  - RGPD art. 9 · données de catégorie spéciale jamais écrites
-  - k-anonymity · agrégation par fichier, pas par ligne individuelle
-  - Audit log · chaque extraction est loggée
+Conformité -
+  - L. 1110-4 CSP (secret professionnel) - pas d'extraction nominative
+  - RGPD art. 9 - données de catégorie spéciale jamais écrites
+  - k-anonymity - agrégation par fichier, pas par ligne individuelle
+  - Audit log - chaque extraction est loggée
 
-Usage ·
+Usage -
     python -m backend.ml.extract_safe_features \\
         --src "D:/Adam - Copie (2)" \\
         --out backend/ml/data/real_features.csv
@@ -76,7 +76,7 @@ def detect_format_from_filename(path: str) -> str:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# EXTRACTION SAFE · stats par fichier sans stocker le contenu
+# EXTRACTION SAFE - stats par fichier sans stocker le contenu
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -85,14 +85,14 @@ def _safe_line_stats(path: str, max_lines: int = 10_000) -> dict:
     Lit le fichier ligne par ligne, calcule des stats agrégées sans
     jamais mémoriser de contenu individuel.
 
-    Stats retournées (toutes anonymes) ·
+    Stats retournées (toutes anonymes) -
     - n_lines, line_len_min/max/median/mean
     - digits_ratio_avg, spaces_ratio_avg, alpha_ratio_avg
-    - digits_at_pos_X_ratio · % de lignes où la position X est un chiffre
-      (positions clés · 0, 9, 18, 21, 41, 48, 61)
-    - has_double_finess_ratio · % avec double FINESS détectable
-    - has_token_HXX_at_0 · % qui commencent par HXX (HAD)
-    - has_token_PXX_at_18 · % avec PXX en pos 18 (PSY)
+    - digits_at_pos_X_ratio - % de lignes où la position X est un chiffre
+      (positions clés - 0, 9, 18, 21, 41, 48, 61)
+    - has_double_finess_ratio - % avec double FINESS détectable
+    - has_token_HXX_at_0 - % qui commencent par HXX (HAD)
+    - has_token_PXX_at_18 - % avec PXX en pos 18 (PSY)
     """
     KEY_POSITIONS = (0, 9, 18, 21, 41, 48, 61, 77)
     counters = {f"digits_pos_{p}": 0 for p in KEY_POSITIONS}
@@ -166,7 +166,7 @@ def _walk_dir(root: str) -> Iterator[str]:
 
 
 def main() -> None:  # pragma: no cover
-    p = argparse.ArgumentParser(description="Extracteur de features ATIH SAFE · zéro PII en sortie.")
+    p = argparse.ArgumentParser(description="Extracteur de features ATIH SAFE - zéro PII en sortie.")
     p.add_argument("--src", required=True, help="Dossier racine contenant les fichiers .txt PMSI réels.")
     p.add_argument("--out", default="backend/ml/data/real_features.csv")
     p.add_argument(
@@ -175,7 +175,7 @@ def main() -> None:  # pragma: no cover
     args = p.parse_args()
 
     if not os.path.isdir(args.src):
-        print(f"[ERR] Source introuvable · {args.src}", file=sys.stderr)
+        print(f"[ERR] Source introuvable - {args.src}", file=sys.stderr)
         raise SystemExit(1)
 
     print(f"[SAFE] Scan de {args.src}")
@@ -203,9 +203,9 @@ def main() -> None:  # pragma: no cover
 
     # Audit log
     audit_line = (
-        f"[AUDIT] {datetime.now().isoformat()} · "
-        f"{len(files)} fichiers traités · "
-        f"src={args.src} · out={args.out}"
+        f"[AUDIT] {datetime.now().isoformat()} - "
+        f"{len(files)} fichiers traités - "
+        f"src={args.src} - out={args.out}"
     )
     print(audit_line)
 
@@ -217,7 +217,7 @@ def main() -> None:  # pragma: no cover
         w.writeheader()
         for row in rows:
             w.writerow({k: row.get(k, "") for k in fields})
-    print(f"[OK] CSV écrit · {args.out} · {len(rows)} lignes · {len(fields)} colonnes")
+    print(f"[OK] CSV écrit - {args.out} - {len(rows)} lignes - {len(fields)} colonnes")
     print("     Aucun IPP, DDN ou NIR n'a été écrit dans la sortie.")
 
 

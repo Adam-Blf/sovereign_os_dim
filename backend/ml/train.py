@@ -1,17 +1,17 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
- backend/ml/train.py · Pipeline d'entraînement multi-modèles
+ backend/ml/train.py - Pipeline d'entraînement multi-modèles
 ═══════════════════════════════════════════════════════════════════════════════
 
 Entraîne 3 tâches sur le dataset synthétique ATIH 2000-2026, en testant
 plusieurs algorithmes par tâche et en gardant le meilleur (validation
-accuracy/AUC sur 20 % du dataset, stratifié) ·
+accuracy/AUC sur 20 % du dataset, stratifié) -
 
-  1. format_detector    · multi-classe (~50 classes · format × version)
-  2. collision_risk     · binaire (probabilité de collision IDV)
-  3. ddn_validity       · binaire (probabilité que la DDN soit valide)
+  1. format_detector    - multi-classe (~50 classes - format × version)
+  2. collision_risk     - binaire (probabilité de collision IDV)
+  3. ddn_validity       - binaire (probabilité que la DDN soit valide)
 
-Modèles testés par tâche ·
+Modèles testés par tâche -
   - XGBoost (tree_method=hist, 200/300 estimators, depth 5/6)
   - XGBoost tuned (estimators 500, depth 8, lr 0.08)
   - LightGBM (n_estimators 300, num_leaves 63)
@@ -21,7 +21,7 @@ Le meilleur modèle par tâche est sauvegardé en .json (XGBoost natif) ou
 .txt (LightGBM/sklearn pickle compressé). Métadonnées dans
 training_metadata.json incluent le tableau comparatif complet.
 
-Usage ·
+Usage -
     python -m backend.ml.train                       # 50k samples, défauts
     python -m backend.ml.train --samples 200000      # plus grand dataset
     python -m backend.ml.train --data-cache <path>   # réutilise un parquet
@@ -56,7 +56,7 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# FEATURES par modèle · ordre stable, à ne JAMAIS changer sans retrain
+# FEATURES par modèle - ordre stable, à ne JAMAIS changer sans retrain
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -111,7 +111,7 @@ MPI_FEATURES = [
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CANDIDATS PAR TÂCHE · benchmark + sélection du meilleur
+# CANDIDATS PAR TÂCHE - benchmark + sélection du meilleur
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -248,14 +248,14 @@ def _save_model(name: str, model: Any, out_dir: str, base_filename: str) -> str:
 
 
 def _train_format_detector(df: pd.DataFrame, out_dir: str) -> dict[str, Any]:
-    print("\n[1/3] format_detector · multi-classe sur lignes ATIH (4 candidats)")
+    print("\n[1/3] format_detector - multi-classe sur lignes ATIH (4 candidats)")
     X = df[LINE_FEATURES].values
     y_str = df["label_format"].values
     classes = sorted(set(y_str))
     cls_to_id = {c: i for i, c in enumerate(classes)}
     y = np.array([cls_to_id[c] for c in y_str])
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
-    print(f"      {len(classes)} classes · {len(X_tr):,} train / {len(X_te):,} test")
+    print(f"      {len(classes)} classes - {len(X_tr):,} train / {len(X_te):,} test")
 
     leaderboard = []
     best = None
@@ -267,7 +267,7 @@ def _train_format_detector(df: pd.DataFrame, out_dir: str) -> dict[str, Any]:
             y_pred = clf.predict(X_te)
             acc = accuracy_score(y_te, y_pred)
             f1m = f1_score(y_te, y_pred, average="macro")
-            score = acc + 0.3 * f1m  # composite · privilégie accuracy
+            score = acc + 0.3 * f1m  # composite - privilégie accuracy
             leaderboard.append(
                 {
                     "candidate": name,
@@ -276,7 +276,7 @@ def _train_format_detector(df: pd.DataFrame, out_dir: str) -> dict[str, Any]:
                     "train_s": round(train_s, 2),
                 }
             )
-            print(f"      · {name:<12} acc={acc:.4f}  f1m={f1m:.4f}  ({train_s:.1f}s)")
+            print(f"      - {name:<12} acc={acc:.4f}  f1m={f1m:.4f}  ({train_s:.1f}s)")
             if best is None or score > best["score"]:
                 best = {
                     "name": name,
@@ -287,12 +287,12 @@ def _train_format_detector(df: pd.DataFrame, out_dir: str) -> dict[str, Any]:
                     "train_seconds": train_s,
                 }
         except Exception as e:  # pragma: no cover
-            print(f"      · {name:<12} ECHEC · {e}")
+            print(f"      - {name:<12} ECHEC - {e}")
 
     saved = _save_model(best["name"], best["model"], out_dir, "format_detector")
     with open(os.path.join(out_dir, "format_classes.json"), "w", encoding="utf-8") as f:
         json.dump(classes, f, ensure_ascii=False, indent=2)
-    print(f"      => GAGNANT · {best['name']} (acc={best['accuracy']:.4f}) -> {os.path.basename(saved)}")
+    print(f"      => GAGNANT - {best['name']} (acc={best['accuracy']:.4f}) -> {os.path.basename(saved)}")
     return {
         "task": "format_detector",
         "winner": best["name"],
@@ -313,7 +313,7 @@ def _train_binary(
     task_name: str,
     use_pos_weight: bool = False,
 ) -> dict[str, Any]:
-    print(f"\n[?/3] {task_name} · binaire sur {len(features)} features (4 candidats)")
+    print(f"\n[?/3] {task_name} - binaire sur {len(features)} features (4 candidats)")
     X = df[features].values
     y = df[label_col].values
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
@@ -321,8 +321,8 @@ def _train_binary(
     neg = len(y_tr) - pos
     spw = neg / max(pos, 1) if use_pos_weight else 1.0
     print(
-        f"      taux base · {y.mean():.2%} positifs"
-        + (f" · scale_pos_weight={spw:.1f}" if use_pos_weight else "")
+        f"      taux base - {y.mean():.2%} positifs"
+        + (f" - scale_pos_weight={spw:.1f}" if use_pos_weight else "")
     )
 
     leaderboard = []
@@ -347,7 +347,7 @@ def _train_binary(
                     "train_s": round(train_s, 2),
                 }
             )
-            print(f"      · {name:<12} AUC={auc:.4f}  acc={acc:.4f}  f1={f1:.4f}  ({train_s:.1f}s)")
+            print(f"      - {name:<12} AUC={auc:.4f}  acc={acc:.4f}  f1={f1:.4f}  ({train_s:.1f}s)")
             if best is None or score > best["score"]:
                 best = {
                     "name": name,
@@ -359,10 +359,10 @@ def _train_binary(
                     "train_seconds": train_s,
                 }
         except Exception as e:  # pragma: no cover
-            print(f"      · {name:<12} ECHEC · {e}")
+            print(f"      - {name:<12} ECHEC - {e}")
 
     saved = _save_model(best["name"], best["model"], out_dir, task_name)
-    print(f"      => GAGNANT · {best['name']} (AUC={best['auc']:.4f}) -> {os.path.basename(saved)}")
+    print(f"      => GAGNANT - {best['name']} (AUC={best['auc']:.4f}) -> {os.path.basename(saved)}")
     return {
         "task": task_name,
         "winner": best["name"],
@@ -391,7 +391,7 @@ def _train_ddn_validity(df: pd.DataFrame, out_dir: str) -> dict[str, Any]:
 def main() -> None:  # pragma: no cover
     p = argparse.ArgumentParser(description="Entraîne les 3 modèles XGBoost.")
     p.add_argument(
-        "--samples", type=int, default=50_000, help="Taille du dataset synthétique (défaut · 50 000)"
+        "--samples", type=int, default=50_000, help="Taille du dataset synthétique (défaut - 50 000)"
     )
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--data-cache", default=None, help="Réutiliser un parquet existant au lieu de régénérer.")
@@ -402,19 +402,19 @@ def main() -> None:  # pragma: no cover
 
     # ─── Données ──────────────────────────────────────────────────────────
     if args.data_cache and os.path.exists(args.data_cache):
-        print(f"[ML] Lecture cache · {args.data_cache}")
+        print(f"[ML] Lecture cache - {args.data_cache}")
         df = pd.read_parquet(args.data_cache)
     else:
-        print(f"[ML] Génération · {args.samples:,} samples (PSY priorisé)")
+        print(f"[ML] Génération - {args.samples:,} samples (PSY priorisé)")
         t0 = time.time()
         df = generate_dataset(n_samples=args.samples, seed=args.seed)
         print(
-            f"     {time.time() - t0:.1f}s · {len(df):,} lignes · "
+            f"     {time.time() - t0:.1f}s - {len(df):,} lignes - "
             f"{df['label_format'].nunique()} formats distincts"
         )
         cache_path = os.path.join(DATA_DIR, "synthetic_train.parquet")
         df.to_parquet(cache_path, index=False)
-        print(f"     Sauvegarde · {cache_path}")
+        print(f"     Sauvegarde - {cache_path}")
 
     # ─── 3 modèles ────────────────────────────────────────────────────────
     metrics = []
@@ -433,8 +433,8 @@ def main() -> None:  # pragma: no cover
     with open(os.path.join(MODELS_DIR, "training_metadata.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
 
-    print(f"\n[OK] Entraînement terminé · 3 modèles sauvegardés dans {MODELS_DIR}")
-    print(f"     PSY share du dataset · {meta['psy_share']:.1%}")
+    print(f"\n[OK] Entraînement terminé - 3 modèles sauvegardés dans {MODELS_DIR}")
+    print(f"     PSY share du dataset - {meta['psy_share']:.1%}")
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -1,18 +1,18 @@
-# ATIH · Référentiel complet 2026
+# ATIH - Référentiel complet 2026
 
-> Source · synthèse research-analyst (4 mai 2026), URLs vérifiées sur atih.sante.fr / Légifrance / lesPMSI.com / Wikipedia / Service-Public.
+> Source - synthèse research-analyst (4 mai 2026), URLs vérifiées sur atih.sante.fr / Légifrance / lesPMSI.com / Wikipedia / Service-Public.
 
 ## 1. Organisation ATIH
 
-- **Statut** · EPA créé par décret n° 2000-1282 du 26 décembre 2000
-- **Tutelle** · ministres de la Santé / Affaires sociales / Sécurité sociale
+- **Statut** - EPA créé par décret n° 2000-1282 du 26 décembre 2000
+- **Tutelle** - ministres de la Santé / Affaires sociales / Sécurité sociale
 - **Direction générale** - autorité administrative indépendante (ATIH)
-- **Précédent (2010-2024)** · Housseyni Holla
-- **Première directrice (2001-2010)** · Maryse Chodorge
-- **Siège** · 117 boulevard Marius-Vivier-Merle, 69003 Lyon
-- **Antenne** · Paris
-- **Effectifs** · ~140 agents
-- **SIREN** · 180092298
+- **Précédent (2010-2024)** - Housseyni Holla
+- **Première directrice (2001-2010)** - Maryse Chodorge
+- **Siège** - 117 boulevard Marius-Vivier-Merle, 69003 Lyon
+- **Antenne** - Paris
+- **Effectifs** - ~140 agents
+- **SIREN** - 180092298
 
 ### URLs institutionnelles
 
@@ -30,8 +30,8 @@
 ## 2. Calendrier PMSI 2026
 
 - **Année calée sur année civile** depuis 2026 (tous champs)
-- **Établissement** · transmission + validation **dans le mois** suivant la période
-- **ARS** · validation **dans les 6 semaines** suivant la période
+- **Établissement** - transmission + validation **dans le mois** suivant la période
+- **ARS** - validation **dans les 6 semaines** suivant la période
 
 ### Calendrier mensuel SMR/PSY 2026 (établissements)
 
@@ -42,9 +42,9 @@
 | M7 | S27-S31 | 02/08/2026 |
 | M12 | S49-S53 | 03/01/2027 |
 
-Source · <https://www.lespmsi.com/calendrier-2026-des-transmissions-pmsi-smr/>
+Source - <https://www.lespmsi.com/calendrier-2026-des-transmissions-pmsi-smr/>
 
-## 3. DRUIDES · Déploiement par champ
+## 3. DRUIDES - Déploiement par champ
 
 | Champ | Date prod | Notes |
 |-------|-----------|-------|
@@ -57,14 +57,14 @@ Source · <https://www.lespmsi.com/calendrier-2026-des-transmissions-pmsi-smr/>
 
 ### Logiciels remplacés
 
-- MCO · GenRSA, AGRAF, Fichsup, LAMDA Séjour/ACE, Visual valo/non-valo/qualité, Preface
-- PSY · **PIVOINE ex-DGF, PIVOINE ex-OQN, VisualQUALITE**
+- MCO - GenRSA, AGRAF, Fichsup, LAMDA Séjour/ACE, Visual valo/non-valo/qualité, Preface
+- PSY - **PIVOINE ex-DGF, PIVOINE ex-OQN, VisualQUALITE**
 - **MAGIC v5.12.0.0 reste obligatoire en 2026** (anonymisation VID-HOSP/ANO-HOSP/VID-IPP)
 
-## 4. Réforme PSY 2025 · Modes de prise en charge
+## 4. Réforme PSY 2025 - Modes de prise en charge
 
-- [Arrêté du 4 juillet 2025](https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000051884050) · modifie arrêté 23/12/2016
-- [Arrêté du 23 juillet 2025](https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000051987561) · modificatif
+- [Arrêté du 4 juillet 2025](https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000051884050) - modifie arrêté 23/12/2016
+- [Arrêté du 23 juillet 2025](https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000051987561) - modificatif
 
 ### Suppressions
 
@@ -74,37 +74,37 @@ Source · <https://www.lespmsi.com/calendrier-2026-des-transmissions-pmsi-smr/>
 
 ### Nouvelles structures
 
-- **CeSPA** (Centre de Soins Post-Aigus) · temps complet, prolongement post-aigu
-- **CATTG** (Centre d'Activités Thérapeutiques et de Temps de Groupe) · ambulatoire
+- **CeSPA** (Centre de Soins Post-Aigus) - temps complet, prolongement post-aigu
+- **CATTG** (Centre d'Activités Thérapeutiques et de Temps de Groupe) - ambulatoire
 
 ### Nouveaux types UM (FicUM)
 
-- **331** · EMPP (Équipe Mobile Psychiatrie Précarité)
-- **332** · EMPPA (EMPP Adolescents)
+- **331** - EMPP (Équipe Mobile Psychiatrie Précarité)
+- **332** - EMPPA (EMPP Adolescents)
 
 ### Modes de prise en charge (3 catégories)
 
-1. **Temps complet** · hospitalisation, CeSPA, AT, CAC
-2. **Temps partiel** · HDJ, hôpital de nuit
-3. **Soins ambulatoires** · CMP, CATTG, soins à domicile (modalité 33), consultations
+1. **Temps complet** - hospitalisation, CeSPA, AT, CAC
+2. **Temps partiel** - HDJ, hôpital de nuit
+3. **Soins ambulatoires** - CMP, CATTG, soins à domicile (modalité 33), consultations
 
 ## 5. Formats PSY 2026 (mises à jour)
 
 | Format | Maj 2026 |
 |--------|----------|
-| **RPS** | suppression ateliers thérapeutiques · ajout codes CeSPA, CAC · recodage modes prise en charge |
-| **RAA** | CATTG remplace CATTP · modalité 33 (soins à domicile) |
+| **RPS** | suppression ateliers thérapeutiques - ajout codes CeSPA, CAC - recodage modes prise en charge |
+| **RAA** | CATTG remplace CATTP - modalité 33 (soins à domicile) |
 | **RPSA / R3A** | dérivés mis à jour |
-| **FICUM-PSY** | nouveaux types UM 331/332 · 7 champs (6 obligatoires) |
+| **FICUM-PSY** | nouveaux types UM 331/332 - 7 champs (6 obligatoires) |
 
 ## 6. Documentation 2026
 
-- **Guide méthodo PSY 2026** · <https://www.atih.sante.fr/sites/default/files/public/content/5115/guide_methodo_psy_2026_version_provisoire_010126.pdf>
-- **Notice technique ATIH-294-9-2025** (21/11/2025) · <https://www.atih.sante.fr/sites/default/files/public/content/5109/notice_technique_pmsi_2026_vdef_0.pdf>
-- **Notice transmission ATIH-31-1-2025** · <https://www.atih.sante.fr/sites/default/files/public/content/4903/notice_technique_complementaire_n_atih-31-1-2025_recueil_transmission_et_validation_des_donnees_pmsi.pdf>
-- **CIM-10 FR usage PMSI 2026** · <https://www.atih.sante.fr/cim-10-fr-usage-pmsi-2026>
+- **Guide méthodo PSY 2026** - <https://www.atih.sante.fr/sites/default/files/public/content/5115/guide_methodo_psy_2026_version_provisoire_010126.pdf>
+- **Notice technique ATIH-294-9-2025** (21/11/2025) - <https://www.atih.sante.fr/sites/default/files/public/content/5109/notice_technique_pmsi_2026_vdef_0.pdf>
+- **Notice transmission ATIH-31-1-2025** - <https://www.atih.sante.fr/sites/default/files/public/content/4903/notice_technique_complementaire_n_atih-31-1-2025_recueil_transmission_et_validation_des_donnees_pmsi.pdf>
+- **CIM-10 FR usage PMSI 2026** - <https://www.atih.sante.fr/cim-10-fr-usage-pmsi-2026>
 
-## 7. e-PMSI · Applications hébergées
+## 7. e-PMSI - Applications hébergées
 
 | Application | Fonction | Champs |
 |------------|----------|--------|
@@ -121,5 +121,5 @@ Source · <https://www.lespmsi.com/calendrier-2026-des-transmissions-pmsi-smr/>
 
 - Données PMSI alimentent SNDS via Health Data Hub + Cnam
 - **NIR pseudonymisé en NIRTEC**
-- Procédure · demande HDH + autorisation CNIL (ou MR-007)
-- Documentation RIM-P · <https://documentation-snds.health-data-hub.fr/snds/glossaire/rim-p>
+- Procédure - demande HDH + autorisation CNIL (ou MR-007)
+- Documentation RIM-P - <https://documentation-snds.health-data-hub.fr/snds/glossaire/rim-p>

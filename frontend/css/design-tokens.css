@@ -1,28 +1,28 @@
 /* =================================================================
-   SOVEREIGN OS DIM · Design Tokens
+   SOVEREIGN OS DIM - Design Tokens
    ----------------------------------------------------------------
    Source unique de vérité pour les couleurs, l'échelle typo, les
    espacements, les rayons et les ombres. Toutes les vues consomment
-   ces variables · pour changer la charte, modifier ICI uniquement.
+   ces variables - pour changer la charte, modifier ICI uniquement.
 
-   Cohérent avec le générateur PDF (tools/generate_guide.py) ·
+   Cohérent avec le générateur PDF (tools/generate_guide.py) -
    palette identique, échelle typo identique.
    ================================================================= */
 
 :root {
-  /* ── Palette · charte GHT Psy Sud Paris ─────────── */
-  --gh-navy:      #253e80;   /* GHT Psy Sud Paris · titres, accents primaires */
+  /* ── Palette - charte GHT Psy Sud Paris ─────────── */
+  --gh-navy:      #253e80;   /* GHT Psy Sud Paris - titres, accents primaires */
   --gh-navy-50:   #e7f0f5;   /* Fond pastel bleu */
   --gh-navy-100:  #cfe1ee;   /* Hover accentué */
   --gh-navy-700:  #1a2b58;   /* Navy profond */
   --gh-teal:      #0c7db6;   /* Bleu-ciel d'accentuation */
   --gh-teal-50:   #e0f2fe;   /* Accent pastel bleu-ciel */
-  --gh-gold:      #D4A437;   /* Mise en valeur métier · ROI, gains DIM */
+  --gh-gold:      #D4A437;   /* Mise en valeur métier - ROI, gains DIM */
   --gh-error:     #E11D48;   /* Erreur, blocage réglementaire */
   --gh-success:   #10B981;   /* Conformité, validation */
   --gh-warning:   #F59E0B;   /* Point d'attention */
 
-  /* ── Niveaux SLATE · échelle de gris (alignée Tailwind slate) ── */
+  /* ── Niveaux SLATE - échelle de gris (alignée Tailwind slate) ── */
   --slate-50:     #F8FAFC;
   --slate-100:    #F1F5F9;
   --slate-200:    #E2E8F0;
@@ -34,18 +34,18 @@
   --slate-900:    #0F172A;
   --terminal:     #020617;
 
-  /* ── Typographie · 7 niveaux fixes, jamais de tailles ad-hoc ── */
+  /* ── Typographie - 7 niveaux fixes, jamais de tailles ad-hoc ── */
   --font-sans:    "Montserrat", system-ui, sans-serif;
   --font-mono:    "Consolas", monospace;
-  --text-display: 2.5rem;    /* 40px · titres de page principaux */
-  --text-h1:      1.875rem;  /* 30px · titres de section */
-  --text-h2:      1.5rem;    /* 24px · sous-titres */
-  --text-h3:      1.125rem;  /* 18px · titres de carte */
-  --text-body:    0.875rem;  /* 14px · corps de texte */
-  --text-small:   0.75rem;   /* 12px · captions, légendes */
-  --text-caption: 0.6875rem; /* 11px · meta, labels en majuscules */
+  --text-display: 2.5rem;    /* 40px - titres de page principaux */
+  --text-h1:      1.875rem;  /* 30px - titres de section */
+  --text-h2:      1.5rem;    /* 24px - sous-titres */
+  --text-h3:      1.125rem;  /* 18px - titres de carte */
+  --text-body:    0.875rem;  /* 14px - corps de texte */
+  --text-small:   0.75rem;   /* 12px - captions, légendes */
+  --text-caption: 0.6875rem; /* 11px - meta, labels en majuscules */
 
-  /* ── Espacements · échelle 4px (alignée Tailwind) ────────────── */
+  /* ── Espacements - échelle 4px (alignée Tailwind) ────────────── */
   --space-1:  0.25rem;   /* 4px */
   --space-2:  0.5rem;    /* 8px */
   --space-3:  0.75rem;   /* 12px */
@@ -55,14 +55,14 @@
   --space-12: 3rem;      /* 48px */
   --space-16: 4rem;      /* 64px */
 
-  /* ── Rayons · 4 niveaux uniquement ────────────────────────────── */
-  --radius-sm:  0.5rem;     /* 8px · badges, pills, kbd */
-  --radius-md:  0.75rem;    /* 12px · boutons, inputs */
-  --radius-lg:  1rem;       /* 16px · cards */
-  --radius-xl:  1.5rem;     /* 24px · modales, panneaux principaux */
+  /* ── Rayons - 4 niveaux uniquement ────────────────────────────── */
+  --radius-sm:  0.5rem;     /* 8px - badges, pills, kbd */
+  --radius-md:  0.75rem;    /* 12px - boutons, inputs */
+  --radius-lg:  1rem;       /* 16px - cards */
+  --radius-xl:  1.5rem;     /* 24px - modales, panneaux principaux */
   --radius-full: 9999px;
 
-  /* ── Ombres · 3 niveaux uniquement ────────────────────────────── */
+  /* ── Ombres - 3 niveaux uniquement ────────────────────────────── */
   --shadow-sm:  0 1px 2px 0 rgba(37, 62, 128, 0.04);
   --shadow-md:  0 4px 12px -2px rgba(37, 62, 128, 0.06);
   --shadow-lg:  0 12px 32px -8px rgba(37, 62, 128, 0.10);
@@ -83,7 +83,7 @@
   --text-muted-color:  var(--slate-500);
 }
 
-/* ── Dark mode · réécriture des variables sémantiques ─────────── */
+/* ── Dark mode - réécriture des variables sémantiques ─────────── */
 .dark {
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
@@ -100,10 +100,10 @@
 }
 
 /* =================================================================
-   COMPOSANTS PARTAGÉS · cohérence visuelle inter-vues
+   COMPOSANTS PARTAGÉS - cohérence visuelle inter-vues
    ================================================================= */
 
-/* ── Eyebrow · petit label en majuscules au-dessus des titres ── */
+/* ── Eyebrow - petit label en majuscules au-dessus des titres ── */
 .eyebrow {
   font-size: var(--text-caption);
   font-weight: 700;
@@ -112,7 +112,7 @@
   color: var(--gh-teal);
 }
 
-/* ── KPI card · uniformisée pour Dashboard, Modo, Structure ──── */
+/* ── KPI card - uniformisée pour Dashboard, Modo, Structure ──── */
 .kpi-card {
   background: white;
   border: 1px solid var(--slate-200);

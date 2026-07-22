@@ -1,5 +1,5 @@
 /*
- * htmlpdf-view.js · HTML → PDF conversion overlay with drag-drop zone.
+ * htmlpdf-view.js - HTML → PDF conversion overlay with drag-drop zone.
  * Calls /api/html-to-pdf (Landscape=true for BIQuery dashboards).
  * Floating button anchored above the Preflight button.
  */
@@ -105,7 +105,7 @@
         status.textContent = 'API dialog non disponible.';
         return;
       }
-      // Reuse select_structure_file or select_csv_file with a tweak · the host dialog accepts any filter.
+      // Reuse select_structure_file or select_csv_file with a tweak - the host dialog accepts any filter.
       const picker = window.pywebview.api.select_structure_file || window.pywebview.api.select_csv_file;
       let path;
       try { path = await picker(); } catch { path = null; }
@@ -120,7 +120,7 @@
       try {
         const r = await window.pywebview.api.html_to_pdf(htmlPath, null, landscape);
         const out = r?.payload?.output || r?.output || '(inconnu)';
-        status.innerHTML = `✅ PDF généré · <code style="font-size:12px;">${escapeHtml(out)}</code>`;
+        status.innerHTML = `✅ PDF généré - <code style="font-size:12px;">${escapeHtml(out)}</code>`;
         status.style.color = '#10B981';
       } catch (e) {
         status.textContent = '❌ ' + (e.message || e);

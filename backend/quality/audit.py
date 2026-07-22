@@ -1,19 +1,19 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
- backend/audit.py · Journal d'audit RGPD art. 30 · persistance SQLite
+ backend/audit.py - Journal d'audit RGPD art. 30 - persistance SQLite
 ═══════════════════════════════════════════════════════════════════════════════
 
-Table immutable · chaque ligne contient timestamp, opérateur, action, cible,
-hash SHA-256 chaîné au précédent (intégrité) · pas de UPDATE ni DELETE.
+Table immutable - chaque ligne contient timestamp, opérateur, action, cible,
+hash SHA-256 chaîné au précédent (intégrité) - pas de UPDATE ni DELETE.
 
-Path · %LOCALAPPDATA%/SovereignOS/audit.db (Windows) ou
+Path - %LOCALAPPDATA%/SovereignOS/audit.db (Windows) ou
        ~/.local/share/SovereignOS/audit.db (Linux/macOS)
        Override via env SOVEREIGN_AUDIT_DB.
 
-Conformité ·
-- Art. 30 RGPD · registre des activités de traitement
-- L. 1110-4 CSP · traçabilité des accès aux données nominatives
-- ANSSI niveau 2 · journal horodaté + hash chaîné
+Conformité -
+- Art. 30 RGPD - registre des activités de traitement
+- L. 1110-4 CSP - traçabilité des accès aux données nominatives
+- ANSSI niveau 2 - journal horodaté + hash chaîné
 ═══════════════════════════════════════════════════════════════════════════════
 """
 
@@ -76,8 +76,8 @@ def _last_hash(c: sqlite3.Connection) -> str:
 
 def append(who: str, action: str, target: str = "") -> dict:
     """
-    Append-only · journalise un événement et retourne la ligne insérée.
-    Le hash est chaîné · sha256(prev_hash + ts + who + action + target).
+    Append-only - journalise un événement et retourne la ligne insérée.
+    Le hash est chaîné - sha256(prev_hash + ts + who + action + target).
     """
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
     with _conn() as c:
@@ -107,7 +107,7 @@ def count() -> int:
 
 def verify_chain() -> dict:
     """
-    Vérifie l'intégrité de la chaîne · recalcule chaque hash depuis le début
+    Vérifie l'intégrité de la chaîne - recalcule chaque hash depuis le début
     et signale toute incohérence (signe d'altération).
     """
     with _conn() as c:

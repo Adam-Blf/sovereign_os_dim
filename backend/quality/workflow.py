@@ -1,12 +1,12 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
- backend/workflow.py · Pipeline TIM → MIM → ARS · persistance SQLite
+ backend/workflow.py - Pipeline TIM → MIM → ARS - persistance SQLite
 ═══════════════════════════════════════════════════════════════════════════════
 
-Table immutable · chaque item suit son cycle de vie ·
+Table immutable - chaque item suit son cycle de vie -
   tim → mim → preflight → ars → done
 
-Path · même répertoire que audit.db, fichier workflow.db.
+Path - même répertoire que audit.db, fichier workflow.db.
 Cohérent avec backend/audit.py (mêmes conventions XDG / LOCALAPPDATA).
 ═══════════════════════════════════════════════════════════════════════════════
 """
@@ -81,7 +81,7 @@ def add_item(ipp: str, label: str, owner: str, stage: Stage = "tim") -> dict:
 
 
 def advance(item_id: int, new_stage: Stage) -> dict | None:
-    """Avance un item dans le pipeline · met à jour updated."""
+    """Avance un item dans le pipeline - met à jour updated."""
     ts = _now()
     with _conn() as c:
         c.execute(
