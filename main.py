@@ -108,7 +108,7 @@ def main() -> None:
     _check_dependencies()
 
     _safe_print("=" * 60)
-    _safe_print("  Sovereign OS DIM V37.2 - GHT Psy Sud Paris")
+    _safe_print("  Sovereign OS V37.3 - Station DIM - GHT Psy Sud Paris")
     _safe_print("  100% local - aucun serveur, aucune socket, aucun flux reseau")
     _safe_print("=" * 60)
     _safe_print("")

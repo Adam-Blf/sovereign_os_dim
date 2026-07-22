@@ -12,7 +12,7 @@ authors = [
 # ════════════════════════════════════════════════════════════════════════════
 # RUFF - lint + format config
 # Keeps local ruff check and CI ruff check in lock-step.
-# Rules selected below - safe defaults for a WPF+Flask+pywebview codebase.
+# Rules selected below - safe defaults for a pywebview codebase.
 # Line length matches the existing codebase (no noise on current code).
 # ════════════════════════════════════════════════════════════════════════════
 [tool.ruff]
