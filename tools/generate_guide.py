@@ -1133,7 +1133,7 @@ FEATURES = [
             "15 validateurs Core , FINESS, IPP, DDN, CIM-10, mode legal, "
             "secteur ARS, chainage, duplicatas, orphelins, cohérence annee, "
             "format RPS, Fichsup, Ficum, Anonymisation, syntaxe.\n"
-            "CimSuggester Intelligence artificielle , fonctionnalité V35 , fournisseur LLM configurable (API nuage informatique ou Ollama local).\n"
+            "CimSuggester Intelligence artificielle , fonctionnalité V35 , modèle local par défaut (zéro configuration), Ollama intranet en option.\n"
             "Règles CIM-10 FR , ATIH MAM CIM-10 2024."
         ),
     ),

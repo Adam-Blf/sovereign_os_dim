@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM - Point d'entrée principal V37
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.2 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.3 - Station DIM GHT Sud Paris
 #
 #  Description :
 #    Application desktop 100% locale. AUCUN serveur, AUCUNE socket, AUCUN flux
@@ -125,7 +125,7 @@ def main() -> None:
         sys.exit(1)
 
     webview.create_window(
-        title="Sovereign OS V37.2 · Station DIM · GHT Psy Sud Paris",
+        title="Sovereign OS V37.3 · Station DIM · GHT Psy Sud Paris",
         url=index_html,
         js_api=api,
         width=1440,

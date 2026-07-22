@@ -1,4 +1,4 @@
-![version](https://img.shields.io/badge/version-V37.2-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![ml](https://img.shields.io/badge/ml-XGBoost%20%2B%20LightGBM-FF6F00?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
+![version](https://img.shields.io/badge/version-V37.3-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![ml](https://img.shields.io/badge/ml-XGBoost%20%2B%20LightGBM-FF6F00?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
 
 # Sovereign OS DIM - Station PMSI
 
@@ -9,13 +9,13 @@
 
 [![CI](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml)
 ![Status](https://img.shields.io/badge/status-production-brightgreen)
-![Version](https://img.shields.io/badge/version-V37.2-blue)
+![Version](https://img.shields.io/badge/version-V37.3-blue)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
 ![C#](https://img.shields.io/badge/C%23-.NET_8-239120?logo=c-sharp&logoColor=white)
 ![WebView2](https://img.shields.io/badge/WebView2-Chromium-3C4A5A?logo=microsoftedge&logoColor=white)
 ![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?logo=tailwindcss&logoColor=white)
 ![ML](https://img.shields.io/badge/ML-XGBoost%20%2B%20LightGBM-FF6F00?logo=scikitlearn&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-203_Py_%2B_30_JS-brightgreen)
+![Tests](https://img.shields.io/badge/tests-208_Py_%2B_30_JS-brightgreen)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -42,7 +42,7 @@ flowchart TB
     SENT["backend/interfaces/_sentinel.py<br/>cockpit - ML - audit - heatmap - workflow"]
     PROC["backend/pmsi + orgchart<br/>parsing 23 formats ATIH - MPI - structure"]
     AUDIT["backend/quality<br/>preflight DRUIDES - 15 validateurs"]
-    ML["backend/ml/<br/>XGBoost - LightGBM - 3 modèles"]
+    ML["backend/ml/<br/>XGBoost - LightGBM - sklearn - 6 modèles"]
     DB["SQLite<br/>Master Patient Index - persistance"]
 
     UI -->|window.pywebview.api| HOST --> API
@@ -59,8 +59,8 @@ flowchart TB
 - **Master Patient Index** - croisement IPP/DDN, persistance SQLite, reprise batch interrompu.
 - **Identitovigilance** - détection collisions, résolution automatique par fréquence majoritaire ou manuelle.
 - **Preflight DRUIDES** - 15 validateurs avant upload e-PMSI - FINESS, IPP, DDN, CIM-10, mode légal, secteur ARS, chaînage, duplicatas, orphelins.
-- **CimSuggester IA** - suggestion de code CIM-10 quand le DP est absent - fournisseur LLM configurable (API cloud ou Ollama local).
-- **Module ML XGBoost** *(V36)* - 3 modèles entraînés sur dataset synthétique ATIH 2000-2026 (PSY ~80 %) - format_detector (58 classes, acc 0.77), collision_risk (AUC 1.0), ddn_validity (AUC 0.86). Benchmark 4 algos par tâche (XGB default + tuned, LightGBM, RF), garde le meilleur. Voir `backend/ml/`.
+- **CimSuggester IA** - suggestion de code CIM-10 quand le DP est absent - modèle local (TF-IDF + régression logistique) par défaut, zéro configuration ; un serveur Ollama intranet peut le remplacer via `OLLAMA_BASE`.
+- **Module ML** *(V36-V37.3)* - 6 modèles entraînés sur dataset synthétique, tous locaux : format_detector (58 classes, acc 0.77), collision_risk (AUC 1.0), ddn_validity (AUC 0.86) *(V36, XGBoost/LightGBM)* ; cim_suggester *(TF-IDF + régression logistique)* ; prédicteur de durée de séjour *(XGBoost, MAE 11.1 j, R² 0.404 sur 20 000 séjours synthétiques)* ; regroupement de patients *(KMeans + UMAP)* *(V37.3)*. Benchmark 4 algos par tâche sur les modèles V36 (XGB default + tuned, LightGBM, RF), garde le meilleur. Voir `backend/ml/`.
 - **Structure polaire** - arborescence Pôle/Secteur/UM avec organigramme vectoriel + export PDF multi-pages.
 - **Analyse d'activité par UM** *(V35)* - drop-zone HTML5 accessible clavier, parsing RPS/RAA asynchrone en chunks 5000 lignes, détection des UM dormantes, export CSV UTF-8 BOM, badges rouges clignotants sur l'arbre.
 - **Dashboard Live** - 4 graphiques Chart.js + 6 KPI dérivés du MPI, export PDF paysage.
@@ -106,7 +106,7 @@ python build.py
 ## Tests
 
 ```bash
-# Python - 203 tests unitaires + intégration
+# Python - 208 tests unitaires + intégration
 python -m pytest tests/ -q
 
 # Frontend - 30 tests Node.js (helpers JS sans navigateur)
@@ -215,7 +215,7 @@ sovereign_os_dim/
 │   ├── capture_screenshots.py - Playwright headless
 │   └── moulinette_fichcomp/   - Moulinette Excel vers FICHCOMP/FICHDMI (code source)
 ├── tests/
-│   ├── test_data_processor.py - 203 tests Python
+│   ├── test_data_processor.py - 208 tests Python
 │   └── frontend/
 │       └── test_activity_analysis.mjs - 30 tests JS
 └── README.md

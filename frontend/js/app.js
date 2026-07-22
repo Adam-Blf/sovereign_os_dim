@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * SOVEREIGN OS V37.2 - Frontend Application Logic (Optimized)
+ * SOVEREIGN OS V37.3 - Frontend Application Logic (Optimized)
  * =============================================================================
  * Features:
  *   - Boot sequence with anime.js
@@ -148,22 +148,22 @@
     const VIEWS = {
         dashboard: { title: "Dashboard", sub: "Tableau de bord de production" },
         cockpit:   { title: "Cockpit chef DIM", sub: "Tableau de bord exécutif mensuel" },
-        health:    { title: "Health monitor",   sub: "Supervision technique · auto-refresh 30 s" },
+        health:    { title: "Health monitor",   sub: "Supervision technique - auto-refresh 30 s" },
         ars:       { title: "Sentinel ARS",     sub: "Prédicteur de rejet DRUIDES" },
         cespa:     { title: "CeSPA / CATTG",    sub: "Conformité réforme 4 juillet 2025" },
         diff:      { title: "Diff lots mensuels", sub: "Anti-régression M+1 vs M" },
-        cim:       { title: "CimSuggester",     sub: "IA codage CIM-10 · LLM Ollama local" },
-        lstm:      { title: "Prédicteur DMS",    sub: "LSTM · stratifié par groupe diagnostique" },
-        cluster:   { title: "Clustering UMAP",  sub: "UMAP + HDBSCAN · 6 archétypes patients" },
+        cim:       { title: "CimSuggester",     sub: "IA codage CIM-10 - LLM Ollama local" },
+        lstm:      { title: "Prédicteur DMS",    sub: "LSTM - stratifié par groupe diagnostique" },
+        cluster:   { title: "Clustering UMAP",  sub: "UMAP + HDBSCAN - 6 archétypes patients" },
         twin:      { title: "Hospital Twin",    sub: "Simulation impact tarifaire DFA" },
-        heatmap:   { title: "Heatmap géo",       sub: "Sectorisation 94 + 92 · file active" },
+        heatmap:   { title: "Heatmap géo",       sub: "Sectorisation 94 + 92 - file active" },
         pivot:     { title: "Tableaux croisés", sub: "Exploration ad hoc du MPI" },
         modo:      { title: "Sélection des fichiers",       sub: "Ingestion & traitement batch" },
         idv:       { title: "Identitovigilance", sub: "Master Patient Index - Résolution des collisions" },
         pilot:     { title: "PMSI Pilot CSV",   sub: "Export des données réconciliées" },
         csv:       { title: "Import CSV",       sub: "Visualiseur de fichiers CSV externes" },
-        structure: { title: "Structure",        sub: "Pôle / Secteur / UM · arborescence" },
-        rgpd:      { title: "RGPD",             sub: "DPO panel · audit art. 30" },
+        structure: { title: "Structure",        sub: "Pôle / Secteur / UM - arborescence" },
+        rgpd:      { title: "RGPD",             sub: "DPO panel - audit art. 30" },
         audit:     { title: "Audit chain",      sub: "Traçabilité immutable SHA-256" },
         workflow:  { title: "Workflows DIM",    sub: "TIM → MIM → Préflight → ARS" },
         tuto:      { title: "Tutoriel",         sub: "Guide pas-à-pas Sentinel" },
@@ -192,7 +192,7 @@
     function render(view) {
         const vp = $("os-viewport");
         if (!vp) return;
-        // Vues Sentinel · portées depuis docs/design/sentinel-refonte/
+        // Vues Sentinel - portées depuis docs/design/sentinel-refonte/
         const sentinelMap = {
             health: "health", ars: "ars", cespa: "cespa", diff: "diff",
             cim: "cim", lstm: "lstm", cluster: "cluster",
@@ -208,7 +208,7 @@
             case "dashboard": renderDashboard(vp); break;
             case "cockpit":
                 if (window.cockpitView) window.cockpitView.render();
-                else vp.innerHTML = "<p style='padding:40px;color:#64748B'>Cockpit module non chargé · vérifier l'inclusion de cockpit-view.js dans index.html</p>";
+                else vp.innerHTML = "<p style='padding:40px;color:#64748B'>Cockpit module non chargé - vérifier l'inclusion de cockpit-view.js dans index.html</p>";
                 break;
             case "modo": renderModo(vp); break;
             case "idv": renderIdv(vp); break;
@@ -250,7 +250,7 @@
                 <!-- Matrice -->
                 <div class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl">
                     <h3 class="font-black text-gh-navy uppercase text-sm tracking-tighter italic mb-6 flex items-center gap-3">
-                        <i data-lucide="database" class="w-5 h-5 text-gh-navy"></i> Matrice ATIH · ${d.formats} formats
+                        <i data-lucide="database" class="w-5 h-5 text-gh-navy"></i> Matrice ATIH - ${d.formats} formats
                     </h3>
                     <div class="grid grid-cols-2 gap-3" id="matrix-grid"></div>
                 </div>
@@ -434,7 +434,7 @@
                     <div class="col-span-3 flex flex-col justify-center">
                         <p class="font-mono font-black text-sm text-gh-navy dark:text-blue-400 tracking-tight truncate">${escHtml(p.ipp)}</p>
                         <p class="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500 mt-1">
-                            ${n} modalités · ${p.sources_count} sources
+                            ${n} modalités - ${p.sources_count} sources
                         </p>
                     </div>
                     <div class="col-span-5 flex items-center flex-wrap gap-1.5">${chips}</div>
@@ -565,7 +565,7 @@
             </div>
             <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-4 italic text-center">
                 Total IPP uniques cumulés sur la période : <span class="font-mono font-bold text-slate-600 dark:text-slate-300">${N(ap.total_unique_ipp)}</span>
-                &nbsp;·&nbsp; Un même patient est compté 1× par année et par champ (dé-doublonnage cross-recueils).
+                &nbsp;-&nbsp; Un même patient est compté 1× par année et par champ (dé-doublonnage cross-recueils).
             </p>
         `;
     }
@@ -753,7 +753,7 @@
 
         const s = S.stats || {};
         toast("Terminé",
-            `${S.files.length} fichiers · ${N(s.ipp_unique)} IPP · ${s.collisions} collisions`,
+            `${S.files.length} fichiers - ${N(s.ipp_unique)} IPP - ${s.collisions} collisions`,
             S.collisions.length > 0 ? "warning" : "success"
         );
     }
@@ -812,7 +812,7 @@
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic">MPI</h3>
-                    <p class="text-slate-400 dark:text-slate-500 text-xs mt-1">${N(m.total_ipp)} IPP · ${N(m.collisions)} collisions · ${N(m.resolved)} résolues</p>
+                    <p class="text-slate-400 dark:text-slate-500 text-xs mt-1">${N(m.total_ipp)} IPP - ${N(m.collisions)} collisions - ${N(m.resolved)} résolues</p>
                 </div>
                 <div class="flex gap-3">
                     <div class="relative">
@@ -972,7 +972,7 @@
                     <i data-lucide="file-down" class="w-10 h-10 text-gh-teal"></i>
                 </div>
                 <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic mb-3">Export PMSI-Pilot</h3>
-                <p class="text-slate-400 dark:text-slate-500 mb-8">CSV normalisés · séparateur ; · DDN pivot injectées</p>
+                <p class="text-slate-400 dark:text-slate-500 mb-8">CSV normalisés - séparateur ; - DDN pivot injectées</p>
 
                 <div class="grid grid-cols-3 gap-4 my-8">
                     <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-5 transition-colors duration-500"><p class="text-2xl font-black text-gh-navy dark:text-blue-400">${N(S.files.length)}</p><p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase mt-1">Fichiers</p></div>
@@ -1028,7 +1028,7 @@
         } else {
             const s = r.stats || {};
             if (t) t.textContent = `✅ ${s.csv_count} CSV`;
-            if (d) d.textContent = `${N(s.lines_exported)} lignes · ${N(s.ddn_corrected)} DDN corrigées · ${r.output_dir}`;
+            if (d) d.textContent = `${N(s.lines_exported)} lignes - ${N(s.ddn_corrected)} DDN corrigées - ${r.output_dir}`;
             toast("Export", `${s.csv_count} CSV exportés`, "success");
         }
         el.classList.remove("hidden");
@@ -1206,7 +1206,7 @@
                     <i data-lucide="table-2" class="w-10 h-10 text-gh-success"></i>
                 </div>
                 <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic mb-3">Import CSV</h3>
-                <p class="text-slate-400 dark:text-slate-500 mb-8">Importez et visualisez un fichier CSV · Auto-détection du séparateur (; , tab)</p>
+                <p class="text-slate-400 dark:text-slate-500 mb-8">Importez et visualisez un fichier CSV - Auto-détection du séparateur (; , tab)</p>
 
                 <button class="px-10 py-5 bg-gh-success text-white rounded-full font-black uppercase text-xs tracking-[0.2em] shadow-lg hover:bg-green-600 transition-all active:scale-95 mb-8" id="btn-csv-select">
                     <i data-lucide="file-up" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Sélectionner un fichier CSV
@@ -1243,7 +1243,7 @@
                         <h4 class="font-black text-gh-navy dark:text-blue-400 uppercase text-sm tracking-tighter italic flex items-center gap-2">
                             <i data-lucide="file-spreadsheet" class="w-4 h-4 text-gh-success"></i> ${escHtml(data.filename)}
                         </h4>
-                        <p class="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1">${N(data.total_rows)} lignes · ${data.headers.length} colonnes · sep: "${escHtml(data.separator)}"</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1">${N(data.total_rows)} lignes - ${data.headers.length} colonnes - sep: "${escHtml(data.separator)}"</p>
                     </div>
                 </div>
                 <div class="max-h-[50vh] overflow-auto custom-scroll rounded-2xl border border-slate-100 dark:border-slate-700">
@@ -1270,7 +1270,7 @@
     // backend/structure.py) et renvoie un arbre {code, label, children[]}
     // qu'on rend en <ul> imbriqués expand/collapse.
 
-    // Collecte les UM (feuilles métier) de l'arbre · level=UM sinon feuilles
+    // Collecte les UM (feuilles métier) de l'arbre - level=UM sinon feuilles
     // sans enfants. Retourne [{code,label,parentCode,parentLabel,sector}].
     function collectUmLeaves(roots) {
         const out = [];
@@ -1298,7 +1298,7 @@
     }
 
     // Lit un fichier ATIH en latin-1 (encodage natif PMSI). FileReader côté
-    // navigateur · fonctionne même si le dialog natif WebView2 est bloqué.
+    // navigateur - fonctionne même si le dialog natif WebView2 est bloqué.
     function readAtihFile(file) {
         return new Promise((resolve, reject) => {
             const r = new FileReader();
@@ -1349,7 +1349,7 @@
     }
 
     // Variante asynchrone de countUmActivity. Découpe en chunks de 5000 lignes
-    // avec `setTimeout(0)` entre chaque pour libérer le main thread · évite le
+    // avec `setTimeout(0)` entre chaque pour libérer le main thread - évite le
     // gel de l'UI sur RAA de 100k+ lignes (12 fichiers mensuels d'un CHS).
     // `onProgress(pct)` est appelé entre chaque chunk.
     async function countUmActivityAsync(lines, umCodes, onProgress) {
@@ -1381,7 +1381,7 @@
     }
 
     // ─── Parseur structure CSV/TSV 100 % client-side ───────────────────────
-    // Port JS de backend/structure.py · permet de charger un fichier de
+    // Port JS de backend/structure.py - permet de charger un fichier de
     // structure sans dependance au pont natif (dialog WebView2 bloque sur
     // certains postes). Accepte CSV/TSV/TXT avec colonnes libres ou fichier
     // plat indente.
@@ -1406,7 +1406,7 @@
     }
 
     function _parseCsvLine(line, delim) {
-        // CSV light · gere les guillemets simples sans virgule interne
+        // CSV light - gere les guillemets simples sans virgule interne
         const out = [];
         let cur = "", inQuote = false;
         for (let i = 0; i < line.length; i++) {
@@ -1524,13 +1524,13 @@
     }
 
     // Extrait les années / mois (AAAA ou AAAAMM ou MMAAAA) depuis les noms de
-    // fichiers ATIH. Convention GHT · `RPS_202410.txt`, `RAA_10_2024.txt`, etc.
+    // fichiers ATIH. Convention GHT - `RPS_202410.txt`, `RAA_10_2024.txt`, etc.
     function extractPeriodFromFilenames(filenames) {
         const years = new Set();
         const months = new Set();
         filenames.forEach(n => {
             const base = String(n).replace(/\.[^.]+$/, "");
-            // Années 4 chiffres · 2020-2030
+            // Années 4 chiffres - 2020-2030
             (base.match(/20[2-3]\d/g) || []).forEach(y => years.add(y));
             // AAAAMM (année + mois)
             (base.match(/20[2-3]\d(0[1-9]|1[0-2])/g) || []).forEach(ym => {
@@ -1608,12 +1608,12 @@
                 </div>
 
                 <input type="file" id="structure-file-input" accept=".csv,.tsv,.txt" class="hidden" />
-                <div id="structure-drop-zone" role="button" tabindex="0" aria-label="Déposer un fichier structure · ou appuyer sur Entrée pour ouvrir le sélecteur"
+                <div id="structure-drop-zone" role="button" tabindex="0" aria-label="Déposer un fichier structure - ou appuyer sur Entrée pour ouvrir le sélecteur"
                      class="mx-auto max-w-3xl border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-[2rem] p-10 text-center transition-all cursor-pointer hover:border-gh-navy hover:bg-blue-50/40 dark:hover:bg-blue-900/15 focus:outline-none focus:border-gh-navy focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900/40 mb-6">
                     <i data-lucide="file-up" class="w-12 h-12 text-gh-navy dark:text-blue-400 mx-auto mb-5"></i>
                     <p class="font-black uppercase tracking-wider text-gh-navy dark:text-blue-400 text-base mb-2">Glissez-déposez votre fichier structure</p>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">ou cliquez pour ouvrir le sélecteur · Entrée / Espace au clavier</p>
-                    <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Formats · CSV, TSV, TXT · colonnes LEVEL / CODE / PARENT / LABEL</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">ou cliquez pour ouvrir le sélecteur - Entrée / Espace au clavier</p>
+                    <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Formats - CSV, TSV, TXT - colonnes LEVEL / CODE / PARENT / LABEL</p>
                 </div>
 
                 <div class="text-center mb-4">
@@ -1626,7 +1626,7 @@
             </div>
         `;
 
-        // ─── Path client-side · drop-zone + file input HTML5 ──────────────
+        // ─── Path client-side - drop-zone + file input HTML5 ──────────────
         const dropZoneS = $("structure-drop-zone");
         const fileInputS = $("structure-file-input");
 
@@ -1647,7 +1647,7 @@
             }
             const parsed = parseStructureText(text);
             if (!parsed.tree.length) {
-                toast("Erreur", "Aucun nœud détecté · vérifiez le format du fichier", "error");
+                toast("Erreur", "Aucun nœud détecté - vérifiez le format du fichier", "error");
                 return;
             }
             performStructureRender({
@@ -1688,14 +1688,14 @@
         const btn = $("btn-structure-select");
         if (btn) btn.addEventListener("click", async () => {
             if (!API()) {
-                toast("Indisponible", "Bridge non disponible · utilisez le drop-zone", "warn");
+                toast("Indisponible", "Bridge non disponible - utilisez le drop-zone", "warn");
                 return;
             }
             let filepath;
             try {
                 filepath = await API().select_structure_file();
             } catch (e) {
-                toast("Erreur dialog", e.message || "Dialog natif indisponible · utilisez le drop-zone", "error");
+                toast("Erreur dialog", e.message || "Dialog natif indisponible - utilisez le drop-zone", "error");
                 return;
             }
             if (!filepath) return;
@@ -1705,7 +1705,7 @@
             try {
                 data = await API().load_structure(filepath);
             } catch (e) {
-                toast("Erreur bridge", e.message || "Échec du parsing · utilisez le drop-zone", "error");
+                toast("Erreur bridge", e.message || "Échec du parsing - utilisez le drop-zone", "error");
                 return;
             }
             performStructureRender(data, filepath);
@@ -1725,7 +1725,7 @@
             const s = data.summary || {};
             const byLevel = s.by_level || {};
             const levelChips = Object.keys(byLevel).map(k =>
-                `<span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">${escHtml(k)} · ${byLevel[k]}</span>`
+                `<span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">${escHtml(k)} - ${byLevel[k]}</span>`
             ).join(" ");
 
             out.innerHTML = `
@@ -1776,12 +1776,12 @@
                         </div>
                     </header>
 
-                    <div id="act-drop-zone" role="button" tabindex="0" aria-label="Déposer des fichiers RPS ou RAA · ou appuyer sur Entrée pour ouvrir le sélecteur"
+                    <div id="act-drop-zone" role="button" tabindex="0" aria-label="Déposer des fichiers RPS ou RAA - ou appuyer sur Entrée pour ouvrir le sélecteur"
                          class="mx-10 my-6 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-[2rem] p-12 text-center transition-all cursor-pointer hover:border-gh-teal hover:bg-teal-50/40 dark:hover:bg-teal-900/15 focus:outline-none focus:border-gh-teal focus:ring-4 focus:ring-teal-200 dark:focus:ring-teal-900/40">
                         <i data-lucide="file-stack" class="w-12 h-12 text-gh-teal mx-auto mb-5"></i>
                         <p class="font-black uppercase tracking-wider text-gh-navy dark:text-blue-400 text-base mb-2">Glissez-déposez vos fichiers RPS / RAA ici</p>
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">ou cliquez pour ouvrir le sélecteur · Entrée / Espace au clavier</p>
-                        <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Formats · RPS (154 c) · RAA (96 c) · RPSA · R3A · EDGAR · encodage latin-1</p>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">ou cliquez pour ouvrir le sélecteur - Entrée / Espace au clavier</p>
+                        <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Formats - RPS (154 c) - RAA (96 c) - RPSA - R3A - EDGAR - encodage latin-1</p>
                     </div>
 
                     <div id="act-status" class="mx-10 mb-6 hidden"></div>
@@ -1840,13 +1840,13 @@
                 setZoom(zoom + (e.deltaY < 0 ? 0.1 : -0.1));
             }, { passive: false });
 
-            // Export PDF · uniquement si on a un filepath natif (pas client-side)
+            // Export PDF - uniquement si on a un filepath natif (pas client-side)
             const btnPdf = $("btn-tree-export-pdf");
             if (btnPdf) {
                 if (!filepath) {
                     btnPdf.disabled = true;
                     btnPdf.classList.add("opacity-40");
-                    btnPdf.title = "Export PDF indisponible pour un fichier chargé via drop-zone · utilisez le dialog natif";
+                    btnPdf.title = "Export PDF indisponible pour un fichier chargé via drop-zone - utilisez le dialog natif";
                 } else {
                     btnPdf.addEventListener("click", async () => {
                         if (!API()) return;
@@ -1932,7 +1932,7 @@
                 document.body.appendChild(a);
                 a.click();
                 setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 100);
-                toast("Export CSV", `${inactive.length} UM · ${a.download}`, "success");
+                toast("Export CSV", `${inactive.length} UM - ${a.download}`, "success");
             }
 
             // Pose une classe sur les nœuds de l'arbre correspondant aux UM inactives.
@@ -1961,7 +1961,7 @@
                     return;
                 }
 
-                setStatus(`<i data-lucide="loader" class="w-4 h-4 inline mr-2 animate-spin"></i>${files.length} fichier${files.length > 1 ? "s" : ""} · lecture en cours…`, "info");
+                setStatus(`<i data-lucide="loader" class="w-4 h-4 inline mr-2 animate-spin"></i>${files.length} fichier${files.length > 1 ? "s" : ""} - lecture en cours…`, "info");
                 setProgress(0, "Lecture…");
                 if (window.lucide) lucide.createIcons();
 
@@ -1973,15 +1973,15 @@
                 try {
                     for (let idx = 0; idx < files.length; idx++) {
                         const f = files[idx];
-                        const baseLabel = `Fichier ${idx + 1}/${files.length} · ${f.name}`;
-                        setProgress((idx / files.length) * 100, baseLabel + " · lecture");
+                        const baseLabel = `Fichier ${idx + 1}/${files.length} - ${f.name}`;
+                        setProgress((idx / files.length) * 100, baseLabel + " - lecture");
                         const text = await readAtihFile(f);
                         const lines = text.split(/\r?\n/).filter(l => l.length > 0);
                         const det = detectAtihFormat(lines);
                         const counts = await countUmActivityAsync(lines, umCodes, pct => {
                             const fileBase = (idx / files.length) * 100;
                             const fileStep = (1 / files.length) * 100;
-                            setProgress(fileBase + (pct / 100) * fileStep, baseLabel + ` · analyse (${pct}%)`);
+                            setProgress(fileBase + (pct / 100) * fileStep, baseLabel + ` - analyse (${pct}%)`);
                         });
                         counts.forEach((v, k) => globalCounts.set(k, (globalCounts.get(k) || 0) + v));
                         grandTotalLines += lines.length;
@@ -1998,10 +1998,10 @@
                 // Période détectée depuis les noms de fichier
                 const period = extractPeriodFromFilenames(files.map(f => f.name));
                 const periodLabel = period
-                    ? (period.monthCount > 0 ? `${period.label} · ${period.monthCount} mois` : period.label)
+                    ? (period.monthCount > 0 ? `${period.label} - ${period.monthCount} mois` : period.label)
                     : "période non détectée (vérifiez les noms de fichier)";
 
-                // Agrégation · actives / inactives / tri
+                // Agrégation - actives / inactives / tri
                 const active = [], inactive = [];
                 umLeaves.forEach(u => {
                     const c = globalCounts.get(u.code) || 0;
@@ -2078,7 +2078,7 @@
                     </div>
                 `).join("") || `<p class="text-xs text-slate-400 italic">Aucune UM active</p>`;
 
-                // Hiérarchie métier · 3 cards · actives / inactives / couverture
+                // Hiérarchie métier - 3 cards - actives / inactives / couverture
                 actResult.innerHTML = `
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                         ${statCard("check-circle-2", "UM actives", active.length + " / " + totalUm, "green")}
@@ -2111,8 +2111,8 @@
 
                     <div class="bg-slate-50 dark:bg-slate-900/40 rounded-2xl p-6 mb-8">
                         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-                            <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600 dark:text-slate-300">Fichiers analysés · ${perFile.length} · ${grandTotalLines.toLocaleString("fr-FR")} lignes</p>
-                            <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400">Période · ${escHtml(periodLabel)}</span>
+                            <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600 dark:text-slate-300">Fichiers analysés - ${perFile.length} - ${grandTotalLines.toLocaleString("fr-FR")} lignes</p>
+                            <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400">Période - ${escHtml(periodLabel)}</span>
                         </div>
                         ${filesHtml || '<p class="text-xs text-slate-400">-</p>'}
                     </div>
@@ -2121,7 +2121,7 @@
                         <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
                             <h4 class="font-black uppercase tracking-[0.2em] text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
                                 <i data-lucide="circle-slash" class="w-4 h-4"></i>
-                                Unités sans activité · ${inactive.length}
+                                Unités sans activité - ${inactive.length}
                             </h4>
                             <button id="btn-act-export-csv" class="px-5 py-2.5 bg-gh-navy text-white rounded-full font-black uppercase text-[10px] tracking-[0.25em] shadow hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-2 ${inactive.length === 0 ? "hidden" : ""}">
                                 <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
@@ -2153,7 +2153,7 @@
                 if (btnExport) btnExport.addEventListener("click", () => exportInactiveCsv(inactive, periodLabel));
 
                 setStatus(
-                    `<i data-lucide="check-circle-2" class="w-4 h-4 inline mr-2"></i>Analyse terminée · ${perFile.length} fichier${perFile.length > 1 ? "s" : ""} · ${grandTotalLines.toLocaleString("fr-FR")} lignes · <strong>${inactive.length} UM sans activité</strong> sur la période <strong>${escHtml(periodLabel)}</strong>`,
+                    `<i data-lucide="check-circle-2" class="w-4 h-4 inline mr-2"></i>Analyse terminée - ${perFile.length} fichier${perFile.length > 1 ? "s" : ""} - ${grandTotalLines.toLocaleString("fr-FR")} lignes - <strong>${inactive.length} UM sans activité</strong> sur la période <strong>${escHtml(periodLabel)}</strong>`,
                     inactive.length > 0 ? "warn" : "ok"
                 );
                 if (window.lucide) lucide.createIcons();
@@ -2187,10 +2187,10 @@
                     if (e.dataTransfer && e.dataTransfer.files) runActivityAnalysis(e.dataTransfer.files);
                 });
             }
-            // Expose à window · testabilité via console/tests
+            // Expose à window - testabilité via console/tests
             window.__sovActivity = { collectUmLeaves, readAtihFile, detectAtihFormat, countUmActivity, countUmActivityAsync, extractPeriodFromFilenames, umLeaves };
 
-            toast("Structure", `${data.filename} · ${s.total_nodes} nœuds`, "success");
+            toast("Structure", `${data.filename} - ${s.total_nodes} nœuds`, "success");
             if (window.lucide) lucide.createIcons();
         }
 
