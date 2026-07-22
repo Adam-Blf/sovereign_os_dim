@@ -1,7 +1,7 @@
-# Sovereign OS DIM — Intégration PHP
+# Sovereign OS DIM - Intégration PHP
 
 Ce dossier contient la console PHP qui pilote le moteur ATIH via le bridge
-HTTP exposé par `python bridge.py`. Aucune dépendance Composer n'est requise —
+HTTP exposé par `python bridge.py`. Aucune dépendance Composer n'est requise -
 uniquement PHP 8.1+ avec l'extension `curl`.
 
 ## Sommaire
@@ -71,7 +71,7 @@ Les valeurs sont lues depuis `php/config.php`, qui les récupère via
 
 ## Utiliser le client PHP
 
-Le client est autonome (`php/SovereignClient.php`) — pas besoin d'autoloader.
+Le client est autonome (`php/SovereignClient.php`) - pas besoin d'autoloader.
 
 ```php
 require_once __DIR__ . '/SovereignClient.php';
@@ -120,7 +120,7 @@ La page `chart.php` accepte :
 Agrégations disponibles : `sum`, `avg`, `count`.
 Types de graphique : `bar`, `line`, `pie`, `doughnut`.
 
-Les fichiers restent côté serveur — aucun upload depuis le navigateur. Les
+Les fichiers restent côté serveur - aucun upload depuis le navigateur. Les
 données PMSI ne transitent donc jamais en clair sur un réseau externe.
 
 ## Sécurité
@@ -128,7 +128,7 @@ données PMSI ne transitent donc jamais en clair sur un réseau externe.
 - Le bridge écoute par défaut sur `127.0.0.1`. Pour l'ouvrir au LAN hospitalier,
   utilisez `--host 0.0.0.0` **et** définissez un `SOVEREIGN_BRIDGE_TOKEN`.
 - `SOVEREIGN_BRIDGE_ORIGINS` contrôle la liste blanche CORS (séparateur virgule).
-- Toutes les sorties PHP passent par `htmlspecialchars()` — aucune injection XSS.
+- Toutes les sorties PHP passent par `htmlspecialchars()` - aucune injection XSS.
 - Les comparaisons de token utilisent `secrets.compare_digest` (résistant aux
   timing attacks).
 

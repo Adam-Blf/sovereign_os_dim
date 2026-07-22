@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM — Synchronisation de la version
+#  SOVEREIGN OS DIM - Synchronisation de la version
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
 #
@@ -46,7 +46,7 @@ TARGETS = [
     ("main.py", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
     ("tools/generate_manual.py", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
     ("README.md", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
-    # Frontend — titre + footer + boot screen
+    # Frontend - titre + footer + boot screen
     ("frontend/index.html", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
     ("frontend/index.html", r"GHT Sud Paris Station V\d+\.\d+", "GHT Sud Paris Station {v}"),
     ("frontend/index.html", r"V\d+\.\d+\.ENTERPRISE", "{v}.ENTERPRISE"),
@@ -81,7 +81,7 @@ def patch_file(path: Path, pattern: str, replacement: str, dry_run: bool = False
     """
     Applique un replace regex. Retourne (nombre de remplacements EFFECTIFS,
     contenu final). On ne compte que les remplacements qui changent le
-    texte — un match regex qui réécrit la même chaîne (version déjà à
+    texte - un match regex qui réécrit la même chaîne (version déjà à
     jour) n'est pas compté comme désynchronisé.
     """
     if not path.is_file():

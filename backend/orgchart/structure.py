@@ -1,8 +1,8 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM — STRUCTURE PARSER v1.0
+#  SOVEREIGN OS DIM - STRUCTURE PARSER v1.0
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.0 - Station DIM GHT Sud Paris
 #
 #  Description :
 #    Parseur du "fichier de structure" d'un établissement : hiérarchie des
@@ -12,7 +12,7 @@
 #    Formats supportés :
 #      - CSV/TSV avec colonnes LEVEL;CODE;PARENT;LABEL  (format étendu)
 #      - CSV/TSV à colonnes libres : on devine parent/code/label via heading
-#      - Fichier plat indenté (2 ou 4 espaces = 1 niveau) — fallback simple
+#      - Fichier plat indenté (2 ou 4 espaces = 1 niveau) - fallback simple
 #
 #    Pourquoi un parseur dédié plutôt que réutiliser DataProcessor ?
 #      DataProcessor est positionnel (largeur fixe ATIH). Les fichiers de
@@ -29,7 +29,7 @@ from typing import Optional
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# DÉTECTION DU TYPE DE SECTEUR — Convention ARS
+# DÉTECTION DU TYPE DE SECTEUR - Convention ARS
 # ══════════════════════════════════════════════════════════════════════════════
 # Les codes secteur PSY suivent la convention nationale ARS :
 #     AA{L}NN  →  AA = département (75, 92, 94…)
@@ -64,11 +64,11 @@ _SECTOR_TYPES = {
 }
 
 _SECTOR_COLORS = {
-    "G": "#2563EB",  # bleu — adulte
-    "I": "#EC4899",  # pink — infanto
-    "D": "#DC2626",  # rouge — UMD
-    "P": "#7C3AED",  # violet — pénitentiaire
-    "Z": "#F97316",  # orange — intersectoriel
+    "G": "#2563EB",  # bleu - adulte
+    "I": "#EC4899",  # pink - infanto
+    "D": "#DC2626",  # rouge - UMD
+    "P": "#7C3AED",  # violet - pénitentiaire
+    "Z": "#F97316",  # orange - intersectoriel
 }
 
 
@@ -342,7 +342,7 @@ def parse_structure(filepath: str) -> dict:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# EXPORT PDF — Arborescence imprimable pour réunions / archivage
+# EXPORT PDF - Arborescence imprimable pour réunions / archivage
 # ══════════════════════════════════════════════════════════════════════════════
 # Pourquoi un PDF plutôt qu'un export PNG ou HTML ?
 #   - Imprimable tel quel pour staff / direction (besoin DIM réel)
@@ -391,7 +391,7 @@ def _draw_org_node(pdf, node: dict, x: float, y: float, node_w: float, node_h: f
     """
     Dessine un noeud de l'organigramme dans un rectangle (x, y, w, h).
 
-    Mise en page en 3 lignes proportionnelles à node_h — évite les
+    Mise en page en 3 lignes proportionnelles à node_h - évite les
     chevauchements aux petites échelles :
       - ligne 1 (haut, ~33% h) : CODE en gras coloré
       - ligne 2 (milieu, ~33% h) : LIBELLÉ en slate (tronqué si besoin)
@@ -463,7 +463,7 @@ def _draw_org_node(pdf, node: dict, x: float, y: float, node_w: float, node_h: f
             pdf.cell(inner_w, line_h, " - ".join(meta_bits), new_x="LMARGIN", new_y="NEXT")
 
 
-# Palette par LEVEL — cohérente avec la charte Sovereign OS (gh-navy, teal…).
+# Palette par LEVEL - cohérente avec la charte Sovereign OS (gh-navy, teal…).
 # Un niveau inconnu tombe sur gris neutre.
 _LEVEL_COLORS = {
     "ETABLISSEMENT": "#253e80",
@@ -647,7 +647,7 @@ def render_tree_pdf(parsed: dict, output_path: str) -> str:
       - Page 2+ : une page par sous-arbre de niveau 2 (ex. un pôle)
 
     Chaque page fait tenir son contenu entièrement dans la zone utile
-    grâce à un calcul d'échelle automatique — aucune coupure.
+    grâce à un calcul d'échelle automatique - aucune coupure.
     """
     from datetime import date
     from fpdf import FPDF

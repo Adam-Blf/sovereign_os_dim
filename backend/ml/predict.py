@@ -85,7 +85,7 @@ def _load_one(base_filename: str) -> Any | None:
             return lgb.Booster(model_file=p)
         except Exception:  # pragma: no cover
             pass
-    # sklearn pickle — fichier produit exclusivement par notre train.py local,
+    # sklearn pickle - fichier produit exclusivement par notre train.py local,
     # jamais exposé à des données non-maîtrisées. nosec justifié.
     p = os.path.join(MODELS_DIR, f"{base_filename}.pkl")
     if os.path.exists(p):

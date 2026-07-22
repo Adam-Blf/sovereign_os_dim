@@ -1,7 +1,7 @@
 <?php
 /**
  * ══════════════════════════════════════════════════════════════════════════════
- *  SOVEREIGN OS DIM — Identitovigilance (résolution des collisions)
+ *  SOVEREIGN OS DIM - Identitovigilance (résolution des collisions)
  * ══════════════════════════════════════════════════════════════════════════════
  *  Cette page liste les collisions IPP → DDN détectées par le moteur ATIH et
  *  permet à l'utilisateur de :
@@ -16,7 +16,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/SovereignClient.php';
 $config = require __DIR__ . '/config.php';
 
-// Client unique — même instance pour toute la requête
+// Client unique - même instance pour toute la requête
 $client = new SovereignClient(
     $config['bridge_url'],
     $config['bridge_token'],
@@ -72,7 +72,7 @@ function h($v): string
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Identitovigilance — Sovereign OS DIM</title>
+  <title>Identitovigilance - Sovereign OS DIM</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="assets/style.css" />
 </head>

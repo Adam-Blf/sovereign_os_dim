@@ -77,9 +77,9 @@ def test_cockpit_empty_state_when_no_data(client):
     assert r.status_code == 200
     body = r.json()
     assert body["has_data"] is False
-    # Pas de chiffres inventés · valeurs '—'
+    # Pas de chiffres inventés · valeurs '-'
     for k in body["kpis"]:
-        assert k["value"] == "—" or k["value"].isdigit() or "," in k["value"]
+        assert k["value"] == "-" or k["value"].isdigit() or "," in k["value"]
     assert body["file_active_history"] == []
     assert body["sector_alerts"] == []
 

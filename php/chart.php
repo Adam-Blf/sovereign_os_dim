@@ -1,7 +1,7 @@
 <?php
 /**
  * ══════════════════════════════════════════════════════════════════════════════
- *  SOVEREIGN OS DIM — Visualisation Excel multi-fichiers (Chart.js)
+ *  SOVEREIGN OS DIM - Visualisation Excel multi-fichiers (Chart.js)
  * ══════════════════════════════════════════════════════════════════════════════
  *  Cette page PHP transforme un ou plusieurs classeurs Excel en graphique
  *  interactif. Elle accepte aussi bien un seul fichier qu'une liste (un par
@@ -104,7 +104,7 @@ function h($v): string
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <title>Visualisation Excel — Sovereign OS DIM</title>
+    <title>Visualisation Excel - Sovereign OS DIM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="assets/style.css" />
     <!-- Chart.js depuis CDN : déjà utilisé par le frontend desktop -->
@@ -151,7 +151,7 @@ function h($v): string
           </div>
           <?php if (count($paths) > 1): ?>
             <div style="color:var(--text-dim);font-size:12px;margin-top:6px">
-              <?= count($paths) ?> fichier(s) — les colonnes sont lues depuis le premier.
+              <?= count($paths) ?> fichier(s) - les colonnes sont lues depuis le premier.
             </div>
           <?php endif; ?>
         </form>
@@ -169,7 +169,7 @@ function h($v): string
               <div>
                 <label for="label">Axe X (label)</label>
                 <select id="label" name="label" required>
-                  <option value="">— choisir —</option>
+                  <option value="">- choisir -</option>
                   <?php foreach ($headers as $head): ?>
                     <option value="<?= h($head) ?>" <?= $head === $labelCol ? 'selected' : '' ?>>
                       <?= h($head) ?>
@@ -180,7 +180,7 @@ function h($v): string
               <div>
                 <label for="value">Valeur (numérique)</label>
                 <select id="value" name="value" required>
-                  <option value="">— choisir —</option>
+                  <option value="">- choisir -</option>
                   <?php foreach ($headers as $head): ?>
                     <option value="<?= h($head) ?>" <?= $head === $valueCol ? 'selected' : '' ?>>
                       <?= h($head) ?>
@@ -228,7 +228,7 @@ function h($v): string
       <?php if ($chartPayload): ?>
         <section class="card">
           <h2>
-            3. Résultat —
+            3. Résultat -
             <?= h($chartPayload['label_col'] ?? '') ?> ×
             <?= h($chartPayload['value_col'] ?? '') ?>
             (<?= h($chartPayload['agg'] ?? '') ?>, mode <?= h($chartPayload['mode'] ?? '') ?>)
@@ -266,7 +266,7 @@ function h($v): string
         </section>
 
         <script>
-          // Rendu Chart.js — multi-séries si plusieurs fichiers en mode compare.
+          // Rendu Chart.js - multi-séries si plusieurs fichiers en mode compare.
           (function () {
             const labels = <?= json_encode($chartPayload['labels'], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
             const datasets = <?= json_encode($chartPayload['datasets'] ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;

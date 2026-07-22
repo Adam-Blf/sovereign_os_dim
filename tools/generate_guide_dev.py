@@ -654,7 +654,7 @@ def _render_cicd(pdf):
         "Types · feat, fix, docs, refactor, test, chore.\n"
         "Scope · backend, frontend, ml, bridge, guide, ci.\n"
         "Langue · anglais impératif, minuscules.\n"
-        "Tirets longs (—) interdits dans les messages de commit.\n"
+        "Tirets longs (-) interdits dans les messages de commit.\n"
         "Exemples valides ·\n"
         "  feat(ml): add RPS P15 format to ATIH_SPECS\n"
         "  fix(bridge): prevent path traversal in /export/txt",

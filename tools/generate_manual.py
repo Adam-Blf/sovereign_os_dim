@@ -1,13 +1,13 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM — Générateur de mode d'emploi PDF (fpdf2)
+#  SOVEREIGN OS DIM - Générateur de mode d'emploi PDF (fpdf2)
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.0 - Station DIM GHT Sud Paris
 #
 #  Description:
 #    Script utilitaire qui produit `docs/Sovereign_OS_DIM_Manuel.pdf`, le
 #    mode d'emploi officiel du bridge PHP et de la visualisation Excel.
-#    Utilise fpdf2 (fork moderne de PyFPDF — licence LGPL), installable via
+#    Utilise fpdf2 (fork moderne de PyFPDF - licence LGPL), installable via
 #    `pip install fpdf2>=2.8`.
 #
 #  Usage:
@@ -28,7 +28,7 @@ from datetime import date
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# CONTENU DU MANUEL — Structuré en sections { titre: [paragraphes|listes] }
+# CONTENU DU MANUEL - Structuré en sections { titre: [paragraphes|listes] }
 # ──────────────────────────────────────────────────────────────────────────────
 # Chaque section est un tuple (titre, blocs). Un bloc peut être :
 #   ("p",  "texte de paragraphe")
@@ -339,7 +339,7 @@ SECTIONS = [
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# GENERATION DU PDF — sous-classe de FPDF avec header/footer cohérents
+# GENERATION DU PDF - sous-classe de FPDF avec header/footer cohérents
 # ──────────────────────────────────────────────────────────────────────────────
 
 
@@ -347,7 +347,7 @@ def build_pdf(output_path: str) -> str:
     """Construit le PDF et retourne le chemin absolu de sortie."""
     try:
         from fpdf import FPDF
-    except ImportError as e:  # pragma: no cover — message humain
+    except ImportError as e:  # pragma: no cover - message humain
         print(
             "fpdf2 n'est pas installe.\n   -> pip install fpdf2>=2.8",
             file=sys.stderr,

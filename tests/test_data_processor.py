@@ -1,8 +1,8 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM — Tests unitaires du Data Processor
+#  SOVEREIGN OS DIM - Tests unitaires du Data Processor
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V34.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V34.0 - Station DIM GHT Sud Paris
 #  Date    : 2026-03-03
 #
 #  Couverture :
@@ -25,7 +25,7 @@ from backend.pmsi.data_processor import DataProcessor, ATIH_MATRIX, ATIH_FORMAT_
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 1 — IDENTIFICATION DE FORMAT (23 formats ATIH)
+# TEST 1 - IDENTIFICATION DE FORMAT (23 formats ATIH)
 # ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -170,7 +170,7 @@ class TestIdentifyFormat:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 2 — VALIDATION DE LIGNE
+# TEST 2 - VALIDATION DE LIGNE
 # ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -205,7 +205,7 @@ class TestLineValidation:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 3 — NORMALISATION IPP (cohérence BIQuery)
+# TEST 3 - NORMALISATION IPP (cohérence BIQuery)
 # ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -263,7 +263,7 @@ class TestNormalizeIPP:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 4 — EXTRACTION IPP/DDN (tous formats)
+# TEST 4 - EXTRACTION IPP/DDN (tous formats)
 # ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -304,7 +304,7 @@ class TestExtraction:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 5 — AUTO-DÉTECTION VARIANTES 2021
+# TEST 5 - AUTO-DÉTECTION VARIANTES 2021
 # ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -354,7 +354,7 @@ class TestFormatVariants:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 6 — COLLISIONS MPI ET RÉSOLUTION
+# TEST 6 - COLLISIONS MPI ET RÉSOLUTION
 # ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -422,7 +422,7 @@ class TestCollisions:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 7 — EXPORT CSV
+# TEST 7 - EXPORT CSV
 # ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -465,7 +465,7 @@ class TestExportCSV:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 8 — EXPORT SANITIZED TXT
+# TEST 8 - EXPORT SANITIZED TXT
 # ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -496,7 +496,7 @@ class TestExportSanitized:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 9 — SCAN ET PROCESSING BATCH
+# TEST 9 - SCAN ET PROCESSING BATCH
 # ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -538,7 +538,7 @@ class TestScanAndProcess:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 10 — MATRICE ATIH (intégrité)
+# TEST 10 - MATRICE ATIH (intégrité)
 # ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -586,7 +586,7 @@ class TestATIHMatrix:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 11 — LOGGING
+# TEST 11 - LOGGING
 # ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -625,7 +625,7 @@ class TestLogging:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 12 — CSV FORMULA INJECTION PROTECTION
+# TEST 12 - CSV FORMULA INJECTION PROTECTION
 # ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -689,7 +689,7 @@ class TestCsvSafe:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TEST 13 — INSPECT FILE
+# TEST 13 - INSPECT FILE
 # ══════════════════════════════════════════════════════════════════════════════
 
 

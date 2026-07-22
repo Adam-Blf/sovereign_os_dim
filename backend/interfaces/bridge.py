@@ -1,12 +1,12 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM — HTTP REST Bridge
+#  SOVEREIGN OS DIM - HTTP REST Bridge
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.0 - Station DIM GHT Sud Paris
 #
 #  Description:
 #    Pont HTTP REST exposant le moteur ATIH (DataProcessor) à des
-#    applications tierces — en particulier une application PHP déployée
+#    applications tierces - en particulier une application PHP déployée
 #    sur le même poste ou le même LAN hospitalier.
 #
 #    L'API pywebview (backend/api.py) reste réservée au frontend embarqué.
@@ -16,21 +16,21 @@
 #      - CORS restrictif (liste blanche d'origines)
 #
 #  Endpoints principaux :
-#    GET  /health                      — heartbeat (pas d'auth)
-#    GET  /api/matrix                  — 23 formats ATIH
-#    POST /api/identify                — identifie un fichier par son nom
-#    POST /api/scan                    — scanne des dossiers
-#    POST /api/process                 — scan + process en un appel
-#    GET  /api/collisions              — liste les collisions MPI
-#    POST /api/resolve                 — set_pivot manuel OU auto-résolution
-#    GET  /api/stats                   — stats dashboard
-#    POST /api/export                  — export CSV vers un dossier
-#    POST /api/export-sanitized        — export .txt purifié
-#    POST /api/inspect                 — inspection ligne par ligne
-#    POST /api/import-csv              — lecture d'un CSV externe
-#    POST /api/import-excel            — lecture d'un classeur Excel (.xlsx)
-#    POST /api/chart-from-excel        — série agrégée prête pour Chart.js
-#    POST /api/reset                   — remise à zéro
+#    GET  /health                      - heartbeat (pas d'auth)
+#    GET  /api/matrix                  - 23 formats ATIH
+#    POST /api/identify                - identifie un fichier par son nom
+#    POST /api/scan                    - scanne des dossiers
+#    POST /api/process                 - scan + process en un appel
+#    GET  /api/collisions              - liste les collisions MPI
+#    POST /api/resolve                 - set_pivot manuel OU auto-résolution
+#    GET  /api/stats                   - stats dashboard
+#    POST /api/export                  - export CSV vers un dossier
+#    POST /api/export-sanitized        - export .txt purifié
+#    POST /api/inspect                 - inspection ligne par ligne
+#    POST /api/import-csv              - lecture d'un CSV externe
+#    POST /api/import-excel            - lecture d'un classeur Excel (.xlsx)
+#    POST /api/chart-from-excel        - série agrégée prête pour Chart.js
+#    POST /api/reset                   - remise à zéro
 #
 #  Usage:
 #    python -m backend.interfaces.bridge --host 127.0.0.1 --port 8765
@@ -52,13 +52,13 @@ from backend.orgchart.structure import parse_structure
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# CONFIGURATION — Variables d'environnement
+# CONFIGURATION - Variables d'environnement
 # ──────────────────────────────────────────────────────────────────────────────
 
 DEFAULT_HOST = os.environ.get("SOVEREIGN_BRIDGE_HOST", "127.0.0.1")
 DEFAULT_PORT = int(os.environ.get("SOVEREIGN_BRIDGE_PORT", "8765"))
 # Jeton partagé entre le bridge et le client PHP. Un jeton vide DÉSACTIVE
-# l'authentification — à n'utiliser qu'en développement local.
+# l'authentification - à n'utiliser qu'en développement local.
 BRIDGE_TOKEN = os.environ.get("SOVEREIGN_BRIDGE_TOKEN", "")
 # Extensions autorisées pour les endpoints ATIH (inspect, export-sanitized).
 _ATIH_EXTS = frozenset({".txt"})
@@ -75,7 +75,7 @@ ALLOWED_ORIGINS = [
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# INSTANCE UNIQUE DU PROCESSEUR — partagé entre toutes les requêtes
+# INSTANCE UNIQUE DU PROCESSEUR - partagé entre toutes les requêtes
 # ──────────────────────────────────────────────────────────────────────────────
 # Pourquoi un singleton ? Le MPI (Master Patient Index) est un état construit
 # au fil des scans. Chaque requête HTTP doit voir l'état accumulé, sinon
@@ -117,7 +117,7 @@ def create_app() -> Flask:
     app.config["JSON_AS_ASCII"] = False
 
     # ──────────────────────────────────────────────────────────────────────
-    # CORS — En-têtes ajoutés à chaque réponse
+    # CORS - En-têtes ajoutés à chaque réponse
     # ──────────────────────────────────────────────────────────────────────
     @app.after_request
     def _cors(response):
@@ -133,11 +133,11 @@ def create_app() -> Flask:
 
     # Préflight CORS pour les POST cross-origin depuis le PHP
     @app.route("/<path:_any>", methods=["OPTIONS"])
-    def _preflight(_any):  # noqa: ARG001 — wildcard
+    def _preflight(_any):  # noqa: ARG001 - wildcard
         return ("", 204)
 
     # ──────────────────────────────────────────────────────────────────────
-    # AUTH — Jeton Bearer partagé
+    # AUTH - Jeton Bearer partagé
     # ──────────────────────────────────────────────────────────────────────
     def _require_token(view: Callable) -> Callable:
         """Décorateur : rejette toute requête sans le bon jeton Bearer."""
@@ -159,7 +159,7 @@ def create_app() -> Flask:
         return wrapper
 
     # ──────────────────────────────────────────────────────────────────────
-    # HEALTHCHECK — public, utilisé par le PHP pour vérifier la liaison
+    # HEALTHCHECK - public, utilisé par le PHP pour vérifier la liaison
     # ──────────────────────────────────────────────────────────────────────
     @app.get("/health")
     def health():
@@ -172,7 +172,7 @@ def create_app() -> Flask:
         )
 
     # ──────────────────────────────────────────────────────────────────────
-    # MATRIX & IDENTIFICATION — Lecture seule (stateless)
+    # MATRIX & IDENTIFICATION - Lecture seule (stateless)
     # ──────────────────────────────────────────────────────────────────────
     @app.get("/api/matrix")
     @_require_token
@@ -265,7 +265,7 @@ def create_app() -> Flask:
         )
 
     # ──────────────────────────────────────────────────────────────────────
-    # MPI — Collisions & résolution
+    # MPI - Collisions & résolution
     # ──────────────────────────────────────────────────────────────────────
     @app.get("/api/collisions")
     @_require_token
@@ -326,7 +326,7 @@ def create_app() -> Flask:
     @app.get("/api/active-population")
     @_require_token
     def api_active_population():
-        """File active PSY par année — KPI rapport d'activité DIM."""
+        """File active PSY par année - KPI rapport d'activité DIM."""
         return jsonify(_processor.compute_active_population())
 
     @app.get("/api/cross-modality")
@@ -405,7 +405,7 @@ def create_app() -> Flask:
         """
         Parse un fichier de structure (pôles / services / UM) et renvoie
         l'arbre JSON prêt à être dessiné côté client. Auto-détection du
-        séparateur et des colonnes — voir backend/structure.py.
+        séparateur et des colonnes - voir backend/structure.py.
         """
         payload = request.get_json(silent=True) or {}
         filepath = payload.get("path")
@@ -473,13 +473,13 @@ def create_app() -> Flask:
         Charge un classeur Excel et retourne (headers, rows, sheets).
 
         On lit en `values_only` pour éviter les références de cellules et on
-        coerce en str/float/int suivant le type natif — les dates sont
+        coerce en str/float/int suivant le type natif - les dates sont
         retournées en ISO pour être JSON-serializable.
         """
         try:
             from openpyxl import load_workbook
         except ImportError as e:
-            raise RuntimeError("openpyxl n'est pas installé — pip install openpyxl>=3.1") from e
+            raise RuntimeError("openpyxl n'est pas installé - pip install openpyxl>=3.1") from e
 
         from datetime import date, datetime as _dt
 
@@ -544,14 +544,14 @@ def create_app() -> Flask:
         Construit une (ou plusieurs) séries agrégées à partir d'un ou de
         plusieurs classeurs Excel, prêtes pour Chart.js.
 
-        Payload (entrée) — deux modes :
+        Payload (entrée) - deux modes :
 
           Mode 1 (un seul fichier, rétro-compatible) :
             {
               "path":  "/chemin/fichier.xlsx",
               "sheet": "Feuil1",                 (optionnel)
-              "label": "Mois",                   (colonne X — obligatoire)
-              "value": "Séjours",                (colonne numérique — obligatoire)
+              "label": "Mois",                   (colonne X - obligatoire)
+              "value": "Séjours",                (colonne numérique - obligatoire)
               "agg":   "sum" | "avg" | "count",  (défaut: sum)
               "top":   20                         (N buckets max, 0 = tous)
             }
@@ -732,7 +732,7 @@ def create_app() -> Flask:
         return jsonify(ok=True)
 
     # ──────────────────────────────────────────────────────────────────────
-    # ERROR HANDLERS — JSON plutôt que HTML
+    # ERROR HANDLERS - JSON plutôt que HTML
     # ──────────────────────────────────────────────────────────────────────
     @app.errorhandler(404)
     def _nf(_e):
@@ -759,7 +759,7 @@ def create_app() -> Flask:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Sovereign OS DIM — HTTP REST bridge (PHP integration)")
+    parser = argparse.ArgumentParser(description="Sovereign OS DIM - HTTP REST bridge (PHP integration)")
     parser.add_argument("--host", default=DEFAULT_HOST)
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     parser.add_argument(
@@ -772,7 +772,7 @@ def main():
     app = create_app()
     banner = (
         "╔══════════════════════════════════════════════════════════╗\n"
-        "║   🛡️  SOVEREIGN OS DIM — HTTP BRIDGE                    ║\n"
+        "║   🛡️  SOVEREIGN OS DIM - HTTP BRIDGE                    ║\n"
         "╚══════════════════════════════════════════════════════════╝\n"
         f"  Listening on http://{args.host}:{args.port}\n"
         f"  Auth: {'Bearer token required' if BRIDGE_TOKEN else 'DISABLED (dev)'}\n"

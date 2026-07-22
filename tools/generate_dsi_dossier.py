@@ -25,8 +25,8 @@ OUT = ROOT / "docs" / "Dossier_Conformite_DSI.pdf"
 FONTS = ROOT / "tools" / "fonts"
 
 # Palette GHT Psy Sud Paris (charte sobre institutionnelle).
-NAVY = (37, 62, 128)      # #253e80
-BLUE = (12, 125, 182)     # #0c7db6
+NAVY = (37, 62, 128)  # #253e80
+BLUE = (12, 125, 182)  # #0c7db6
 INK = (28, 32, 40)
 MUTED = (90, 96, 110)
 RULE = (210, 214, 222)

@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * SOVEREIGN OS V37.0 — Frontend Application Logic (Optimized)
+ * SOVEREIGN OS V37.0 - Frontend Application Logic (Optimized)
  * =============================================================================
  * Features:
  *   - Boot sequence with anime.js
@@ -87,7 +87,7 @@
             "Activation ThreadPoolExecutor…",
             "Calibration MPI & détection collisions…",
             "Chargement matrice positionnelle stricte…",
-            "Sovereign OS — Prêt.",
+            "Sovereign OS - Prêt.",
         ];
 
         // Anime.js progress bar
@@ -159,7 +159,7 @@
         heatmap:   { title: "Heatmap géo",       sub: "Sectorisation 94 + 92 · file active" },
         pivot:     { title: "Tableaux croisés", sub: "Exploration ad hoc du MPI" },
         modo:      { title: "Sélection des fichiers",       sub: "Ingestion & traitement batch" },
-        idv:       { title: "Identitovigilance", sub: "Master Patient Index — Résolution des collisions" },
+        idv:       { title: "Identitovigilance", sub: "Master Patient Index - Résolution des collisions" },
         pilot:     { title: "PMSI Pilot CSV",   sub: "Export des données réconciliées" },
         csv:       { title: "Import CSV",       sub: "Visualiseur de fichiers CSV externes" },
         structure: { title: "Structure",        sub: "Pôle / Secteur / UM · arborescence" },
@@ -281,11 +281,11 @@
                 </div>
             </div>
 
-            <!-- FILE ACTIVE PSY — KPI rapport d'activité (dé-doublonnage cross-recueils) -->
+            <!-- FILE ACTIVE PSY - KPI rapport d'activité (dé-doublonnage cross-recueils) -->
             <div class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl mt-10" id="active-pop-block">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="font-black text-gh-navy uppercase text-sm tracking-tighter italic flex items-center gap-3">
-                        <i data-lucide="users" class="w-5 h-5 text-gh-teal"></i> File active — par année et par champ
+                        <i data-lucide="users" class="w-5 h-5 text-gh-teal"></i> File active - par année et par champ
                     </h3>
                     <span class="text-[9px] font-mono text-slate-400 italic">IPP uniques dé-doublonnés cross-recueils</span>
                 </div>
@@ -294,7 +294,7 @@
                 </div>
             </div>
 
-            <!-- PARCOURS CROSS-MODALITÉS — Patients traversant plusieurs recueils PMSI -->
+            <!-- PARCOURS CROSS-MODALITÉS - Patients traversant plusieurs recueils PMSI -->
             <div id="cross-modality-block"></div>
         `;
 
@@ -341,7 +341,7 @@
             }
         } catch (e) { /* ok */ }
 
-        // File active PSY — tableau Année × Champ + total global.
+        // File active PSY - tableau Année × Champ + total global.
         // Si les noms de fichiers ne contiennent pas d'année détectable
         // (convention "RPS_2024.txt"), on le signale à l'utilisateur.
         try {
@@ -351,7 +351,7 @@
             }
         } catch (e) { /* ok */ }
 
-        // Parcours cross-modalités — top 50 patients les plus complexes.
+        // Parcours cross-modalités - top 50 patients les plus complexes.
         try {
             if (API()) {
                 const cm = await API().get_cross_modality_patients(2, 50);
@@ -364,7 +364,7 @@
     }
 
     // =========================================================================
-    // PARCOURS CROSS-MODALITÉS — patients traversant plusieurs recueils PMSI
+    // PARCOURS CROSS-MODALITÉS - patients traversant plusieurs recueils PMSI
     // =========================================================================
     // Rendu "journey cartography" : chaque ligne = un patient. Numéral de
     // complexité (2/3/4+) en teal→warning→error, chips format colorées par
@@ -422,7 +422,7 @@
 
             const span = p.years.length
                 ? `${escHtml(p.years[0])}→${escHtml(p.years[p.years.length - 1])}`
-                : "—";
+                : "-";
 
             return `
                 <div class="journey-row relative grid grid-cols-12 gap-6 px-10 py-6 border-b border-slate-100 dark:border-slate-800 transition-colors"
@@ -471,7 +471,7 @@
                             </h3>
                         </div>
                         <p class="text-[11px] text-slate-500 dark:text-slate-400 tracking-wide max-w-lg">
-                            Patients traversant plusieurs recueils PMSI — hospit, CMP, HDJ. Indicateur de complexité clinique non visible dans CPage ni DxCare.
+                            Patients traversant plusieurs recueils PMSI - hospit, CMP, HDJ. Indicateur de complexité clinique non visible dans CPage ni DxCare.
                         </p>
                     </div>
                     <div class="flex items-center gap-5">
@@ -497,7 +497,7 @@
             </section>
         `;
 
-        // Filtre live IPP — display:none sur les lignes non-concernées
+        // Filtre live IPP - display:none sur les lignes non-concernées
         // (pas de rebuild du DOM, préserve l'état de scroll et les animations)
         const input = containerEl.querySelector("#journey-filter");
         const list = containerEl.querySelector("#journey-list");
@@ -594,7 +594,7 @@
                         <i data-lucide="upload-cloud" class="w-10 h-10 text-gh-teal"></i>
                     </div>
                     <h3 class="text-2xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic mb-3">Déposer les fichiers PMSI</h3>
-                    <p class="text-slate-400 dark:text-slate-500 mb-6">Glissez vos dossiers ici — fichiers et sous-dossiers inclus</p>
+                    <p class="text-slate-400 dark:text-slate-500 mb-6">Glissez vos dossiers ici - fichiers et sous-dossiers inclus</p>
                     <div class="flex justify-center gap-4">
                         <button class="pointer-events-auto px-8 py-4 bg-gh-navy dark:bg-blue-600 text-white rounded-full font-black uppercase text-[10px] tracking-[0.2em] shadow-lg hover:bg-blue-800 dark:hover:bg-blue-700 transition-all active:scale-95" id="btn-add-folder">
                             <i data-lucide="folder-plus" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Ajouter dossier
@@ -766,7 +766,7 @@
         sec.classList.remove("hidden");
         if (cnt) cnt.textContent = `${S.files.length} fichiers`;
 
-        // f.name, f.path, f.dir viennent de os.listdir — un nom de fichier
+        // f.name, f.path, f.dir viennent de os.listdir - un nom de fichier
         // malveillant (ex : "a<script>.txt") pourrait injecter du HTML.
         // On échappe systématiquement et on remplace le onclick inline par
         // un data-attribute + binding addEventListener (évite toute
@@ -898,7 +898,7 @@
                 <div class="col-span-3">
                     ${c.pivot
                 ? `<span class="text-gh-success font-bold font-mono text-xs">${escHtml(c.pivot)}</span>`
-                : `<span class="text-gh-error font-bold italic text-xs">—</span>`}
+                : `<span class="text-gh-error font-bold italic text-xs">-</span>`}
                 </div>
                 <div class="col-span-2"><span class="bg-red-50 dark:bg-red-900/40 text-gh-error px-2 py-0.5 rounded-full text-[9px] font-black">${c.options.length} DDN</span></div>
                 <div class="col-span-2 text-[10px] text-slate-400 dark:text-slate-500 font-mono">${c.total_sources}</div>
@@ -980,7 +980,7 @@
                     <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-5 transition-colors duration-500"><p class="text-2xl font-black ${m.pending > 0 ? "text-gh-error" : "text-gh-success"}">${N(m.pending)}</p><p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase mt-1">Conflits</p></div>
                 </div>
 
-                ${m.pending > 0 ? `<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-xl p-4 mb-6 text-left text-xs text-amber-800 dark:text-amber-400 font-bold transition-colors duration-500"><i data-lucide="alert-triangle" class="w-4 h-4 inline mr-1"></i>${m.pending} collision(s) non résolue(s) — auto-résolution appliquée à l'export.</div>` : ""}
+                ${m.pending > 0 ? `<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-xl p-4 mb-6 text-left text-xs text-amber-800 dark:text-amber-400 font-bold transition-colors duration-500"><i data-lucide="alert-triangle" class="w-4 h-4 inline mr-1"></i>${m.pending} collision(s) non résolue(s) - auto-résolution appliquée à l'export.</div>` : ""}
 
                 <div class="flex justify-center gap-4">
                     <button class="px-10 py-5 bg-gh-teal dark:bg-teal-600 text-white rounded-full font-black uppercase text-xs tracking-[0.2em] shadow-lg hover:bg-teal-600 dark:hover:bg-teal-700 transition-all active:scale-95" id="btn-exp-def">
@@ -1068,8 +1068,8 @@
             return `<div class="flex gap-4 text-[10px] py-1.5 px-4 rounded ${cls}">
                 <span class="text-slate-600 w-10 text-right shrink-0">${l.num}</span>
                 <span class="font-bold w-16 ${col} shrink-0 uppercase">${escHtml(l.status)}</span>
-                <span class="text-blue-300 w-28 shrink-0 truncate">${escHtml(l.ipp || "—")}</span>
-                <span class="text-teal-300 w-20 shrink-0">${escHtml(l.ddn || "—")}</span>
+                <span class="text-blue-300 w-28 shrink-0 truncate">${escHtml(l.ipp || "-")}</span>
+                <span class="text-teal-300 w-20 shrink-0">${escHtml(l.ddn || "-")}</span>
                 <span class="text-slate-500 truncate flex-1">${escHtml((l.raw || "").substring(0, 80))}</span>
                 ${l.repair ? `<span class="text-amber-400 shrink-0 text-[8px]">${escHtml(l.repair)}</span>` : ""}
             </div>`;
@@ -1082,7 +1082,7 @@
                 if (!API()) return;
                 const r = await API().export_sanitized(fp);
                 if (r.error) { toast("Erreur", r.error, "error"); }
-                else { toast("Sanitized", `${r.name} — ${r.stats.pivoted} pivots injectés`, "success"); }
+                else { toast("Sanitized", `${r.name} - ${r.stats.pivoted} pivots injectés`, "success"); }
             };
         }
     };
@@ -1255,7 +1255,7 @@
                 ${data.rows.length > maxPreview ? `<p class="text-[10px] text-slate-400 dark:text-slate-500 mt-3 text-center italic">Affichage limité à ${maxPreview} lignes sur ${N(data.total_rows)}</p>` : ""}
             `;
             result.classList.remove("hidden");
-            toast("Import", `${data.filename} — ${N(data.total_rows)} lignes`, "success");
+            toast("Import", `${data.filename} - ${N(data.total_rows)} lignes`, "success");
             if (window.lucide) lucide.createIcons();
         });
 
@@ -1263,7 +1263,7 @@
     }
 
     // =========================================================================
-    // STRUCTURE — Arborescence pôles / services / UM
+    // STRUCTURE - Arborescence pôles / services / UM
     // =========================================================================
     // Affiche l'arbre du fichier de structure d'un établissement.
     // L'utilisateur choisit un .csv/.tsv/.txt, le backend le parse (voir
@@ -1799,7 +1799,7 @@
             `;
             out.classList.remove("hidden");
 
-            // Zoom — simple CSS transform sur #org-stage (pas de re-render).
+            // Zoom - simple CSS transform sur #org-stage (pas de re-render).
             const stage = $("org-stage");
             const zoomLabel = $("org-zoom-label");
             let zoom = 1;
@@ -2114,7 +2114,7 @@
                             <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600 dark:text-slate-300">Fichiers analysés · ${perFile.length} · ${grandTotalLines.toLocaleString("fr-FR")} lignes</p>
                             <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400">Période · ${escHtml(periodLabel)}</span>
                         </div>
-                        ${filesHtml || '<p class="text-xs text-slate-400">—</p>'}
+                        ${filesHtml || '<p class="text-xs text-slate-400">-</p>'}
                     </div>
 
                     <div class="mb-8">

@@ -1,8 +1,8 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM — Script de build Python
+#  SOVEREIGN OS DIM - Script de build Python
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.0 - Station DIM GHT Sud Paris
 #
 #  Description :
 #    Compile l'application en .exe portable Windows via PyInstaller.
@@ -50,7 +50,7 @@ HIDDEN_IMPORTS = [
     "pythonnet",
     "cffi",
     "pycparser",
-    # Modules du projet — normalement auto-détectés, mais on les explicite
+    # Modules du projet - normalement auto-détectés, mais on les explicite
     # pour que l'omission d'un import indirect ne casse pas le build.
     "backend.orgchart.structure",
     "backend.interfaces.bridge",
@@ -186,7 +186,7 @@ def main() -> None:
     args = parser.parse_args()
 
     print("=" * 70)
-    print("  SOVEREIGN OS DIM — Build Production")
+    print("  SOVEREIGN OS DIM - Build Production")
     print("=" * 70)
 
     if not args.skip_deps:
@@ -203,13 +203,13 @@ def main() -> None:
     if args.only in ("dir", "both"):
         _run(
             _pyinstaller_args("Sovereign_OS_DIM", onefile=False),
-            step="2/3 Format Dossier (onedir — demarrage rapide)",
+            step="2/3 Format Dossier (onedir - demarrage rapide)",
         )
 
     if args.only in ("portable", "both"):
         _run(
             _pyinstaller_args("Sovereign_OS_DIM_Portable", onefile=True),
-            step="3/3 Format Portable (onefile — 1 seul .exe)",
+            step="3/3 Format Portable (onefile - 1 seul .exe)",
         )
 
     print("\n" + "=" * 70)

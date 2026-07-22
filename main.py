@@ -1,8 +1,8 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM — Point d'entrée principal V37
+#  SOVEREIGN OS DIM - Point d'entrée principal V37
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.0 - Station DIM GHT Sud Paris
 #
 #  Description ·
 #    Lance l'écosystème complet en un seul .exe ·

@@ -1,4 +1,4 @@
-# Tests pour compute_active_population() — KPI "file active" du DIM PSY.
+# Tests pour compute_active_population() - KPI "file active" du DIM PSY.
 # On monte un MPI factice en bypassant le scan, pour contrôler exactement
 # les couples (IPP, année, format) et vérifier le dé-dédoublonnage.
 

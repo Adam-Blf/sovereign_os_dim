@@ -1,5 +1,5 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM — Test Configuration (conftest.py)
+#  SOVEREIGN OS DIM - Test Configuration (conftest.py)
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
 #  Purpose : Fixtures partagées pour toute la suite de tests
@@ -18,7 +18,7 @@ from backend.pmsi.data_processor import DataProcessor, ATIH_MATRIX
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# FIXTURES — Données de test réutilisables
+# FIXTURES - Données de test réutilisables
 # ──────────────────────────────────────────────────────────────────────────────
 
 

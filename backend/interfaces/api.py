@@ -1,8 +1,8 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM — API v3.0
+#  SOVEREIGN OS DIM - API v3.0
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.0 - Station DIM GHT Sud Paris
 #  Date    : 2026-03-02
 #
 #  Description:
@@ -17,7 +17,7 @@
 #    - Inspection : inspect_file (terminal line-by-line)
 #    - Export : export_csv, export_csv_to, export_sanitized
 #    - Stats : get_dashboard_stats, get_matrix_info, get_mpi_stats
-#    - Import CSV : import_csv_file (nouveau — import de CSV externes)
+#    - Import CSV : import_csv_file (nouveau - import de CSV externes)
 #    - Système : reset_all, get_pending_logs
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -49,7 +49,7 @@ class Api:
         self.current_files = []
 
     # ──────────────────────────────────────────────────────────────────────────
-    # GESTION DES DOSSIERS — Sélection, ajout, vidage
+    # GESTION DES DOSSIERS - Sélection, ajout, vidage
     # ──────────────────────────────────────────────────────────────────────────
 
     def select_folder(self):
@@ -96,7 +96,7 @@ class Api:
         return True
 
     # ──────────────────────────────────────────────────────────────────────────
-    # SCAN & PROCESS — Pipeline de traitement batch
+    # SCAN & PROCESS - Pipeline de traitement batch
     # ──────────────────────────────────────────────────────────────────────────
 
     def scan_files(self):
@@ -136,7 +136,7 @@ class Api:
         }
 
     # ──────────────────────────────────────────────────────────────────────────
-    # IMPORT CSV — Lecture et affichage de fichiers CSV externes
+    # IMPORT CSV - Lecture et affichage de fichiers CSV externes
     # ──────────────────────────────────────────────────────────────────────────
 
     def select_csv_file(self):
@@ -153,7 +153,7 @@ class Api:
         return None
 
     # ──────────────────────────────────────────────────────────────────────────
-    # STRUCTURE — Arborescence pôles / services / UM (fichier de structure)
+    # STRUCTURE - Arborescence pôles / services / UM (fichier de structure)
     # ──────────────────────────────────────────────────────────────────────────
 
     def select_structure_file(self):
@@ -258,7 +258,7 @@ class Api:
             return {"error": str(e)}
 
     # ──────────────────────────────────────────────────────────────────────────
-    # MPI — Master Patient Index (résolution des collisions)
+    # MPI - Master Patient Index (résolution des collisions)
     # ──────────────────────────────────────────────────────────────────────────
 
     def get_collisions(self):
@@ -290,7 +290,7 @@ class Api:
     def get_active_population(self):
         """
         File active PSY par année et par champ PMSI.
-        KPI central du rapport d'activité annuel DIM — pas disponible dans
+        KPI central du rapport d'activité annuel DIM - pas disponible dans
         CPage ni DxCare qui ne dé-doublonnent pas cross-recueils.
         """
         return self.processor.compute_active_population()
@@ -298,7 +298,7 @@ class Api:
     def get_cross_modality_patients(self, min_formats=2, limit=100):
         """
         Patients vus dans plusieurs modalités de soin (hospit + CMP + HDJ).
-        Indicateur de complexité de parcours — utile pour revues de cas.
+        Indicateur de complexité de parcours - utile pour revues de cas.
         """
         return self.processor.get_cross_modality_patients(min_formats=int(min_formats), limit=int(limit))
 
@@ -311,7 +311,7 @@ class Api:
         return [c for c in all_cols if q in c["ipp"].lower()]
 
     # ──────────────────────────────────────────────────────────────────────────
-    # INSPECTION — Analyse ligne par ligne pour le terminal
+    # INSPECTION - Analyse ligne par ligne pour le terminal
     # ──────────────────────────────────────────────────────────────────────────
 
     def inspect_file(self, filepath):
@@ -319,7 +319,7 @@ class Api:
         return self.processor.inspect_file(filepath)
 
     # ──────────────────────────────────────────────────────────────────────────
-    # EXPORT CSV — Données normalisées avec DDN pivot injectée
+    # EXPORT CSV - Données normalisées avec DDN pivot injectée
     # ──────────────────────────────────────────────────────────────────────────
 
     def export_csv(self):
@@ -349,7 +349,7 @@ class Api:
         return result
 
     # ──────────────────────────────────────────────────────────────────────────
-    # EXPORT SANITIZED — Fichier .txt purifié avec pivot injecté
+    # EXPORT SANITIZED - Fichier .txt purifié avec pivot injecté
     # ──────────────────────────────────────────────────────────────────────────
 
     def export_sanitized(self, filepath):
@@ -360,7 +360,7 @@ class Api:
         return self.processor.export_sanitized_txt(filepath, out)
 
     # ──────────────────────────────────────────────────────────────────────────
-    # STATISTIQUES — Dashboard et matrice ATIH
+    # STATISTIQUES - Dashboard et matrice ATIH
     # ──────────────────────────────────────────────────────────────────────────
 
     def get_matrix_info(self):
@@ -392,7 +392,7 @@ class Api:
         }
 
     # ──────────────────────────────────────────────────────────────────────────
-    # SYSTÈME — Reset et logs
+    # SYSTÈME - Reset et logs
     # ──────────────────────────────────────────────────────────────────────────
 
     def reset_all(self):

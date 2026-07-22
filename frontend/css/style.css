@@ -1,5 +1,5 @@
 /* =================================================================
-   SOVEREIGN OS V32.0 — Premium Design System
+   SOVEREIGN OS V32.0 - Premium Design System
    Author  : Adam Beloucif
    Date    : 2026-03-02
    ================================================================= */
@@ -814,7 +814,7 @@ kbd {
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
 }
 
-/* Liseré coloré à gauche — accent par level */
+/* Liseré coloré à gauche - accent par level */
 .org-node::before {
     content: '';
     position: absolute;
@@ -866,7 +866,7 @@ kbd {
     color: #CBD5E1;
 }
 
-/* Couleurs par LEVEL — cohérent avec _LEVEL_COLORS (backend/structure.py) */
+/* Couleurs par LEVEL - cohérent avec _LEVEL_COLORS (backend/structure.py) */
 .org-level-etablissement::before { background: #253e80; }
 .org-level-etablissement .org-code { color: #253e80; }
 
@@ -888,7 +888,7 @@ kbd {
     width: 100%;
 }
 
-/* Badge type de secteur ARS (G/I/D/P/Z) — petit pill coloré à droite du code */
+/* Badge type de secteur ARS (G/I/D/P/Z) - petit pill coloré à droite du code */
 .org-sector-badge {
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
@@ -900,7 +900,7 @@ kbd {
     flex-shrink: 0;
 }
 
-/* Liseré gauche par TYPE DE SECTEUR — prioritaire sur le level.
+/* Liseré gauche par TYPE DE SECTEUR - prioritaire sur le level.
    Couleurs : G=bleu, I=rose, D=rouge, P=violet, Z=orange. */
 .org-sector-g::before { background: #2563EB !important; }
 .org-sector-g .org-sector-badge { background: #2563EB; }

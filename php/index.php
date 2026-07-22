@@ -1,7 +1,7 @@
 <?php
 /**
  * ══════════════════════════════════════════════════════════════════════════════
- *  SOVEREIGN OS DIM — Console PHP (tableau de bord du bridge HTTP)
+ *  SOVEREIGN OS DIM - Console PHP (tableau de bord du bridge HTTP)
  * ══════════════════════════════════════════════════════════════════════════════
  *  Cette page est l'interface PHP officielle qui consomme le bridge Python.
  *  Elle permet à un utilisateur DIM de piloter le moteur ATIH depuis un
@@ -49,7 +49,7 @@ try {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// TRAITEMENT DES ACTIONS POST — scan/process/reset
+// TRAITEMENT DES ACTIONS POST - scan/process/reset
 // ──────────────────────────────────────────────────────────────────────────────
 if ($health && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -63,7 +63,7 @@ if ($health && $_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $procResult = $client->process($folders);
             $notice = sprintf(
-                '%d fichier(s) traité(s) — %s IPP uniques, %s collision(s)',
+                '%d fichier(s) traité(s) - %s IPP uniques, %s collision(s)',
                 (int) ($procResult['stats']['files_processed'] ?? 0),
                 number_format((int) ($procResult['stats']['ipp_unique'] ?? 0), 0, ',', ' '),
                 (int) ($procResult['stats']['collisions'] ?? 0)
@@ -89,7 +89,7 @@ if ($health) {
     }
 }
 
-// Helper d'échappement — évite l'oubli de htmlspecialchars
+// Helper d'échappement - évite l'oubli de htmlspecialchars
 function h($v): string
 {
     return htmlspecialchars((string) $v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -99,7 +99,7 @@ function h($v): string
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Sovereign OS DIM — Console PHP</title>
+  <title>Sovereign OS DIM - Console PHP</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="assets/style.css" />
 </head>
@@ -124,18 +124,18 @@ function h($v): string
       <div class="alert ok"><?= h($notice) ?></div>
     <?php endif; ?>
 
-    <!-- Carte santé — heartbeat du bridge -->
+    <!-- Carte santé - heartbeat du bridge -->
     <section class="card">
       <h2>Santé du bridge</h2>
       <?php if ($health): ?>
         <div class="grid">
           <div class="stat">
             <div class="label">Service</div>
-            <div class="value"><?= h($health['service'] ?? '—') ?></div>
+            <div class="value"><?= h($health['service'] ?? '-') ?></div>
           </div>
           <div class="stat">
             <div class="label">Version</div>
-            <div class="value"><?= h($health['version'] ?? '—') ?></div>
+            <div class="value"><?= h($health['version'] ?? '-') ?></div>
           </div>
           <div class="stat">
             <div class="label">Formats ATIH</div>
@@ -151,7 +151,7 @@ function h($v): string
       <?php endif; ?>
     </section>
 
-    <!-- Carte statistiques — dashboard PMSI -->
+    <!-- Carte statistiques - dashboard PMSI -->
     <?php if ($stats): ?>
       <section class="card">
         <h2>Dashboard PMSI</h2>
@@ -181,7 +181,7 @@ function h($v): string
       </section>
     <?php endif; ?>
 
-    <!-- Carte action — scan + process -->
+    <!-- Carte action - scan + process -->
     <section class="card">
       <h2>Lancer un scan + traitement</h2>
       <form method="post">

@@ -1,10 +1,10 @@
 <?php
 /**
  * ══════════════════════════════════════════════════════════════════════════════
- *  SOVEREIGN OS DIM — PHP Client
+ *  SOVEREIGN OS DIM - PHP Client
  * ══════════════════════════════════════════════════════════════════════════════
  *  Author  : Adam Beloucif
- *  Project : Sovereign OS V32.0 — Station DIM GHT Sud Paris
+ *  Project : Sovereign OS V32.0 - Station DIM GHT Sud Paris
  *
  *  Client PHP pour le bridge HTTP exposé par `python bridge.py`.
  *  Encapsule les appels cURL, l'authentification Bearer et la sérialisation JSON.

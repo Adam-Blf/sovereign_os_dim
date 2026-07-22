@@ -1,8 +1,8 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM — DATA PROCESSOR v3.1
+#  SOVEREIGN OS DIM - DATA PROCESSOR v3.1
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.0 — Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.0 - Station DIM GHT Sud Paris
 #  Date    : 2026-03-03
 #
 #  Description:
@@ -37,14 +37,14 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# MATRICE ATIH — 23 formats normalisés, positions 0-indexées
+# MATRICE ATIH - 23 formats normalisés, positions 0-indexées
 # ══════════════════════════════════════════════════════════════════════════════
 # Chaque format ATIH a une longueur fixe et des positions dédiées pour l'IPP
 # (Identifiant Permanent du Patient) et la DDN (Date De Naissance).
 # Cette matrice est la source de vérité absolue pour le parsing positionnel.
-# Ref: Documentation technique ATIH — Formats de recueil 2010–2026
+# Ref: Documentation technique ATIH - Formats de recueil 2010-2026
 #
-# COUVERTURE COMPLÈTE — 4 champs PMSI depuis 2010 :
+# COUVERTURE COMPLÈTE - 4 champs PMSI depuis 2010 :
 #   ┌─────────────┬───────────────────────────────────────────────────────┐
 #   │ Champ       │ Formats                                               │
 #   ├─────────────┼───────────────────────────────────────────────────────┤
@@ -71,7 +71,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 # ══════════════════════════════════════════════════════════════════════════════
 
 # ══════════════════════════════════════════════════════════════════════════════
-# VARIANTES DE FORMAT PAR ANNÉE — Gestion des transitions ATIH
+# VARIANTES DE FORMAT PAR ANNÉE - Gestion des transitions ATIH
 # ══════════════════════════════════════════════════════════════════════════════
 # En 2021, certains établissements (ex: Fondation Vallée) ont produit des
 # fichiers RPS et RAA avec des longueurs de ligne différentes de la norme
@@ -110,7 +110,7 @@ ATIH_MATRIX = {
         "length": 154,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "Résumé Par Séquence — Hospitalisation PSY (Format P05)",
+        "desc": "Résumé Par Séquence - Hospitalisation PSY (Format P05)",
         "field": "PSY",
         "since": 2007,
     },
@@ -118,7 +118,7 @@ ATIH_MATRIX = {
         "length": 96,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "Recueil Activité Ambulatoire — PSY (Format P06, DAF)",
+        "desc": "Recueil Activité Ambulatoire - PSY (Format P06, DAF)",
         "field": "PSY",
         "since": 2007,
     },
@@ -130,7 +130,7 @@ ATIH_MATRIX = {
         "length": 154,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "Résumé Par Séquence Anonyme — PSY (ARS)",
+        "desc": "Résumé Par Séquence Anonyme - PSY (ARS)",
         "field": "PSY",
         "since": 2007,
     },
@@ -138,7 +138,7 @@ ATIH_MATRIX = {
         "length": 96,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "Résumé Activité Ambulatoire Anonyme — PSY (ARS)",
+        "desc": "Résumé Activité Ambulatoire Anonyme - PSY (ARS)",
         "field": "PSY",
         "since": 2009,
     },
@@ -156,7 +156,7 @@ ATIH_MATRIX = {
         "length": 96,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "EDGAR — Cotation actes ambulatoires PSY (Entretien, Groupe...)",
+        "desc": "EDGAR - Cotation actes ambulatoires PSY (Entretien, Groupe...)",
         "field": "PSY",
         "since": 2015,
     },
@@ -164,7 +164,7 @@ ATIH_MATRIX = {
         "length": 80,
         "ipp": (18, 38),
         "ddn": (38, 46),
-        "desc": "FicUM-PSY — Unités médicales psychiatriques (secteurs)",
+        "desc": "FicUM-PSY - Unités médicales psychiatriques (secteurs)",
         "field": "PSY",
         "since": 2017,
     },
@@ -172,12 +172,12 @@ ATIH_MATRIX = {
         "length": 310,
         "ipp": (221, 241),
         "ddn": (41, 49),
-        "desc": "RSF-ACE PSY — Activité externe psychiatrique (OQN)",
+        "desc": "RSF-ACE PSY - Activité externe psychiatrique (OQN)",
         "field": "PSY",
         "since": 2020,
     },
     # ═══════════════════════════════════════════════════════════════════════
-    # FORMATS SSR / SMR — Soins de Suite et Réadaptation (renommé SMR 2022)
+    # FORMATS SSR / SMR - Soins de Suite et Réadaptation (renommé SMR 2022)
     # ═══════════════════════════════════════════════════════════════════════
     # RHS : Résumé Hebdomadaire Standardisé (équivalent du RSS pour le SSR).
     #   Créé en 2003, le RHS est le format fondateur du recueil SSR.
@@ -189,7 +189,7 @@ ATIH_MATRIX = {
         "length": 192,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "Résumé Hebdomadaire Standardisé — SSR/SMR (S04)",
+        "desc": "Résumé Hebdomadaire Standardisé - SSR/SMR (S04)",
         "field": "SSR",
         "since": 2003,
     },
@@ -197,7 +197,7 @@ ATIH_MATRIX = {
         "length": 192,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "SSR-HA — RHS Anonymisé (transmission ARS/ATIH)",
+        "desc": "SSR-HA - RHS Anonymisé (transmission ARS/ATIH)",
         "field": "SSR",
         "since": 2009,
     },
@@ -205,7 +205,7 @@ ATIH_MATRIX = {
         "length": 140,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "RAPSS — Résumé Anonyme Par Sous-Séquence SSR/SMR",
+        "desc": "RAPSS - Résumé Anonyme Par Sous-Séquence SSR/SMR",
         "field": "SSR",
         "since": 2009,
     },
@@ -213,12 +213,12 @@ ATIH_MATRIX = {
         "length": 105,
         "ipp": (11, 31),
         "ddn": (31, 39),
-        "desc": "FichComp SMR — Données complémentaires SSR (MO, transports)",
+        "desc": "FichComp SMR - Données complémentaires SSR (MO, transports)",
         "field": "SSR",
         "since": 2012,
     },
     # ═══════════════════════════════════════════════════════════════════════
-    # FORMATS HAD — Hospitalisation À Domicile
+    # FORMATS HAD - Hospitalisation À Domicile
     # ═══════════════════════════════════════════════════════════════════════
     # RPSS : Résumé Par Sous-Séquence HAD (équivalent RHS/RSS pour le HAD).
     #   Créé en 2005, le RPSS est le format natif du recueil HAD.
@@ -230,7 +230,7 @@ ATIH_MATRIX = {
         "length": 162,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "RPSS — Résumé Par Sous-Séquence HAD (H07)",
+        "desc": "RPSS - Résumé Par Sous-Séquence HAD (H07)",
         "field": "HAD",
         "since": 2005,
     },
@@ -238,7 +238,7 @@ ATIH_MATRIX = {
         "length": 162,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "RAPSS-HAD — Résumé Anonyme HAD (transmission ARS)",
+        "desc": "RAPSS-HAD - Résumé Anonyme HAD (transmission ARS)",
         "field": "HAD",
         "since": 2009,
     },
@@ -246,7 +246,7 @@ ATIH_MATRIX = {
         "length": 105,
         "ipp": (11, 31),
         "ddn": (31, 39),
-        "desc": "FichComp HAD — Données complémentaires HAD (DMI, médic.)",
+        "desc": "FichComp HAD - Données complémentaires HAD (DMI, médic.)",
         "field": "HAD",
         "since": 2010,
     },
@@ -254,7 +254,7 @@ ATIH_MATRIX = {
         "length": 160,
         "ipp": (21, 41),
         "ddn": (41, 49),
-        "desc": "SSRHA-HAD — Résumé anonymisé HAD post-groupage",
+        "desc": "SSRHA-HAD - Résumé anonymisé HAD post-groupage",
         "field": "HAD",
         "since": 2012,
     },
@@ -265,7 +265,7 @@ ATIH_MATRIX = {
         "length": 518,
         "ipp": (265, 285),
         "ddn": (19, 27),
-        "desc": "Vidhosp V015/V016 — Chaînage anonyme (obligatoire depuis 2009)",
+        "desc": "Vidhosp V015/V016 - Chaînage anonyme (obligatoire depuis 2009)",
         "field": "TRANSVERSAL",
         "since": 2009,
     },
@@ -273,7 +273,7 @@ ATIH_MATRIX = {
         "length": 206,
         "ipp": (18, 38),
         "ddn": (38, 46),
-        "desc": "ANO-HOSP — Anonymisation patient (couverture AMO)",
+        "desc": "ANO-HOSP - Anonymisation patient (couverture AMO)",
         "field": "TRANSVERSAL",
         "since": 2009,
     },
@@ -281,18 +281,18 @@ ATIH_MATRIX = {
         "length": 105,
         "ipp": (11, 31),
         "ddn": (31, 39),
-        "desc": "FichComp — Données complémentaires (DMI, isolement, prothèses)",
+        "desc": "FichComp - Données complémentaires (DMI, isolement, prothèses)",
         "field": "TRANSVERSAL",
         "since": 2010,
     },
     # ═══════════════════════════════════════════════════════════════════════
-    # FORMATS MCO — Médecine Chirurgie Obstétrique (interopérabilité)
+    # FORMATS MCO - Médecine Chirurgie Obstétrique (interopérabilité)
     # ═══════════════════════════════════════════════════════════════════════
     "RSS": {
         "length": 177,
         "ipp": (12, 32),
         "ddn": (62, 70),
-        "desc": "RSS/RUM — MCO (format fondateur depuis 1991)",
+        "desc": "RSS/RUM - MCO (format fondateur depuis 1991)",
         "field": "MCO",
         "since": 1991,
     },
@@ -300,7 +300,7 @@ ATIH_MATRIX = {
         "length": 310,
         "ipp": (221, 241),
         "ddn": (41, 49),
-        "desc": "RSF-A — Activité externe MCO",
+        "desc": "RSF-A - Activité externe MCO",
         "field": "MCO",
         "since": 2009,
     },
@@ -308,7 +308,7 @@ ATIH_MATRIX = {
         "length": 350,
         "ipp": (39, 59),
         "ddn": (89, 97),
-        "desc": "RSF-B — Séjour MCO",
+        "desc": "RSF-B - Séjour MCO",
         "field": "MCO",
         "since": 2009,
     },
@@ -316,7 +316,7 @@ ATIH_MATRIX = {
         "length": 280,
         "ipp": (30, 50),
         "ddn": (50, 58),
-        "desc": "RSF-C — Honoraires MCO",
+        "desc": "RSF-C - Honoraires MCO",
         "field": "MCO",
         "since": 2009,
     },
@@ -324,7 +324,7 @@ ATIH_MATRIX = {
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# REGEX PRÉ-COMPILÉS — Performance (compile une seule fois au chargement)
+# REGEX PRÉ-COMPILÉS - Performance (compile une seule fois au chargement)
 # ══════════════════════════════════════════════════════════════════════════════
 # L'identification du format est critique : elle se base sur le NOM du fichier,
 # pas son contenu. Les conventions de nommage ATIH sont flexibles (tirets,
@@ -417,7 +417,7 @@ class DataProcessor:
         self._variant_cache: dict = {}
 
     # ──────────────────────────────────────────────────────────────────────────
-    # LOGGING — Messages horodatés envoyés au frontend via l'API
+    # LOGGING - Messages horodatés envoyés au frontend via l'API
     # ──────────────────────────────────────────────────────────────────────────
 
     def _log(self, msg: str, level: str = "INFO"):
@@ -437,7 +437,7 @@ class DataProcessor:
         return out
 
     # ──────────────────────────────────────────────────────────────────────────
-    # IDENTIFICATION DU FORMAT — Basée sur le nom de fichier (pas le contenu)
+    # IDENTIFICATION DU FORMAT - Basée sur le nom de fichier (pas le contenu)
     # ──────────────────────────────────────────────────────────────────────────
 
     @staticmethod
@@ -457,7 +457,7 @@ class DataProcessor:
         return None
 
     # ──────────────────────────────────────────────────────────────────────────
-    # VALIDATION DE LIGNE — Filtre les lignes de padding et artefacts
+    # VALIDATION DE LIGNE - Filtre les lignes de padding et artefacts
     # ──────────────────────────────────────────────────────────────────────────
 
     @staticmethod
@@ -475,7 +475,7 @@ class DataProcessor:
         return True
 
     # ══════════════════════════════════════════════════════════════════════════
-    # NORMALISATION IPP — Cohérence des numéros de dossier (BIQuery compat)
+    # NORMALISATION IPP - Cohérence des numéros de dossier (BIQuery compat)
     # ══════════════════════════════════════════════════════════════════════════
 
     @staticmethod
@@ -513,7 +513,7 @@ class DataProcessor:
         return stripped
 
     # ══════════════════════════════════════════════════════════════════════════
-    # AUTO-DÉTECTION DE VARIANTE — Format 2021 vs standard
+    # AUTO-DÉTECTION DE VARIANTE - Format 2021 vs standard
     # ══════════════════════════════════════════════════════════════════════════
 
     def _detect_format_variant(self, filepath: str, fmt: str) -> dict:
@@ -605,7 +605,7 @@ class DataProcessor:
         return spec
 
     # ══════════════════════════════════════════════════════════════════════════
-    # SCAN — Découverte récursive des fichiers .txt PMSI
+    # SCAN - Découverte récursive des fichiers .txt PMSI
     # ══════════════════════════════════════════════════════════════════════════
 
     def scan_directory(self, folder: str) -> list:
@@ -657,7 +657,7 @@ class DataProcessor:
         return all_files
 
     # ══════════════════════════════════════════════════════════════════════════
-    # PROCESSING — Extraction parallèle des couples (IPP, DDN)
+    # PROCESSING - Extraction parallèle des couples (IPP, DDN)
     # ══════════════════════════════════════════════════════════════════════════
 
     def _process_single_file(self, finfo: dict) -> dict:
@@ -806,7 +806,7 @@ class DataProcessor:
             if res.get("skip"):
                 totals["files_skipped"] += 1
                 if res.get("error"):
-                    self._log(f"❌ Erreur : {res['name']} — {res['error']}", "ERROR")
+                    self._log(f"❌ Erreur : {res['name']} - {res['error']}", "ERROR")
                 continue
 
             totals["files_processed"] += 1
@@ -841,7 +841,7 @@ class DataProcessor:
         return totals
 
     # ══════════════════════════════════════════════════════════════════════════
-    # MPI — Master Patient Index (gestion des collisions d'identité)
+    # MPI - Master Patient Index (gestion des collisions d'identité)
     # ══════════════════════════════════════════════════════════════════════════
 
     def get_collisions(self) -> list:
@@ -922,7 +922,7 @@ class DataProcessor:
         }
 
     # ══════════════════════════════════════════════════════════════════════════
-    # INSPECTION — Analyse ligne par ligne pour le terminal UI
+    # INSPECTION - Analyse ligne par ligne pour le terminal UI
     # ══════════════════════════════════════════════════════════════════════════
 
     def inspect_file(self, filepath: str) -> dict:
@@ -1009,7 +1009,7 @@ class DataProcessor:
         }
 
     # ══════════════════════════════════════════════════════════════════════════
-    # EXPORT CSV PILOT — Données normalisées avec DDN pivot injectée
+    # EXPORT CSV PILOT - Données normalisées avec DDN pivot injectée
     # ══════════════════════════════════════════════════════════════════════════
 
     def export_csv(self, file_list: list, output_dir: str) -> dict:
@@ -1090,7 +1090,7 @@ class DataProcessor:
                 )
                 stats["csv_count"] += 1
             except OSError as e:
-                self._log(f"❌ Erreur export : {src} — {e}", "ERROR")
+                self._log(f"❌ Erreur export : {src} - {e}", "ERROR")
                 stats["files_skipped"] += 1
 
         self._log(
@@ -1101,7 +1101,7 @@ class DataProcessor:
         return {"stats": stats, "files": generated, "output_dir": output_dir}
 
     # ══════════════════════════════════════════════════════════════════════════
-    # EXPORT .TXT PURIFIÉ (sanitized) — Fichier nettoyé avec pivot injecté
+    # EXPORT .TXT PURIFIÉ (sanitized) - Fichier nettoyé avec pivot injecté
     # ══════════════════════════════════════════════════════════════════════════
 
     def export_sanitized_txt(self, filepath: str, output_dir: str) -> dict:
@@ -1174,7 +1174,7 @@ class DataProcessor:
         return {"path": out_path, "name": out_name, "stats": stats}
 
     # ══════════════════════════════════════════════════════════════════════════
-    # STATISTIQUES PAR FORMAT — Pour le dashboard Chart.js
+    # STATISTIQUES PAR FORMAT - Pour le dashboard Chart.js
     # ══════════════════════════════════════════════════════════════════════════
 
     def get_format_breakdown(self) -> list:
@@ -1188,7 +1188,7 @@ class DataProcessor:
         return [{"format": k, "count": v} for k, v in sorted(counts.items(), key=lambda x: -x[1])]
 
     # ══════════════════════════════════════════════════════════════════════════
-    # FILE ACTIVE — KPI central du rapport d'activité annuel DIM PSY
+    # FILE ACTIVE - KPI central du rapport d'activité annuel DIM PSY
     # ══════════════════════════════════════════════════════════════════════════
     # Pourquoi spécifique à la station ?
     #   Ni CPage (facturation) ni DxCare (dossier patient) ne calculent la
@@ -1215,7 +1215,7 @@ class DataProcessor:
         return m.group(1) if m else None
 
     # ══════════════════════════════════════════════════════════════════════════
-    # PARCOURS CROSS-MODALITÉS — Patients vus en hospit + CMP + HDJ, etc.
+    # PARCOURS CROSS-MODALITÉS - Patients vus en hospit + CMP + HDJ, etc.
     # ══════════════════════════════════════════════════════════════════════════
     # Cas d'usage DIM PSY :
     #   Un patient psychiatrique chronique alterne souvent entre hospitalisation
@@ -1231,13 +1231,13 @@ class DataProcessor:
     def get_cross_modality_patients(self, min_formats: int = 2, limit: int = 100) -> list:
         """
         Liste les IPP qui apparaissent dans >= `min_formats` formats ATIH
-        distincts. Triée par nombre de formats décroissant — les patients
+        distincts. Triée par nombre de formats décroissant - les patients
         "les plus complexes" en premier.
 
         Chaque entrée : {
             "ipp": str,
             "formats": [list triée de formats ATIH],
-            "fields": [champs PMSI touchés — PSY, SSR, HAD, MCO],
+            "fields": [champs PMSI touchés - PSY, SSR, HAD, MCO],
             "years": [années d'apparition],
             "sources_count": int  (nombre total de fichiers-source distincts)
         }
@@ -1302,7 +1302,7 @@ class DataProcessor:
             }
 
         Si aucun fichier n'a d'année détectable, years est vide et
-        by_year_* sont des dicts vides — le frontend affiche alors un
+        by_year_* sont des dicts vides - le frontend affiche alors un
         message "impossible d'inférer l'année depuis les noms de fichiers".
         """
         # Index inverse : pour chaque (fichier, format), on retrouve l'année

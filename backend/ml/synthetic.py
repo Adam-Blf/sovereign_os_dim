@@ -10,7 +10,7 @@ Produit un dataset fidèle aux specifications ATIH des 25 dernières années
 Pourquoi synthétique · les vrais fichiers PMSI sont protégés par le secret
 hospitalier (RGPD + L.1110-4 CSP). Les caractéristiques exploitées par les
 modèles (longueur de ligne, position IPP/DDN, distribution annuelle) sont
-toutes publiques — voir notice technique ATIH.
+toutes publiques - voir notice technique ATIH.
 
 Usage ·
     from backend.ml.synthetic import generate_dataset

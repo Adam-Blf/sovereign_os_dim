@@ -43,8 +43,8 @@
         meta: `Uptime · ${d.uptime_hours} h` }) +
       `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;">
         ${kpi({ label: "Uptime", value: d.uptime_hours, unit: "h", accent: TEAL })}
-        ${kpi({ label: "RAM", value: d.ram_mb || "—", unit: d.ram_mb ? "Mo" : "", accent: NAVY })}
-        ${kpi({ label: "Req/min", value: d.requests_per_min || "—", accent: GOLD })}
+        ${kpi({ label: "RAM", value: d.ram_mb || "-", unit: d.ram_mb ? "Mo" : "", accent: NAVY })}
+        ${kpi({ label: "Req/min", value: d.requests_per_min || "-", accent: GOLD })}
         ${kpi({ label: "Erreurs 24h", value: d.errors_24h || 0, accent: SUCCESS })}
       </div>` +
       card({ title: "Vérifications système", icon: "activity",
@@ -444,7 +444,7 @@
                 font-weight:700;color:${TEAL};">${e.action}</span>
             <span style="font-size:12px;color:var(--text-secondary);
                 overflow:hidden;text-overflow:ellipsis;
-                white-space:nowrap;">${e.target || "—"}</span>
+                white-space:nowrap;">${e.target || "-"}</span>
             <span style="font-family:'JetBrains Mono',monospace;font-size:9px;
                 color:var(--text-muted-color);">${e.sha256.slice(0, 8)}…</span>
           </div>`).join("") }));

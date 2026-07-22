@@ -1,4 +1,4 @@
-# Tests pour get_cross_modality_patients() — parcours PSY cross-recueils.
+# Tests pour get_cross_modality_patients() - parcours PSY cross-recueils.
 # Scénarios métier réels : patient hospit + CMP, patient uniquement hospit,
 # patient partagé entre champs PSY / SSR, dé-doublonnage source multi-fichiers.
 
