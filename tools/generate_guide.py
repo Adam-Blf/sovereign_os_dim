@@ -1,19 +1,19 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM · Generateur de guide PDF complet (fpdf2)
+#  SOVEREIGN OS DIM - Generateur de guide PDF complet (fpdf2)
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V35.0 · Station DIM GHT Sud Paris
+#  Project : Sovereign OS V35.0 - Station DIM GHT Sud Paris
 #
-#  Description ·
-#    Produit `Sovereign_OS_DIM_Guide.pdf` a la racine du depot · un seul
+#  Description -
+#    Produit `Sovereign_OS_DIM_Guide.pdf` a la racine du depot - un seul
 #    fichier PDF, 20 pages par fonctionnalite, avec logo Groupe Hospitalier
 #    Paul Guiraud en en-tete sur chaque page.
 #
-#  Usage ·
+#  Usage -
 #    python tools/generate_guide.py [--output chemin.pdf]
 #
-#  Architecture ·
-#    - FEATURES · liste de dicts · chaque fonctionnalite documentee
+#  Architecture -
+#    - FEATURES - liste de dicts - chaque fonctionnalite documentee
 #    - Chaque feature est rendue en 20 pages identiquement structurees
 #      (cover, resume, pourquoi, prerequis, ..., FAQ, references)
 #    - Plus une page de garde + sommaire + glossaire final
@@ -38,11 +38,11 @@ FONT_DIR = os.path.join(HERE, "fonts")  # polices bundlees (optionnel)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# POLICES UNICODE · accents et typographie hospitaliere
+# POLICES UNICODE - accents et typographie hospitaliere
 # ══════════════════════════════════════════════════════════════════════════════
 # Sans police TTF Unicode, fpdf2 retombe sur Helvetica core (latin-1 only),
 # ce qui supprime tous les accents (Apercu vs Apercu, etc.). Ce resolveur
-# choisit la meilleure police disponible · Segoe UI sur Windows (poste DIM
+# choisit la meilleure police disponible - Segoe UI sur Windows (poste DIM
 # cible), DejaVu Sans sur Linux/CI, fallback Helvetica core sinon.
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -50,23 +50,30 @@ FONT_DIR = os.path.join(HERE, "fonts")  # polices bundlees (optionnel)
 SANS = "GuideSans"  # corps de texte, titres
 MONO = "GuideMono"  # snippets code, fichiers, IPP
 
-# Variantes recherchees · regular, bold, italic, bold-italic
+# Variantes recherchees - regular, bold, italic, bold-italic
 _SANS_CANDIDATES = (
-    # Windows · Segoe UI (excellente lisibilite a l'ecran et en print)
+    # Montserrat bundlee (identite typographique du projet, prioritaire)
+    (
+        os.path.join(FONT_DIR, "Montserrat-Regular.ttf"),
+        os.path.join(FONT_DIR, "Montserrat-Bold.ttf"),
+        os.path.join(FONT_DIR, "Montserrat-Italic.ttf"),
+        os.path.join(FONT_DIR, "Montserrat-BoldItalic.ttf"),
+    ),
+    # Windows - Segoe UI (excellente lisibilite a l'ecran et en print)
     (
         "C:/Windows/Fonts/segoeui.ttf",
         "C:/Windows/Fonts/segoeuib.ttf",
         "C:/Windows/Fonts/segoeuii.ttf",
         "C:/Windows/Fonts/segoeuiz.ttf",
     ),
-    # Linux Debian/Ubuntu · DejaVu (couvre tout l'ATIH + sigles ARS)
+    # Linux Debian/Ubuntu - DejaVu (couvre tout l'ATIH + sigles ARS)
     (
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf",
     ),
-    # Windows · Arial fallback
+    # Windows - Arial fallback
     (
         "C:/Windows/Fonts/arial.ttf",
         "C:/Windows/Fonts/arialbd.ttf",
@@ -132,8 +139,8 @@ def _register_fonts(pdf):
         pdf.add_font(SANS, "B", sans[1])
         pdf.add_font(SANS, "I", sans[2])
         pdf.add_font(SANS, "BI", sans[3])
-    else:  # pragma: no cover · fallback rare
-        # Alias propre · on garde le nom "GuideSans" mais set_font tombera
+    else:  # pragma: no cover - fallback rare
+        # Alias propre - on garde le nom "GuideSans" mais set_font tombera
         # sur Helvetica core via le mecanisme de FPDF.
         globals()["SANS"] = "Helvetica"
     if mono:
@@ -163,24 +170,24 @@ FEATURE_SCREENSHOTS = {
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
-# DESIGN SYSTEM · palette + echelle typographique unique
+# DESIGN SYSTEM - palette + echelle typographique unique
 # ══════════════════════════════════════════════════════════════════════════════
 # Une seule source de verite pour les couleurs et la typo. Toutes les
-# fonctions de rendu lisent ces constantes · changer la palette ici se
+# fonctions de rendu lisent ces constantes - changer la palette ici se
 # repercute sur l'integralite du PDF.
 #
-# Palette · charte Groupe Hospitalier Paul Guiraud
-#   - GH_NAVY  · couleur Republique Francaise (titres, en-tetes)
-#   - GH_TEAL  · accent secondaire (filets, indicateurs, succes operationnel)
-#   - GH_GOLD  · accent tertiaire (mise en valeur metier · gain de temps)
-# Niveaux SLATE · echelle de gris pour le corps de texte (Tailwind slate)
+# Palette - charte Groupe Hospitalier Paul Guiraud
+#   - GH_NAVY  - couleur Republique Francaise (titres, en-tetes)
+#   - GH_TEAL  - accent secondaire (filets, indicateurs, succes operationnel)
+#   - GH_GOLD  - accent tertiaire (mise en valeur metier - gain de temps)
+# Niveaux SLATE - echelle de gris pour le corps de texte (Tailwind slate)
 # ══════════════════════════════════════════════════════════════════════════════
-GH_NAVY = (37, 62, 128)  # #253e80 · titres, headers, accents primaires
-GH_TEAL = (12, 125, 182)  # #0c7db6 · filets, indicateurs, accent secondaire
-GH_GOLD = (212, 164, 55)  # #D4A437 · mise en valeur metier, ROI
-GH_ERR = (225, 29, 72)  # #E11D48 · erreurs, blocages reglementaires
-GH_OK = (16, 185, 129)  # #10B981 · succes, conformite RGPD
-GH_WARN = (245, 158, 11)  # #F59E0B · warnings, points d'attention
+GH_NAVY = (37, 62, 128)  # #253e80 - titres, headers, accents primaires
+GH_TEAL = (12, 125, 182)  # #0c7db6 - filets, indicateurs, accent secondaire
+GH_GOLD = (212, 164, 55)  # #D4A437 - mise en valeur metier, ROI
+GH_ERR = (225, 29, 72)  # #E11D48 - erreurs, blocages reglementaires
+GH_OK = (16, 185, 129)  # #10B981 - succes, conformite RGPD
+GH_WARN = (245, 158, 11)  # #F59E0B - warnings, points d'attention
 SLATE_900 = (15, 23, 42)  # texte principal sombre
 SLATE_700 = (51, 65, 85)  # corps de texte
 SLATE_500 = (100, 116, 139)  # texte secondaire, captions
@@ -190,7 +197,7 @@ SLATE_100 = (241, 245, 249)  # fonds clairs neutres
 SLATE_50 = (248, 250, 252)  # fond le plus clair (cards)
 WHITE = (255, 255, 255)
 
-# Echelle typographique · 7 niveaux fixes, jamais de tailles ad-hoc
+# Echelle typographique - 7 niveaux fixes, jamais de tailles ad-hoc
 TYPE = {
     "display": 28,  # cover seulement
     "h1": 18,  # titre de feature
@@ -212,7 +219,7 @@ SPACE = {
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# FEATURES · 10 fonctionnalites, chacune structuree en 20 pages identiques
+# FEATURES - 10 fonctionnalites, chacune structuree en 20 pages identiques
 # ══════════════════════════════════════════════════════════════════════════════
 # Chaque feature est un dict avec 20 cles de contenu qui correspondent aux
 # 20 pages du template. Le rendu est fait par render_feature() qui boucle
@@ -271,7 +278,7 @@ def mk(
 
 FEATURES = [
     # ══════════════════════════════════════════════════════════════════════
-    # FEATURE 1 · DASHBOARD ET MPI
+    # FEATURE 1 - DASHBOARD ET MPI
     # ══════════════════════════════════════════════════════════════════════
     mk(
         title="Tableau de bord et Master Patient Index",
@@ -447,7 +454,7 @@ FEATURES = [
         ),
     ),
     # ══════════════════════════════════════════════════════════════════════
-    # FEATURE 2 · MODO FILES
+    # FEATURE 2 - MODO FILES
     # ══════════════════════════════════════════════════════════════════════
     mk(
         title="Sélection des fichiers , sélection et traitement des lots ATIH",
@@ -621,7 +628,7 @@ FEATURES = [
         ),
     ),
     # ══════════════════════════════════════════════════════════════════════
-    # FEATURE 3 · IDENTITOVIGILANCE
+    # FEATURE 3 - IDENTITOVIGILANCE
     # ══════════════════════════════════════════════════════════════════════
     mk(
         title="Identitovigilance , résolution des collisions IPP/DDN",
@@ -798,7 +805,7 @@ FEATURES = [
         ),
     ),
     # ══════════════════════════════════════════════════════════════════════
-    # FEATURE 4 · PMSI PILOT CSV
+    # FEATURE 4 - PMSI PILOT CSV
     # ══════════════════════════════════════════════════════════════════════
     mk(
         title="PMSI Pilot CSV , exports normalises e-PMSI",
@@ -962,7 +969,7 @@ FEATURES = [
         ),
     ),
     # ══════════════════════════════════════════════════════════════════════
-    # FEATURE 5 · INSPECTOR TERMINAL + PREFLIGHT DRUIDES
+    # FEATURE 5 - INSPECTOR TERMINAL + PREFLIGHT DRUIDES
     # ══════════════════════════════════════════════════════════════════════
     mk(
         title="Inspecteur ligne par ligne et Contrôle préalable DRUIDES",
@@ -1131,7 +1138,7 @@ FEATURES = [
         ),
     ),
     # ══════════════════════════════════════════════════════════════════════
-    # FEATURE 6 · DASHBOARD LIVE
+    # FEATURE 6 - DASHBOARD LIVE
     # ══════════════════════════════════════════════════════════════════════
     mk(
         title="Tableau de bord en direct , graphes temps reel",
@@ -1289,7 +1296,7 @@ FEATURES = [
         ),
     ),
     # ══════════════════════════════════════════════════════════════════════
-    # FEATURE 7 · STRUCTURE + EXPORT PDF
+    # FEATURE 7 - STRUCTURE + EXPORT PDF
     # ══════════════════════════════════════════════════════════════════════
     mk(
         title="Structure , arborescence polaire et export PDF",
@@ -1446,7 +1453,7 @@ FEATURES = [
         ),
     ),
     # ══════════════════════════════════════════════════════════════════════
-    # FEATURE 8 · ANALYSE D'ACTIVITE PAR UM (LA NOUVELLE FEATURE)
+    # FEATURE 8 - ANALYSE D'ACTIVITE PAR UM (LA NOUVELLE FEATURE)
     # ══════════════════════════════════════════════════════════════════════
     mk(
         title="Analyse d'activité par UM , détection des UM dormantes",
@@ -1631,7 +1638,7 @@ FEATURES = [
         ),
     ),
     # ══════════════════════════════════════════════════════════════════════
-    # FEATURE 9 · IMPORT CSV + HTML to PDF
+    # FEATURE 9 - IMPORT CSV + HTML to PDF
     # ══════════════════════════════════════════════════════════════════════
     mk(
         title="Import CSV externe et HTML vers PDF",
@@ -1800,7 +1807,7 @@ FEATURES = [
         ),
     ),
     # ══════════════════════════════════════════════════════════════════════
-    # FEATURE 10 · ADMINISTRATION (securite, RGPD, raccourcis, support)
+    # FEATURE 10 - ADMINISTRATION (securite, RGPD, raccourcis, support)
     # ══════════════════════════════════════════════════════════════════════
     mk(
         title="Administration , sécurité, RGPD, raccourcis, support",
@@ -1952,7 +1959,7 @@ FEATURES = [
         ),
     ),
     # ══════════════════════════════════════════════════════════════════════
-    # FEATURE 11 · MODULE ML XGBOOST (V36)
+    # FEATURE 11 - MODULE ML XGBOOST (V36)
     # ══════════════════════════════════════════════════════════════════════
     mk(
         title="Module ML XGBoost , prédiction et assistance TIM",
@@ -2157,7 +2164,7 @@ FEATURES = [
 # ══════════════════════════════════════════════════════════════════════════════
 # RENDU D'UNE FEATURE EN 20 PAGES
 # ══════════════════════════════════════════════════════════════════════════════
-# Structure fixe · 20 pages par feature dans cet ordre ·
+# Structure fixe - 20 pages par feature dans cet ordre -
 #  1. Cover
 #  2. Resume / TL;DR
 #  3. Pourquoi cette feature
@@ -2303,9 +2310,9 @@ def _kpi_strip(pdf, kpis):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SCHEMAS DESSINES · mockups UI, diagrammes workflow, integrations
+# SCHEMAS DESSINES - mockups UI, diagrammes workflow, integrations
 # ══════════════════════════════════════════════════════════════════════════════
-# Tous les schemas sont dessines en primitives fpdf2 (rect, line, text) ·
+# Tous les schemas sont dessines en primitives fpdf2 (rect, line, text) -
 # pas d'image raster, rendu vectoriel pur, leger.
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -2343,7 +2350,7 @@ def _screenshot_box(pdf, png_path, caption=None, max_w=150):
     if caption:
         pdf.set_font(SANS, "I", 8)
         pdf.set_text_color(*SLATE_500)
-        pdf.multi_cell(0, 4, "Capture d'ecran , " + caption, align="C", new_x="LMARGIN", new_y="NEXT")
+        pdf.multi_cell(0, 4, "Capture d'ecran , " + caption, align="L", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(3)
     return True
 
@@ -2452,7 +2459,7 @@ def _ui_mockup(pdf, highlight_zone=None):
         "Schema , disposition generique de l'interface Sovereign OS DIM",
         new_x="LMARGIN",
         new_y="NEXT",
-        align="C",
+        align="L",
     )
     pdf.ln(4)
 
@@ -2498,7 +2505,7 @@ def _workflow_diagram(pdf, steps_labels=("Etape 1", "Etape 2", "Etape 3")):
         "Diagramme , progrèssion du mode opératoire en 3 etapes sequentielles",
         new_x="LMARGIN",
         new_y="NEXT",
-        align="C",
+        align="L",
     )
     pdf.ln(4)
 
@@ -2568,7 +2575,7 @@ def _integration_diagram(pdf, feature_name, consumers, producers):
         "Diagramme d'integration , flux de données entre modules",
         new_x="LMARGIN",
         new_y="NEXT",
-        align="C",
+        align="L",
     )
     pdf.ln(4)
 
@@ -2605,7 +2612,7 @@ def _perf_chart(pdf, metrics):
     pdf.set_font(SANS, "I", 7.5)
     pdf.set_text_color(*SLATE_500)
     pdf.cell(
-        0, 4, "Graphique , performances typiques sur poste standard", new_x="LMARGIN", new_y="NEXT", align="C"
+        0, 4, "Graphique , performances typiques sur poste standard", new_x="LMARGIN", new_y="NEXT", align="L"
     )
     pdf.ln(4)
 
@@ -2645,7 +2652,7 @@ def _feature_schema(pdf, feat_num):
     cx, cy, cw, ch = x0 + 4, y0 + 10, w - 8, h - 14
 
     if feat_num == 1:
-        # Tableau de bord · 4 indicateurs cards + donut chart
+        # Tableau de bord - 4 indicateurs cards + donut chart
         for i in range(4):
             kx = cx + i * (cw / 4 + 1)
             pdf.set_fill_color(*SLATE_50)
@@ -2685,7 +2692,7 @@ def _feature_schema(pdf, feat_num):
         pdf.cell(100, 4, "Repartition par format PMSI")
 
     elif feat_num == 2:
-        # Sélection des fichiers · liste de fichiers
+        # Sélection des fichiers - liste de fichiers
         pdf.set_fill_color(*GH_NAVY)
         pdf.rect(cx, cy, cw, 6, "F")
         pdf.set_font(SANS, "B", 6.5)
@@ -2721,7 +2728,7 @@ def _feature_schema(pdf, feat_num):
             pdf.cell(25, 4, f[3])
 
     elif feat_num == 3:
-        # Identitovigilance · paires de collisions
+        # Identitovigilance - paires de collisions
         pdf.set_font(SANS, "B", 7)
         pdf.set_text_color(*GH_ERR)
         pdf.set_xy(cx + 2, cy)
@@ -2751,7 +2758,7 @@ def _feature_schema(pdf, feat_num):
             pdf.cell(0, 4, c[2])
 
     elif feat_num == 4:
-        # PMSI Pilot CSV · flux export
+        # PMSI Pilot CSV - flux export
         boxes = [
             (cx + 5, cy + 15, 35, 18, SLATE_50, "MPI", "(memoire)"),
             (cx + 70, cy + 5, 40, 15, GH_TEAL, "CSV", "normalise"),
@@ -2779,7 +2786,7 @@ def _feature_schema(pdf, feat_num):
         pdf.line(cx + 110, cy + 37, cx + 135, cy + 37)
 
     elif feat_num == 5:
-        # Inspector + Contrôle préalable · terminal decomposition
+        # Inspector + Contrôle préalable - terminal decomposition
         pdf.set_fill_color(15, 23, 42)
         pdf.rect(cx, cy, cw, ch, "F")
         pdf.set_font(MONO, "", 6.5)
@@ -2810,7 +2817,7 @@ def _feature_schema(pdf, feat_num):
         pdf.cell(0, 4, "[ERREUR] FINESS incoherent avec lot (attendu 940110018)")
 
     elif feat_num == 6:
-        # Tableau de bord en direct · 4 charts en grille 2x2
+        # Tableau de bord en direct - 4 charts en grille 2x2
         chart_w = cw / 2 - 2
         chart_h = ch / 2 - 2
         for row in range(2):
@@ -2863,7 +2870,7 @@ def _feature_schema(pdf, feat_num):
                             pdf.rect(gx + 4 + c * 4, gy + 10 + r * 4, 3.5, 3.5, "F")
 
     elif feat_num == 7:
-        # Structure · arbre
+        # Structure - arbre
         nodes = [
             (cx + cw / 2 - 20, cy + 2, 40, 10, GH_NAVY, "Fondation Vallee"),
             (cx + cw / 4 - 22, cy + 20, 44, 9, GH_TEAL, "Pôle Infanto-juv"),
@@ -2898,7 +2905,7 @@ def _feature_schema(pdf, feat_num):
         pdf.line(cx + 3 * cw / 4, cy + 29, cx + cw - 30, cy + 40)
 
     elif feat_num == 8:
-        # Analyse activite UM · zone de dépôt + liste inactives
+        # Analyse activite UM - zone de dépôt + liste inactives
         pdf.set_draw_color(*GH_TEAL)
         pdf.set_line_width(0.6)
         pdf.set_dash_pattern(dash=2, gap=2)
@@ -2939,7 +2946,7 @@ def _feature_schema(pdf, feat_num):
             pdf.cell(0, 4, label)
 
     elif feat_num == 9:
-        # Import CSV · tableau preview
+        # Import CSV - tableau preview
         pdf.set_fill_color(*GH_NAVY)
         pdf.rect(cx, cy, cw, 6, "F")
         pdf.set_font(SANS, "B", 6.5)
@@ -2977,7 +2984,7 @@ def _feature_schema(pdf, feat_num):
             pdf.cell(25, 4, r[4])
 
     elif feat_num == 10:
-        # Administration · raccourcis clavier
+        # Administration - raccourcis clavier
         shortcuts = [
             ("Ctrl+1", "Tableau de bord"),
             ("Ctrl+2", "Sélection des fichiers"),
@@ -3022,7 +3029,7 @@ def _feature_schema(pdf, feat_num):
         "Schema , representation vectorielle de la vue (rendu pixel-perfect dans l'application)",
         new_x="LMARGIN",
         new_y="NEXT",
-        align="C",
+        align="L",
     )
     pdf.ln(3)
 
@@ -3046,7 +3053,7 @@ def render_feature(pdf, feat, logo_path, feat_num, total_feats, screenshot_path=
     ft = feat["title"]
     cat = feat["category"]
 
-    # ═══ PAGE 1 · VUE D'ENSEMBLE + CAPTURE ═══
+    # ═══ PAGE 1 - VUE D'ENSEMBLE + CAPTURE ═══
     pdf.add_page()
     _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
     # Titre de feature
@@ -3078,7 +3085,7 @@ def render_feature(pdf, feat, logo_path, feat_num, total_feats, screenshot_path=
 
     pdf.ln(SPACE["xs"])
     _subheading(pdf, "Aperçu de la vue")
-    # Si un screenshot existe pour cette feature, on l'utilise · sinon
+    # Si un screenshot existe pour cette feature, on l'utilise - sinon
     # on retombe sur le mockup vectoriel.
     if screenshot_path and os.path.exists(screenshot_path):
         ok = _screenshot_box(pdf, screenshot_path, caption=f"Vue {ft.split(' , ')[0]}", max_w=170)
@@ -3087,7 +3094,7 @@ def render_feature(pdf, feat, logo_path, feat_num, total_feats, screenshot_path=
     else:
         _feature_schema(pdf, feat_num)
 
-    # ═══ PAGE 2 · WORKFLOW + OPTIONS ═══
+    # ═══ PAGE 2 - WORKFLOW + OPTIONS ═══
     pdf.add_page()
     _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
     _page_title(pdf, 2, "Utilisation")
@@ -3105,7 +3112,7 @@ def render_feature(pdf, feat, logo_path, feat_num, total_feats, screenshot_path=
     _subheading(pdf, "Options principales")
     _body_text(pdf, feat["options"])
 
-    # ═══ PAGE 3 · DÉPANNAGE + FAQ + RÉFÉRENCES ═══
+    # ═══ PAGE 3 - DÉPANNAGE + FAQ + RÉFÉRENCES ═══
     pdf.add_page()
     _page_header(pdf, logo_path, ft, cat, feat_num, total_feats)
     _page_title(pdf, 3, "Dépannage et bonnes pratiques")
@@ -3155,7 +3162,7 @@ def build_pdf(output_path: str) -> str:
                 8,
                 f"Sovereign OS DIM, page {self.page_no()} sur {{nb}}, "
                 f"Adam Beloucif, Groupement Hospitalier Sud Paris",
-                align="C",
+                align="L",
             )
 
     pdf = Guide()
@@ -3184,10 +3191,10 @@ def build_pdf(output_path: str) -> str:
     pdf.set_y(95)
     pdf.set_font(SANS, "B", TYPE["display"])
     pdf.set_text_color(*GH_NAVY)
-    pdf.cell(0, 14, "SOVEREIGN OS DIM", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 14, "SOVEREIGN OS DIM", new_x="LMARGIN", new_y="NEXT", align="L")
     pdf.set_font(SANS, "", TYPE["h1"])
     pdf.set_text_color(*SLATE_700)
-    pdf.cell(0, 10, "Guide d'utilisation", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 10, "Guide d'utilisation", new_x="LMARGIN", new_y="NEXT", align="L")
     pdf.ln(SPACE["lg"])
     pdf.set_draw_color(*GH_TEAL)
     pdf.set_line_width(1.0)
@@ -3195,26 +3202,26 @@ def build_pdf(output_path: str) -> str:
     pdf.ln(SPACE["lg"])
     pdf.set_font(SANS, "", TYPE["h3"])
     pdf.set_text_color(*SLATE_500)
-    pdf.cell(0, 7, f"Version 37.0, {total_feats} fonctionnalités", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 7, f"Version 37.0, {total_feats} fonctionnalités", new_x="LMARGIN", new_y="NEXT", align="L")
     pdf.cell(
         0,
         7,
         "Groupement Hospitalier de Territoire Psychiatrie Sud Paris",
         new_x="LMARGIN",
         new_y="NEXT",
-        align="C",
+        align="L",
     )
     pdf.cell(
-        0, 7, "Fondation Vallée et Groupe Hospitalier Paul Guiraud", new_x="LMARGIN", new_y="NEXT", align="C"
+        0, 7, "Fondation Vallée et Groupe Hospitalier Paul Guiraud", new_x="LMARGIN", new_y="NEXT", align="L"
     )
     pdf.ln(20)
     pdf.set_font(SANS, "I", TYPE["body"])
     pdf.set_text_color(*SLATE_400)
     pdf.cell(
-        0, 5, f"Édition du {date.today().strftime('%d / %m / %Y')}", new_x="LMARGIN", new_y="NEXT", align="C"
+        0, 5, f"Édition du {date.today().strftime('%d / %m / %Y')}", new_x="LMARGIN", new_y="NEXT", align="L"
     )
     pdf.cell(
-        0, 5, "Auteur Adam Beloucif, adam.beloucif@psysudparis.fr", new_x="LMARGIN", new_y="NEXT", align="C"
+        0, 5, "Auteur Adam Beloucif, adam.beloucif@psysudparis.fr", new_x="LMARGIN", new_y="NEXT", align="L"
     )
     pdf.ln(15)
     pdf.set_font(SANS, "", TYPE["small"])
@@ -3248,7 +3255,7 @@ def build_pdf(output_path: str) -> str:
         new_x="LMARGIN",
         new_y="NEXT",
         fill=True,
-        align="C",
+        align="L",
     )
 
     # ══════ SOMMAIRE ══════
@@ -3602,7 +3609,7 @@ def build_pdf(output_path: str) -> str:
         "Indicateur métier, par exemple gain de temps, retour sur investissement ou impact financier.",
     )
 
-    # ══════ RENDU DE CHAQUE FEATURE · 3 PAGES CHACUNE ══════
+    # ══════ RENDU DE CHAQUE FEATURE - 3 PAGES CHACUNE ══════
     for i, feat in enumerate(FEATURES, start=1):
         shot_name = FEATURE_SCREENSHOTS.get(i - 1)
         shot_path = os.path.join(SCREENSHOT_DIR, shot_name) if shot_name else None
@@ -3614,7 +3621,7 @@ def build_pdf(output_path: str) -> str:
             print(f"[ERR] Feature {i} , {feat['title']} , {e}", file=sys.stderr)
             raise
 
-    # ══════ GALERIE · 16 VUES SENTINEL V36 (4 thumbnails par page) ══════
+    # ══════ GALERIE - 16 VUES SENTINEL V36 (4 thumbnails par page) ══════
     sentinel_gallery = [
         (
             "01_tableau de bord.png",
@@ -3689,7 +3696,7 @@ def build_pdf(output_path: str) -> str:
             pdf.set_text_color(*SLATE_500)
             pdf.cell(cell_w, 4, sub, new_x="LMARGIN", new_y="NEXT")
 
-    # ══════ PAGE FEUILLE DE ROUTE · MODULES À VENIR ══════
+    # ══════ PAGE FEUILLE DE ROUTE - MODULES À VENIR ══════
     pdf.add_page()
     _page_header(pdf, LOGO_PATH, "Feuille de route", "Feuille de route", total_feats, total_feats)
     _page_title(pdf, 12, "Modules à venir , plan 2026 et 2027")
@@ -3814,7 +3821,7 @@ def build_pdf(output_path: str) -> str:
         pdf.multi_cell(0, 4, gain.upper(), new_x="LMARGIN", new_y="NEXT")
         pdf.ln(2)
 
-    # ══════ PAGE FINALE · SUPPORT ET CRÉDITS ══════
+    # ══════ PAGE FINALE - SUPPORT ET CRÉDITS ══════
     pdf.add_page()
     _page_header(pdf, LOGO_PATH, "Support et crédits", "Fin", total_feats, total_feats)
     _page_title(pdf, 13, "Support, crédits, licence")
@@ -3927,11 +3934,11 @@ def main() -> None:
     path = build_pdf(args.output)
     size_kb = os.path.getsize(path) // 1024
 
-    # Post-traitement · métadonnées + outline navigable (skill pdf-official).
+    # Post-traitement - métadonnées + outline navigable (skill pdf-official).
     # Import via le dossier `tools/` directement, sans dépendre du PYTHONPATH.
     try:
         sys.path.insert(0, HERE)
-        from enrich_guide_pdf import enrich  # noqa · resolve via sys.path
+        from enrich_guide_pdf import enrich  # noqa - resolve via sys.path
 
         enrich(path, path)
         size_kb = os.path.getsize(path) // 1024

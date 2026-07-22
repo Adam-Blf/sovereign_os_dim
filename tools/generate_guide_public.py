@@ -1,20 +1,20 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
- tools/generate_guide_public.py · Guide accessible · grand public
+ tools/generate_guide_public.py - Guide accessible - grand public
 ═══════════════════════════════════════════════════════════════════════════════
 
-Variante du guide PDF rédigée pour être comprise par n'importe qui ·
+Variante du guide PDF rédigée pour être comprise par n'importe qui -
 parents, conjoint d'un soignant, élu local, journaliste, étudiant, etc.
 
-Principes éditoriaux ·
+Principes éditoriaux -
 - Caractères grands (corps 14 pour le texte, 22 pour les titres)
 - Phrases courtes (≤ 20 mots), une idée par phrase
-- Aucun jargon · si un sigle apparaît, il est expliqué juste après
+- Aucun jargon - si un sigle apparaît, il est expliqué juste après
 - Analogies de la vie quotidienne (« c'est comme... »)
-- Aucun chiffre fictif · si une donnée n'est pas factuelle, on dit « par exemple »
-- Hiérarchie visuelle simple · 1 question → 1 réponse
+- Aucun chiffre fictif - si une donnée n'est pas factuelle, on dit « par exemple »
+- Hiérarchie visuelle simple - 1 question → 1 réponse
 
-Sortie · Sovereign_OS_DIM_Guide_Public.pdf à la racine du dépôt.
+Sortie - Sovereign_OS_DIM_Guide_Public.pdf à la racine du dépôt.
 ═══════════════════════════════════════════════════════════════════════════════
 """
 
@@ -46,7 +46,7 @@ try:
         SLATE_100,
         SLATE_50,
     )
-except Exception:  # pragma: no cover · fallback
+except Exception:  # pragma: no cover - fallback
     SANS, MONO = "Helvetica", "Courier"
     GH_NAVY = (37, 62, 128)
     GH_TEAL = (12, 125, 182)
@@ -64,7 +64,7 @@ except Exception:  # pragma: no cover · fallback
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CONTENU · 12 questions / réponses
+# CONTENU - 12 questions / réponses
 # ─────────────────────────────────────────────────────────────────────────────
 
 QUESTIONS = [
@@ -106,7 +106,7 @@ QUESTIONS = [
         ),
         "ex": (
             "Comparez une vieille calculatrice de bureau et un smartphone "
-            "moderne · les deux calculent, mais l'un est plus rapide et "
+            "moderne - les deux calculent, mais l'un est plus rapide et "
             "fait plein de choses en plus."
         ),
     },
@@ -118,7 +118,7 @@ QUESTIONS = [
             "reste dans l'hôpital. C'est le principe « 100 % local »."
         ),
         "ex": (
-            "C'est comme un coffre-fort dans le bureau d'un médecin · "
+            "C'est comme un coffre-fort dans le bureau d'un médecin - "
             "personne ne peut l'ouvrir à distance, ni emporter son contenu "
             "sans s'en rendre compte."
         ),
@@ -126,12 +126,12 @@ QUESTIONS = [
     {
         "q": "Qui s'en sert au quotidien ?",
         "a": (
-            "Trois métiers utilisent ce logiciel · le TIM (technicien qui "
+            "Trois métiers utilisent ce logiciel - le TIM (technicien qui "
             "saisit les données), le médecin DIM (qui valide), et le chef "
             "de pôle (qui suit l'activité du service)."
         ),
         "ex": (
-            "Comme dans une cuisine de restaurant · le commis prépare "
+            "Comme dans une cuisine de restaurant - le commis prépare "
             "(TIM), le chef goûte et valide (médecin DIM), le directeur "
             "regarde combien de couverts sont sortis (chef de pôle)."
         ),
@@ -146,7 +146,7 @@ QUESTIONS = [
         ),
         "ex": (
             "Un peu comme deux fiches d'inscription à l'école avec une "
-            "faute de frappe sur la même personne · il faut savoir "
+            "faute de frappe sur la même personne - il faut savoir "
             "laquelle est la vraie."
         ),
     },
@@ -159,18 +159,18 @@ QUESTIONS = [
             "des doublons. L'IA propose, le technicien décide toujours."
         ),
         "ex": (
-            "Comme un correcteur d'orthographe dans Word · il souligne "
+            "Comme un correcteur d'orthographe dans Word - il souligne "
             "les erreurs probables, mais c'est vous qui corrigez."
         ),
     },
     {
         "q": "C'est facile à installer ?",
         "a": (
-            "Oui · un seul fichier à double-cliquer. Pas besoin "
+            "Oui - un seul fichier à double-cliquer. Pas besoin "
             "d'administrateur, pas de compte à créer, pas de licence à "
             "acheter. Le logiciel s'ouvre en quelques secondes."
         ),
-        "ex": ("C'est comme ouvrir un PDF · vous double-cliquez et le programme se lance dans une fenêtre."),
+        "ex": ("C'est comme ouvrir un PDF - vous double-cliquez et le programme se lance dans une fenêtre."),
     },
     {
         "q": "Combien de temps ça fait gagner ?",
@@ -181,7 +181,7 @@ QUESTIONS = [
             "économisés par mois."
         ),
         "ex": (
-            "Comme un GPS qui calcule l'itinéraire le plus rapide · vous "
+            "Comme un GPS qui calcule l'itinéraire le plus rapide - vous "
             "n'avez plus à ouvrir une carte papier et compter les "
             "kilomètres à la main."
         ),
@@ -195,7 +195,7 @@ QUESTIONS = [
         ),
         "ex": (
             "C'est l'équivalent du logiciel de comptabilité d'un cabinet "
-            "médical · il aide le médecin sur la paperasse, mais il "
+            "médical - il aide le médecin sur la paperasse, mais il "
             "n'examine aucun patient."
         ),
     },
@@ -208,7 +208,7 @@ QUESTIONS = [
             "comme avant."
         ),
         "ex": (
-            "Comme un fichier Word sauvegardé sur une clé USB · même si "
+            "Comme un fichier Word sauvegardé sur une clé USB - même si "
             "l'ordinateur lâche, le document est encore là."
         ),
     },
@@ -222,7 +222,7 @@ QUESTIONS = [
             "accueillir tout le monde."
         ),
         "ex": (
-            "C'est comme bien remplir une feuille de soin chez le médecin · "
+            "C'est comme bien remplir une feuille de soin chez le médecin - "
             "si une case est oubliée, la sécurité sociale rembourse mal."
         ),
     },
@@ -251,10 +251,10 @@ def build(output_path: str) -> str:
     pdf.set_y(100)
     pdf.set_font(SANS, "B", 32)
     pdf.set_text_color(*GH_NAVY)
-    pdf.cell(0, 14, "Sovereign OS DIM", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 14, "Sovereign OS DIM", new_x="LMARGIN", new_y="NEXT", align="L")
     pdf.set_font(SANS, "", 18)
     pdf.set_text_color(*SLATE_700)
-    pdf.cell(0, 10, "Le guide en clair", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 10, "Le guide en clair", new_x="LMARGIN", new_y="NEXT", align="L")
     pdf.ln(10)
     pdf.set_draw_color(*GH_TEAL)
     pdf.set_line_width(1.2)
@@ -265,8 +265,8 @@ def build(output_path: str) -> str:
     pdf.multi_cell(
         0,
         8,
-        "Un logiciel d'hôpital expliqué simplement · 12 questions, 12 réponses, sans jargon technique.",
-        align="C",
+        "Un logiciel d'hôpital expliqué simplement - 12 questions, 12 réponses, sans jargon technique.",
+        align="L",
         new_x="LMARGIN",
         new_y="NEXT",
     )
@@ -274,9 +274,9 @@ def build(output_path: str) -> str:
     pdf.set_font(SANS, "I", 12)
     pdf.set_text_color(*SLATE_400)
     pdf.cell(
-        0, 6, f"Édition du {date.today().strftime('%d / %m / %Y')}", new_x="LMARGIN", new_y="NEXT", align="C"
+        0, 6, f"Édition du {date.today().strftime('%d / %m / %Y')}", new_x="LMARGIN", new_y="NEXT", align="L"
     )
-    pdf.cell(0, 6, "Adam Beloucif · GHT Psy Sud Paris", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 6, "Adam Beloucif - GHT Psy Sud Paris", new_x="LMARGIN", new_y="NEXT", align="L")
 
     # ─── PRÉAMBULE ──────────────────────────────────────────────────────
     pdf.add_page()
@@ -322,7 +322,7 @@ def build(output_path: str) -> str:
         new_y="NEXT",
     )
 
-    # ─── 12 QUESTIONS · 1 PAR PAGE ─────────────────────────────────────
+    # ─── 12 QUESTIONS - 1 PAR PAGE ─────────────────────────────────────
     for i, item in enumerate(QUESTIONS, start=1):
         pdf.add_page()
         # Numéro
@@ -372,7 +372,7 @@ def build(output_path: str) -> str:
     pdf.multi_cell(
         0,
         8,
-        "Si vous voulez en savoir plus sur le fonctionnement précis du logiciel ·",
+        "Si vous voulez en savoir plus sur le fonctionnement précis du logiciel -",
         new_x="LMARGIN",
         new_y="NEXT",
     )
@@ -391,8 +391,8 @@ def build(output_path: str) -> str:
         ),
         (
             "Le code source ouvert",
-            "Le logiciel est libre · n'importe qui peut le télécharger et "
-            "le vérifier. Adresse · github.com/Adam-Blf/sovereign_os_dim",
+            "Le logiciel est libre - n'importe qui peut le télécharger et "
+            "le vérifier. Adresse - github.com/Adam-Blf/sovereign_os_dim",
         ),
     ]
     for title, body in items_after:
@@ -410,8 +410,8 @@ def build(output_path: str) -> str:
     pdf.multi_cell(
         0,
         7,
-        "Auteur · Adam Beloucif, alternant au service DIM du GHT Psy Sud "
-        "Paris (Fondation Vallée et Paul Guiraud). Contact · "
+        "Auteur - Adam Beloucif, alternant au service DIM du GHT Psy Sud "
+        "Paris (Fondation Vallée et Paul Guiraud). Contact - "
         "adam.beloucif@psysudparis.fr",
         new_x="LMARGIN",
         new_y="NEXT",
@@ -442,21 +442,21 @@ def main() -> None:  # pragma: no cover
             short = QUESTIONS[i]["q"]
             if len(short) > 50:
                 short = short[:47] + "..."
-            sections.append((f"Q{i + 1:02d} · {short}", 2 + i))
+            sections.append((f"Q{i + 1:02d} - {short}", 2 + i))
         sections.append(("Pour aller plus loin", 2 + len(QUESTIONS)))
         enrich_pdf(
             path,
             path,
-            title="Sovereign OS DIM · Guide grand public",
+            title="Sovereign OS DIM - Guide grand public",
             author="Adam Beloucif",
-            subject="Guide accessible · 12 questions/réponses sans jargon",
+            subject="Guide accessible - 12 questions/réponses sans jargon",
             keywords="hôpital, psychiatrie, DIM, grand public, vulgarisation",
             creator="tools/generate_guide_public.py",
             sections=sections,
         )
-        msg = f"(enrichi · {len(sections)} bookmarks)"
+        msg = f"(enrichi - {len(sections)} bookmarks)"
     except Exception as e:  # pragma: no cover
-        msg = f"(brut · enrichissement skip · {e})"
+        msg = f"(brut - enrichissement skip - {e})"
 
     size_kb = os.path.getsize(path) // 1024
     print(f"[OK] Guide public genere: {path} ({size_kb} Ko) {msg}")

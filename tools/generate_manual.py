@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM - Générateur de mode d'emploi PDF (fpdf2)
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.1 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.2 - Station DIM GHT Sud Paris
 #
 #  Description:
 #    Script utilitaire qui produit `docs/Sovereign_OS_DIM_Manuel.pdf`, le
@@ -359,10 +359,10 @@ def build_pdf(output_path: str) -> str:
 
         def header(self):
             # Bandeau haut : titre + date de generation
-            self.set_font("Helvetica", "B", 11)
+            self.set_font("Montserrat", "B", 11)
             self.set_text_color(30, 41, 59)
             self.cell(0, 8, "Sovereign OS DIM - Mode d'emploi", new_x="RIGHT", new_y="TOP")
-            self.set_font("Helvetica", "", 9)
+            self.set_font("Montserrat", "", 9)
             self.set_text_color(100, 116, 139)
             self.cell(0, 8, date.today().isoformat(), new_x="LMARGIN", new_y="NEXT", align="R")
             # Ligne de separation
@@ -372,30 +372,35 @@ def build_pdf(output_path: str) -> str:
 
         def footer(self):
             self.set_y(-15)
-            self.set_font("Helvetica", "I", 8)
+            self.set_font("Montserrat", "I", 8)
             self.set_text_color(148, 163, 184)
             self.cell(
                 0,
                 8,
                 f"Page {self.page_no()} / {{nb}}  -  Adam Beloucif - GHT Sud Paris",
-                align="C",
+                align="L",
             )
 
     pdf = Manual()
+    # Montserrat bundlee (Unicode, accents corrects) - remplace Helvetica core
+    _font_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
+    pdf.add_font("Montserrat", "", os.path.join(_font_dir, "Montserrat-Regular.ttf"))
+    pdf.add_font("Montserrat", "B", os.path.join(_font_dir, "Montserrat-Bold.ttf"))
+    pdf.add_font("Montserrat", "I", os.path.join(_font_dir, "Montserrat-Italic.ttf"))
     pdf.set_auto_page_break(auto=True, margin=18)
     pdf.alias_nb_pages()
     pdf.add_page()
 
     # Page de garde
-    pdf.set_font("Helvetica", "B", 22)
+    pdf.set_font("Montserrat", "B", 22)
     pdf.set_text_color(15, 23, 42)
     pdf.ln(10)
     pdf.cell(0, 12, "Sovereign OS DIM V34.0", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", "", 13)
+    pdf.set_font("Montserrat", "", 13)
     pdf.set_text_color(71, 85, 105)
     pdf.cell(0, 8, "Bridge PHP + Visualisation Excel multi-fichiers", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(6)
-    pdf.set_font("Helvetica", "I", 10)
+    pdf.set_font("Montserrat", "I", 10)
     pdf.set_text_color(100, 116, 139)
     pdf.multi_cell(
         0,
@@ -408,7 +413,7 @@ def build_pdf(output_path: str) -> str:
 
     # Sections
     for title, blocks in SECTIONS:
-        pdf.set_font("Helvetica", "B", 14)
+        pdf.set_font("Montserrat", "B", 14)
         pdf.set_text_color(15, 23, 42)
         pdf.cell(0, 9, title, new_x="LMARGIN", new_y="NEXT")
         pdf.set_draw_color(56, 189, 248)
@@ -418,17 +423,17 @@ def build_pdf(output_path: str) -> str:
 
         for kind, content in blocks:
             if kind == "h":
-                pdf.set_font("Helvetica", "B", 11)
+                pdf.set_font("Montserrat", "B", 11)
                 pdf.set_text_color(30, 41, 59)
                 pdf.cell(0, 7, content, new_x="LMARGIN", new_y="NEXT")
                 pdf.ln(1)
             elif kind == "p":
-                pdf.set_font("Helvetica", "", 10)
+                pdf.set_font("Montserrat", "", 10)
                 pdf.set_text_color(51, 65, 85)
                 pdf.multi_cell(0, 5.5, content)
                 pdf.ln(2)
             elif kind == "li":
-                pdf.set_font("Helvetica", "", 10)
+                pdf.set_font("Montserrat", "", 10)
                 pdf.set_text_color(51, 65, 85)
                 # On préfixe chaque item par un tiret et on décale via set_x
                 # plutôt qu'avec des cell() empilés (sinon multi_cell déborde
@@ -469,7 +474,7 @@ def main() -> None:
 
     path = build_pdf(args.output)
 
-    # Post-traitement · métadonnées + outline (skill pdf-official)
+    # Post-traitement - métadonnées + outline (skill pdf-official)
     try:
         import sys as _sys
 
@@ -487,19 +492,19 @@ def main() -> None:
         enrich_pdf(
             path,
             path,
-            title="Sovereign OS DIM · Manuel TIM",
+            title="Sovereign OS DIM - Manuel TIM",
             author="Adam Beloucif",
-            subject="Manuel quotidien TIM · workflow rapide",
+            subject="Manuel quotidien TIM - workflow rapide",
             keywords="PMSI, ATIH, DRUIDES, TIM, manuel, GHT Sud Paris",
             creator="tools/generate_manual.py",
             sections=sections,
         )
-        enriched = "(enrichi · metadata + bookmarks)"
+        enriched = "(enrichi - metadata + bookmarks)"
     except Exception as e:  # pragma: no cover
-        print(f"[WARN] Enrichissement PDF echoue · {e}")
+        print(f"[WARN] Enrichissement PDF echoue - {e}")
         enriched = "(brut)"
 
-    print(f"[OK] Manuel genere : {path} · {enriched}")
+    print(f"[OK] Manuel genere : {path} - {enriched}")
 
 
 if __name__ == "__main__":

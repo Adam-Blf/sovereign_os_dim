@@ -1,16 +1,16 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  SOVEREIGN OS DIM · Générateur du guide développeur PDF (fpdf2)
+#  SOVEREIGN OS DIM - Générateur du guide développeur PDF (fpdf2)
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V36.0 · Station DIM GHT Sud Paris
+#  Project : Sovereign OS V36.0 - Station DIM GHT Sud Paris
 #
-#  Description ·
+#  Description -
 #    Produit `Sovereign_OS_DIM_Guide_Dev.pdf` à la racine du dépôt.
 #    Ce guide est destiné aux développeurs et aux équipes DSI.
 #    Il documente l'architecture, le bridge HTTP, le module ML,
 #    la sécurité, la CI/CD et les conventions de contribution.
 #
-#  Usage ·
+#  Usage -
 #    python tools/generate_guide_dev.py [--output chemin.pdf]
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -30,6 +30,13 @@ SANS = "DevSans"
 MONO = "DevMono"
 
 _SANS_CANDIDATES = (
+    # Montserrat bundlee (identite typographique du projet, prioritaire)
+    (
+        os.path.join(FONT_DIR, "Montserrat-Regular.ttf"),
+        os.path.join(FONT_DIR, "Montserrat-Bold.ttf"),
+        os.path.join(FONT_DIR, "Montserrat-Italic.ttf"),
+        os.path.join(FONT_DIR, "Montserrat-BoldItalic.ttf"),
+    ),
     (
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
@@ -157,7 +164,7 @@ def _page_header(pdf, title, category):
     pdf.set_xy(28, 15)
     pdf.set_font(SANS, "", TYPE["caption"])
     pdf.set_text_color(*SLATE_500)
-    pdf.cell(120, 4, f"Guide Développeur · {category}", new_x="RIGHT", new_y="TOP")
+    pdf.cell(120, 4, f"Guide Développeur - {category}", new_x="RIGHT", new_y="TOP")
     pdf.set_draw_color(*SLATE_200)
     pdf.line(10, 22, 200, 22)
     pdf.set_y(28)
@@ -241,53 +248,53 @@ def _table_row(pdf, cols, widths, bold=False, header=False):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# CONTENU DU GUIDE DEV · sections
+# CONTENU DU GUIDE DEV - sections
 # ──────────────────────────────────────────────────────────────────────────────
 
 SECTIONS = [
-    # ══════ 1 · ARCHITECTURE GÉNÉRALE ══════
+    # ══════ 1 - ARCHITECTURE GÉNÉRALE ══════
     {
         "title": "Architecture générale",
         "category": "Architecture",
         "content": lambda pdf: _render_architecture(pdf),
     },
-    # ══════ 2 · STACK TECHNIQUE ══════
+    # ══════ 2 - STACK TECHNIQUE ══════
     {
         "title": "Stack technique et dépendances",
         "category": "Stack",
         "content": lambda pdf: _render_stack(pdf),
     },
-    # ══════ 3 · BRIDGE HTTP & PHP ══════
+    # ══════ 3 - BRIDGE HTTP & PHP ══════
     {
         "title": "Bridge HTTP et intégration PHP",
         "category": "API",
         "content": lambda pdf: _render_bridge(pdf),
     },
-    # ══════ 4 · MODULE ML ══════
+    # ══════ 4 - MODULE ML ══════
     {
-        "title": "Module ML · configuration et entraînement",
+        "title": "Module ML - configuration et entraînement",
         "category": "ML",
         "content": lambda pdf: _render_ml(pdf),
     },
-    # ══════ 5 · SÉCURITÉ ══════
+    # ══════ 5 - SÉCURITÉ ══════
     {
         "title": "Sécurité et conformité RGPD",
         "category": "Sécurité",
         "content": lambda pdf: _render_security(pdf),
     },
-    # ══════ 6 · CI/CD ══════
+    # ══════ 6 - CI/CD ══════
     {
-        "title": "CI/CD · pipeline et qualité de code",
+        "title": "CI/CD - pipeline et qualité de code",
         "category": "CI/CD",
         "content": lambda pdf: _render_cicd(pdf),
     },
-    # ══════ 7 · PERFORMANCES ══════
+    # ══════ 7 - PERFORMANCES ══════
     {
         "title": "Performances et benchmarks",
         "category": "Perfs",
         "content": lambda pdf: _render_perfs(pdf),
     },
-    # ══════ 8 · CONTRIBUER ══════
+    # ══════ 8 - CONTRIBUER ══════
     {
         "title": "Contribuer au projet",
         "category": "Contribution",
@@ -335,7 +342,7 @@ def _render_architecture(pdf):
     _alert(
         pdf,
         "warn",
-        "Le bridge HTTP ne doit jamais écouter sur 0.0.0.0 · "
+        "Le bridge HTTP ne doit jamais écouter sur 0.0.0.0 - "
         "127.0.0.1 uniquement. Toute modification expose les données patient.",
     )
 
@@ -361,7 +368,7 @@ def _render_stack(pdf):
     _body_text(
         pdf,
         "HTML/CSS vanille + Tailwind CSS (CDN embarqué). Chart.js "
-        "pour les graphiques. Aucun framework JS (React/Vue) · "
+        "pour les graphiques. Aucun framework JS (React/Vue) - "
         "volontairement léger pour rester embarquable dans WebView2 "
         "sans build step. ES modules natifs (import/export).",
     )
@@ -422,7 +429,7 @@ def _render_bridge(pdf):
     _subheading(pdf, "Endpoints disponibles")
     rows = [
         ("Méthode", "Route", "Auth", "Description"),
-        ("GET", "/health", "Non", "Ping · retourne {status: ok}"),
+        ("GET", "/health", "Non", "Ping - retourne {status: ok}"),
         ("GET", "/mpi/stats", "Oui", "KPI Dashboard (fichiers, IPP, collisions)"),
         ("POST", "/mpi/process", "Oui", "Lance traitement d'un dossier ATIH"),
         ("GET", "/mpi/collisions", "Oui", "Liste des collisions IDV"),
@@ -447,9 +454,9 @@ def _render_bridge(pdf):
     _subheading(pdf, "CORS")
     _body_text(
         pdf,
-        "Origine autorisée · null (WebView2) et http://127.0.0.1 "
+        "Origine autorisée - null (WebView2) et http://127.0.0.1 "
         "uniquement. Toute autre origine est bloquée par les "
-        "headers CORS restrictifs. Méthodes autorisées · "
+        "headers CORS restrictifs. Méthodes autorisées - "
         "GET, POST, OPTIONS.",
     )
 
@@ -480,10 +487,10 @@ def _render_ml(pdf):
             "format_detector.json",
             "XGBoost tuned",
             "Classification format ATIH (58 classes)",
-            "accuracy 0,77 · F1 0,70",
+            "accuracy 0,77 - F1 0,70",
         ),
-        ("collision_risk.json", "XGBoost tuned", "Scoring risque collision IDV", "AUC 1,00 · F1 1,00"),
-        ("ddn_validity.pkl", "RandomForest", "Détection DDN suspecte", "AUC 0,86 · acc 0,99"),
+        ("collision_risk.json", "XGBoost tuned", "Scoring risque collision IDV", "AUC 1,00 - F1 1,00"),
+        ("ddn_validity.pkl", "RandomForest", "Détection DDN suspecte", "AUC 0,86 - acc 0,99"),
     ]
     for i, row in enumerate(rows):
         _table_row(pdf, row, [50, 32, 65, 50], header=(i == 0))
@@ -517,7 +524,7 @@ def _render_ml(pdf):
     _body_text(
         pdf,
         "Pour chaque tâche, 4 algorithmes sont évalués en "
-        "cross-validation stratifiée (5-fold) · XGBoost default, "
+        "cross-validation stratifiée (5-fold) - XGBoost default, "
         "XGBoost tuned (Optuna, 30 trials), LightGBM, RandomForest. "
         "Le winner est sélectionné par AUC (binaire) ou F1 macro "
         "(multiclasse) et sérialisé. Le leaderboard complet est "
@@ -549,7 +556,7 @@ def _render_ml(pdf):
     _subheading(pdf, "Audit des modèles")
     _body_text(
         pdf,
-        "training_metadata.json contient pour chaque modèle · "
+        "training_metadata.json contient pour chaque modèle - "
         "date d'entraînement, nombre de samples, seed, leaderboard "
         "complet des 4 candidats avec métriques test, hash SHA-256 "
         "du fichier modèle sérialisé. Ce fichier est versionné en "
@@ -581,7 +588,7 @@ def _render_security(pdf):
         pdf,
         "os.path.abspath() + vérification que le chemin résolu "
         "reste sous le dossier autorisé (path traversal guard). "
-        "Côté C# · SafePath.validate() applique la même règle. "
+        "Côté C# - SafePath.validate() applique la même règle. "
         "Les liens symboliques pointant hors du dossier cible "
         "sont rejetés.",
     )
@@ -633,7 +640,7 @@ def _render_security(pdf):
 def _render_cicd(pdf):
     _subheading(pdf, "Pipeline GitHub Actions")
     _body_text(
-        pdf, "Déclenchement · push sur main ou PR vers main. Environnement · ubuntu-latest, Python 3.12."
+        pdf, "Déclenchement - push sur main ou PR vers main. Environnement - ubuntu-latest, Python 3.12."
     )
     rows = [
         ("Étape", "Commande", "Bloquant"),
@@ -650,12 +657,12 @@ def _render_cicd(pdf):
     _subheading(pdf, "Conventions de commit")
     _body_text(
         pdf,
-        "Format · <type>(<scope>): <description>\n"
-        "Types · feat, fix, docs, refactor, test, chore.\n"
-        "Scope · backend, frontend, ml, bridge, guide, ci.\n"
-        "Langue · anglais impératif, minuscules.\n"
+        "Format - <type>(<scope>): <description>\n"
+        "Types - feat, fix, docs, refactor, test, chore.\n"
+        "Scope - backend, frontend, ml, bridge, guide, ci.\n"
+        "Langue - anglais impératif, minuscules.\n"
         "Tirets longs (-) interdits dans les messages de commit.\n"
-        "Exemples valides ·\n"
+        "Exemples valides -\n"
         "  feat(ml): add RPS P15 format to ATIH_SPECS\n"
         "  fix(bridge): prevent path traversal in /export/txt",
     )
@@ -663,17 +670,17 @@ def _render_cicd(pdf):
     _subheading(pdf, "Pull Requests")
     _body_text(
         pdf,
-        "Branche de base · main. Branche de travail · "
+        "Branche de base - main. Branche de travail - "
         "<type>/<description-courte>. "
         "Tests pytest verts obligatoires avant merge. "
         "Review par au moins 1 membre du projet. "
-        "Squash merge · un seul commit par PR dans main.",
+        "Squash merge - un seul commit par PR dans main.",
     )
 
     _subheading(pdf, "Release")
     _body_text(
         pdf,
-        "Cycle trimestriel · V36 juillet 2026, V37 octobre 2026. "
+        "Cycle trimestriel - V36 juillet 2026, V37 octobre 2026. "
         "Tag Git : vXX.Y.Z (semver). GitHub Release auto-générée "
         "avec changelog depuis les commits. Binaire PyInstaller "
         "attaché à la release (Sovereign_OS_DIM.exe).",
@@ -699,12 +706,12 @@ def _render_perfs(pdf):
     _subheading(pdf, "Conditions de mesure")
     _body_text(
         pdf,
-        "Poste de référence · Intel Core i5 8e gen, 16 Go RAM, "
+        "Poste de référence - Intel Core i5 8e gen, 16 Go RAM, "
         "SSD NVMe. Système : Windows 11 Pro. "
         "Python 3.12, xgboost 2.0, sqlite 3.45.",
     )
 
-    _subheading(pdf, "Backend · traitement PMSI")
+    _subheading(pdf, "Backend - traitement PMSI")
     rows = [
         ("Opération", "Mesure", "Notes"),
         ("Scan 1 000 fichiers (12 dossiers)", "1,2 s", "Heuristique regex"),
@@ -745,7 +752,7 @@ def _render_perfs(pdf):
     _alert(
         pdf,
         "warn",
-        "Goulot principal · écriture SQLite pour les très gros lots "
+        "Goulot principal - écriture SQLite pour les très gros lots "
         "(> 1 M lignes). Solution : traiter par trimestres successifs "
         "ou passer à WAL mode (journal_mode=WAL).",
     )
@@ -756,9 +763,9 @@ def _render_contrib(pdf):
     _body_text(
         pdf,
         "https://github.com/Adam-Blf/sovereign_os_dim\n"
-        "Licence · MIT (code) + LGPL (fpdf2).\n"
+        "Licence - MIT (code) + LGPL (fpdf2).\n"
         "Issues GitHub pour bugs et suggestions.\n"
-        "Contact direct · adam.beloucif@psysudparis.fr",
+        "Contact direct - adam.beloucif@psysudparis.fr",
     )
 
     _subheading(pdf, "Structure du dépôt")
@@ -782,7 +789,7 @@ def _render_contrib(pdf):
     _subheading(pdf, "Ajouter un format ATIH")
     _body_text(
         pdf,
-        "1. Editer backend/ml/synthetic.py · ajouter l'entrée dans "
+        "1. Editer backend/ml/synthetic.py - ajouter l'entrée dans "
         "ATIH_SPECS (format, version, year_from, line_length, "
         "positions IPP/DDN).\n"
         "2. Relancer l'entraînement ML "
@@ -826,7 +833,7 @@ def build_pdf(output_path: str) -> str:
     try:
         from fpdf import FPDF
     except ImportError as e:
-        print("fpdf2 non installe · pip install fpdf2>=2.8", file=sys.stderr)
+        print("fpdf2 non installe - pip install fpdf2>=2.8", file=sys.stderr)
         raise SystemExit(1) from e
 
     class DevGuide(FPDF):
@@ -837,9 +844,9 @@ def build_pdf(output_path: str) -> str:
             self.cell(
                 0,
                 8,
-                f"Sovereign OS DIM · Guide Développeur · "
-                f"Page {self.page_no()} / {{nb}} · Adam Beloucif · GHT Sud Paris",
-                align="C",
+                f"Sovereign OS DIM - Guide Développeur - "
+                f"Page {self.page_no()} / {{nb}} - Adam Beloucif - GHT Sud Paris",
+                align="L",
             )
 
     pdf = DevGuide()
@@ -857,10 +864,10 @@ def build_pdf(output_path: str) -> str:
     pdf.set_y(95)
     pdf.set_font(SANS, "B", TYPE["display"])
     pdf.set_text_color(*GH_NAVY)
-    pdf.cell(0, 14, "SOVEREIGN OS DIM", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 14, "SOVEREIGN OS DIM", new_x="LMARGIN", new_y="NEXT", align="L")
     pdf.set_font(SANS, "", TYPE["h1"])
     pdf.set_text_color(*SLATE_700)
-    pdf.cell(0, 10, "Guide Développeur", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 10, "Guide Développeur", new_x="LMARGIN", new_y="NEXT", align="L")
     pdf.ln(SPACE["lg"])
     pdf.set_draw_color(*GH_TEAL)
     pdf.set_line_width(1.0)
@@ -871,26 +878,26 @@ def build_pdf(output_path: str) -> str:
     pdf.cell(
         0,
         7,
-        f"Version 36.0  ·  {len(SECTIONS)} sections  ·  référence technique",
+        f"Version 36.0  -  {len(SECTIONS)} sections  -  référence technique",
         new_x="LMARGIN",
         new_y="NEXT",
-        align="C",
+        align="L",
     )
     pdf.cell(
         0,
         7,
-        "GHT Psy Sud Paris  ·  Fondation Vallée + Paul Guiraud",
+        "GHT Psy Sud Paris  -  Fondation Vallée + Paul Guiraud",
         new_x="LMARGIN",
         new_y="NEXT",
-        align="C",
+        align="L",
     )
     pdf.ln(20)
     pdf.set_font(SANS, "I", TYPE["body"])
     pdf.set_text_color(*SLATE_400)
     pdf.cell(
-        0, 5, f"Généré le {date.today().strftime('%d / %m / %Y')}", new_x="LMARGIN", new_y="NEXT", align="C"
+        0, 5, f"Généré le {date.today().strftime('%d / %m / %Y')}", new_x="LMARGIN", new_y="NEXT", align="L"
     )
-    pdf.cell(0, 5, "Adam Beloucif  ·  adam.beloucif@psysudparis.fr", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 5, "Adam Beloucif  -  adam.beloucif@psysudparis.fr", new_x="LMARGIN", new_y="NEXT", align="L")
     pdf.ln(12)
     pdf.set_font(SANS, "", TYPE["small"])
     pdf.set_text_color(*SLATE_500)
@@ -902,7 +909,7 @@ def build_pdf(output_path: str) -> str:
         "le bridge HTTP, le module ML, la sécurité et la CI/CD. "
         "Pour le guide d'utilisation quotidienne (TIM, médecin DIM, "
         "chef de pôle), voir Sovereign_OS_DIM_Guide.pdf.",
-        align="C",
+        align="L",
         new_x="LMARGIN",
         new_y="NEXT",
     )
@@ -913,12 +920,12 @@ def build_pdf(output_path: str) -> str:
     pdf.cell(
         0,
         7,
-        "  Dépôt · https://github.com/Adam-Blf/sovereign_os_dim  ·  "
-        "Stack · Python 3.12 + C# .NET 8 + WebView2 + XGBoost",
+        "  Dépôt - https://github.com/Adam-Blf/sovereign_os_dim  -  "
+        "Stack - Python 3.12 + C# .NET 8 + WebView2 + XGBoost",
         new_x="LMARGIN",
         new_y="NEXT",
         fill=True,
-        align="C",
+        align="L",
     )
 
     # ══════ SOMMAIRE ══════
@@ -953,39 +960,39 @@ def build_pdf(output_path: str) -> str:
     _subheading(pdf, "Documentation officielle ATIH")
     _body_text(
         pdf,
-        "Notice technique 2026 · "
+        "Notice technique 2026 - "
         "https://www.atih.sante.fr/notice-technique-nouveautes-pmsi-mco-had-smr-psychiatrie-2026-0\n"
-        "Formats PMSI 2026 (Excel) · "
+        "Formats PMSI 2026 (Excel) - "
         "https://www.atih.sante.fr/formats-pmsi-2026-0\n"
-        "Catalogue formats historiques · format-pmsi.fr\n"
-        "Plateforme DRUIDES · https://www.epmsi.atih.sante.fr",
+        "Catalogue formats historiques - format-pmsi.fr\n"
+        "Plateforme DRUIDES - https://www.epmsi.atih.sante.fr",
     )
 
     _subheading(pdf, "RGPD et conformité")
     _body_text(
         pdf,
-        "RGPD UE 2016/679 · art. 9 (données de santé), art. 30 "
+        "RGPD UE 2016/679 - art. 9 (données de santé), art. 30 "
         "(registre de traitement).\n"
-        "HAS · Instruction DGOS/PF2 no 2019-116 (identitovigilance).\n"
-        "ANS · Référentiel national d'identito-vigilance 2023.\n"
-        "Health Data Hub · MR-007 (pseudonymisation SNDS).\n"
-        "Instruction DGOS/PF2/2020/143 · rétention 5 ans.",
+        "HAS - Instruction DGOS/PF2 no 2019-116 (identitovigilance).\n"
+        "ANS - Référentiel national d'identito-vigilance 2023.\n"
+        "Health Data Hub - MR-007 (pseudonymisation SNDS).\n"
+        "Instruction DGOS/PF2/2020/143 - rétention 5 ans.",
     )
 
     _subheading(pdf, "Dépôt et support")
     _body_text(
         pdf,
-        "GitHub · https://github.com/Adam-Blf/sovereign_os_dim\n"
-        "Issues · https://github.com/Adam-Blf/sovereign_os_dim/issues\n"
-        "Contact · adam.beloucif@psysudparis.fr\n"
-        "Alternance EFREI M1 Data Engineering · Fondation Vallée 2025-2027.",
+        "GitHub - https://github.com/Adam-Blf/sovereign_os_dim\n"
+        "Issues - https://github.com/Adam-Blf/sovereign_os_dim/issues\n"
+        "Contact - adam.beloucif@psysudparis.fr\n"
+        "Alternance EFREI M1 Data Engineering - Fondation Vallée 2025-2027.",
     )
 
     _alert(
         pdf,
         "info",
         "Ce guide développeur est généré automatiquement depuis "
-        "tools/generate_guide_dev.py · mettre à jour le contenu "
+        "tools/generate_guide_dev.py - mettre à jour le contenu "
         "dans ce fichier pour l'enrichir.",
     )
 
@@ -1006,7 +1013,7 @@ def main() -> None:
     args = parser.parse_args()
     path = build_pdf(args.output)
 
-    # Post-traitement · métadonnées + outline navigable (skill pdf-official)
+    # Post-traitement - métadonnées + outline navigable (skill pdf-official)
     try:
         import sys as _sys
 
@@ -1016,7 +1023,7 @@ def main() -> None:
         enrich_pdf(
             path,
             path,
-            title="Sovereign OS DIM · Guide développeur V36",
+            title="Sovereign OS DIM - Guide développeur V36",
             author="Adam Beloucif",
             subject="Architecture, build, tests, déploiement, ML stack",
             keywords=(
@@ -1029,21 +1036,21 @@ def main() -> None:
                 ("1. Architecture générale", 2),
                 ("2. Stack technique et dépendances", 3),
                 ("3. Bridge HTTP et intégration PHP", 4),
-                ("4. Module ML · configuration et entraînement", 6),
+                ("4. Module ML - configuration et entraînement", 6),
                 ("5. Sécurité et conformité RGPD", 8),
-                ("6. CI/CD · pipeline et qualité", 9),
+                ("6. CI/CD - pipeline et qualité", 9),
                 ("7. Performances et benchmarks", 10),
                 ("8. Contribuer au projet", 11),
                 ("Références et ressources", 12),
             ],
         )
-        enriched = "(enrichi · metadata + 11 bookmarks)"
+        enriched = "(enrichi - metadata + 11 bookmarks)"
     except Exception as e:  # pragma: no cover
-        print(f"[WARN] Enrichissement PDF echoue · {e}")
+        print(f"[WARN] Enrichissement PDF echoue - {e}")
         enriched = "(brut)"
 
     size_kb = os.path.getsize(path) // 1024
-    print(f"[OK] Guide développeur généré : {path}  ({size_kb} Ko) · {enriched}")
+    print(f"[OK] Guide développeur généré : {path}  ({size_kb} Ko) - {enriched}")
 
 
 if __name__ == "__main__":
