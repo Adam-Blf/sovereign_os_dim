@@ -68,7 +68,7 @@ flowchart TB
 - **100% local, zéro réseau** - aucun serveur HTTP, aucune socket en écoute. Le frontend appelle Python via le pont in-process de pywebview (`window.pywebview.api`). Aucune surface de fuite de données.
 - **Moulinette FICHCOMP** *(V37)* - moulinette Excel vers fichier plat FICHCOMP/FICHDMI à largeur fixe (suppléments transports, médicaments, dispositifs médicaux). Nettoyage du classeur source, propagation des dates, génération du format ATIH puis contrôle de longueur (53 caractères médicament, 50 caractères DMI). Code source dans `tools/moulinette_fichcomp/`.
 - **Export PDF** - organigrammes, rapports preflight, dashboards BIQuery (HTML→PDF).
-- **Guide utilisateur** *(V36)* - `docs/Sovereign_OS_DIM_Guide.pdf` (38 pages, polices Unicode, orientation métier, page Roadmap, références ATIH/ARS vérifiées).
+- **Guides PDF** *(V37)* - `docs/Sovereign_OS_DIM_Guide.pdf` (38 pages, polices Unicode, orientation métier, page Roadmap, références ATIH/ARS vérifiées).
 
 ## Formats ATIH supportés
 
@@ -246,24 +246,32 @@ sovereign_os_dim/
 
 ## Version distribuée
 
-Le bundle C# prêt à livrer vit dans `D:\SovereignOS_DIM_CSharp\` -
-`SovereignOS.Desktop.exe` (97 Mo), `frontend/` (patchs sécurité inclus),
-`Sovereign_OS_DIM_Guide.pdf` (guide métier), `Sovereign_OS_DIM_Guide_Dev.pdf` (guide dev), `LISEZ-MOI.txt`,
-`LICENCE.txt`, `VERSION`, `CHECKSUMS.sha256`. Total 140 Mo.
+Un bundle portable est constitué hors dépôt pour la livraison au poste DIM -
+exécutable autonome, `frontend/` vendorisé, guides PDF (`docs/`), `LISEZ-MOI.txt`,
+`LICENCE.txt`, `VERSION` et `CHECKSUMS.sha256`. Aucun binaire n'est versionné ici.
 
-## Roadmap V37+
+## Modules Sentinel v2 (implémentés)
 
-8 modules métier proposés en discussion avec l'équipe DIM (détail page 12
-du guide PDF) -
+Écrans livrés en V37, tous 100 % locaux via le pont in-process
+(`backend/interfaces/_sentinel.py`) -
 
-1. **Sentinel ARS** - prédicteur de rejet DRUIDES avant upload
-2. **CimSuggester live** - IA de codage CIM-10 dans l'UI
-3. **Cockpit chef DIM** - tableau de bord exécutif mensuel
-4. **Audit DRUIDES temps réel** - alerte instantanée sur rejet
-5. **CeSPA / CATTG validator** - conformité réforme 4 juillet 2025
-6. **Sentinel INS** - qualité INS Ségur
-7. **Connecteur SNDS local** - pseudonymisation auto + k ≥ 5
-8. **Hospital Twin** - simulation impact tarifaire DFA
+1. **Sentinel ARS** - score qualité d'un lot avant téléversement (ML)
+2. **Cockpit chef DIM** - KPI réels lus du Master Patient Index
+3. **Audit chaîné** - journal SHA-256 art. 30 RGPD, intégrité vérifiable
+4. **CeSPA / CATTG validator** - règles réforme PSY du 4 juillet 2025
+5. **Heatmap secteurs** - file active par code postal
+6. **Hospital Twin** - simulation d'impact tarifaire DFA
+7. **Diff de lots** - comparaison des états du MPI
+8. **Workflow DIM** - pipeline TIM, MIM, préflight, ARS
+
+## Roadmap V38+
+
+Pistes en discussion avec l'équipe DIM -
+
+1. **CimSuggester live** - suggestion CIM-10 dans l'UI (Ollama intranet)
+2. **Sentinel INS** - qualité INS Ségur
+3. **Connecteur SNDS local** - pseudonymisation auto + k ≥ 5
+4. **Snapshots mensuels** - baseline persistée pour le diff de lots
 
 ## Références ATIH et ARS
 
