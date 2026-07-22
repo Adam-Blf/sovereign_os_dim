@@ -61,6 +61,10 @@ tools/moulinette_fichcomp/Fichier/
 .pytest_cache/
 .ruff_cache/
 
+# Node - outillage de test uniquement (Playwright pour le smoke test de
+# rendu), jamais embarque dans l'app ni sur poste hopital (cf package.json)
+node_modules/
+
 # Jamais versionnes : hooks locaux, echantillons internes etablissement, scripts .bat (regle EDR)
 hooks/
 sample/

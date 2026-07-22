@@ -46,14 +46,24 @@ jobs:
       - name: Syntax check
         run: |
           node --check frontend/js/app.js
-          node --check frontend/js/bridge-shim.js
           node --check frontend/js/dashboard-live.js
           node --check frontend/js/preflight-view.js
           node --check frontend/js/htmlpdf-view.js
           node --check frontend/js/tuto-overlay.js
+          node --check frontend/js/cockpit-view.js
+          node --check frontend/js/sentinel-helpers.js
+          node --check frontend/js/sentinel-views.js
 
       - name: Run frontend tests
         run: node tests/frontend/test_activity_analysis.mjs
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Run render smoke test
+        run: node tests/frontend/test_render_smoke.mjs
 
   deps:
     name: Dependencies - CVE audit
@@ -70,8 +80,15 @@ jobs:
         run: python -m pip install pip-audit
 
       - name: Audit requirements.txt for known CVEs
-        run: pip-audit -r requirements.txt --disable-pip
+        run: pip-audit -r requirements.txt --disable-pip --format json -o pip-audit-report.json
         continue-on-error: true
+
+      - name: Upload CVE audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: pip-audit-report.json
+          retention-days: 90
 
   lint:
     name: Lint - ruff
