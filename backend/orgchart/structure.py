@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM - STRUCTURE PARSER v1.0
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.1 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.2 - Station DIM GHT Sud Paris
 #
 #  Description :
 #    Parseur du "fichier de structure" d'un établissement : hiérarchie des

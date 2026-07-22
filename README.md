@@ -15,7 +15,7 @@
 ![WebView2](https://img.shields.io/badge/WebView2-Chromium-3C4A5A?logo=microsoftedge&logoColor=white)
 ![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?logo=tailwindcss&logoColor=white)
 ![ML](https://img.shields.io/badge/ML-XGBoost%20%2B%20LightGBM-FF6F00?logo=scikitlearn&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-260_Py_%2B_30_JS-brightgreen)
+![Tests](https://img.shields.io/badge/tests-203_Py_%2B_30_JS-brightgreen)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -106,7 +106,7 @@ python build.py
 ## Tests
 
 ```bash
-# Python - 260 tests unitaires + intégration
+# Python - 203 tests unitaires + intégration
 python -m pytest tests/ -q
 
 # Frontend - 30 tests Node.js (helpers JS sans navigateur)
@@ -218,7 +218,7 @@ sovereign_os_dim/
 │   ├── capture_screenshots.py - Playwright headless
 │   └── moulinette_fichcomp/   - Moulinette Excel vers FICHCOMP/FICHDMI (code source)
 ├── tests/
-│   ├── test_data_processor.py - 260 tests Python
+│   ├── test_data_processor.py - 203 tests Python
 │   └── frontend/
 │       └── test_activity_analysis.mjs - 30 tests JS
 └── README.md

@@ -60,3 +60,8 @@ tools/moulinette_fichcomp/Fichier/
 # Caches outils
 .pytest_cache/
 .ruff_cache/
+
+# Jamais versionnes : hooks locaux, echantillons internes etablissement, scripts .bat (regle EDR)
+hooks/
+sample/
+*.bat
