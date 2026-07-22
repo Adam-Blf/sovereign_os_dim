@@ -44,20 +44,22 @@ L'application repose sur un modèle hybride de type application de bureau, combi
 ```mermaid
 flowchart TB
     UI["Interface Utilisateur (WebView2)<br/>HTML5 - Tailwind CSS - Chart.js"]
-    HOST["Hôte Bureau C# .NET 8<br/>SovereignOS.Desktop.exe"]
-    BR["Bridge de Communication local<br/>REST 127.0.0.1 - Token Bearer unique"]
-    API["Moteur Métier Python 3.12 (FastAPI)<br/>Validation PMSI - Modèles ML XGBoost"]
+    HOST["Hôte Bureau (pywebview ou C# .NET 8)<br/>SovereignOS.Desktop.exe"]
+    API["Moteur Métier Python 3.12<br/>Validation PMSI - Modèles ML XGBoost"]
     DB["Base de Données Locale SQLite<br/>Table Master Patient Index (MPI)"]
 
-    UI --> HOST
-    HOST --> BR
-    BR --> API
+    UI -->|pont in-process pywebview| HOST
+    HOST --> API
     API --> DB
 ```
 
+L'interface et le moteur métier s'exécutent dans le même processus. La communication
+entre la WebView et Python passe par le pont natif de l'hôte (appels de fonctions
+in-process), **sans aucun serveur HTTP, sans port en écoute et sans socket réseau**.
+
 ### 2.1 Langages et Frameworks
 *   **Hôte Bureau :** Écrit en **C# (.NET 8)**. Il gère le cycle de vie de l'application, instancie le composant Microsoft WebView2 (moteur de rendu Chromium) et lance en arrière-plan le service applicatif Python.
-*   **Moteur Applicatif (Backend) :** Développé en **Python 3.12** à l'aide de **FastAPI** pour l'exposition des services métiers, et empaqueté avec le reste de l'exécutable pour une portabilité totale.
+*   **Moteur Applicatif (Backend) :** Développé en **Python 3.12**, exposé au frontend uniquement via le **pont in-process de pywebview** (`js_api`), sans framework serveur ni exposition réseau, et empaqueté avec le reste de l'exécutable pour une portabilité totale.
 *   **Interface (Frontend) :** Construite en **HTML5 / CSS (Tailwind)** et enrichie par **Chart.js** pour la visualisation des KPI d'activité en temps réel.
 *   **Machine Learning :** Modèles d'aide à la décision locaux basés sur **XGBoost** et **LightGBM** (auto-détection du meilleur algorithme) pour la validation des dates de naissance (AUC 0.86), le score de risque de collision MPI (AUC 1.0) et la classification des formats de fichiers ATIH (58 classes, exactitude 0.77).
 
@@ -112,20 +114,18 @@ sequenceDiagram
 *   **Import Manuel :** L'alimentation de l'application se fait exclusivement par import manuel (glisser-déposer dans l'interface) de fichiers plats extraits au préalable par les agents du DIM via les outils décisionnels institutionnels (BIQuery, etc.).
 
 ### 4.2 Flux Réseau Externes et Internes
-*   **Pont Applicatif Local (127.0.0.1) :** La communication entre la WebView2 et l'API Python s'effectue sur l'interface de boucle locale (`localhost` / `127.0.0.1`). Ce port d'écoute local est dynamique et inaccessible depuis le réseau extérieur de l'hôpital.
-*   **Appels Extranets / Cloud :** Par défaut, l'application fonctionne à 100 % hors-ligne.
-*   **Module de Suggestion CIM-10 (CimSuggester - Optionnel) :**
-    *   *Mode local (Recommandé par la DSI) :* L'application interroge un serveur **Ollama** déployé en local sur la station ou sur un serveur privé du réseau interne du GHT. Le flux est purement intranet (HTTP).
-    *   *Mode Cloud (Désactivé par défaut) :* Si l'administrateur DIM l'active explicitement, l'application peut envoyer des requêtes chiffrées (HTTPS) à une API de modèle de langage externe. Dans ce cas, **aucune donnée nominative patient (IPP, DDN, Nom) n'est transmise dans la requête**, seuls les libellés cliniques bruts à coder sont envoyés pour suggestion.
+*   **Aucun serveur, aucun port en écoute :** l'application n'ouvre aucune socket et n'expose aucun service HTTP. La communication entre l'interface WebView et le moteur Python se fait exclusivement par appels de fonctions **in-process** (pont natif pywebview), à l'intérieur du même processus. Il n'existe donc aucune surface réseau à interroger, ni en local ni depuis l'extérieur.
+*   **Fonctionnement 100 % hors-ligne :** aucun appel extranet ni cloud n'est effectué par défaut.
+*   **Module de Suggestion CIM-10 (CimSuggester - Optionnel, désactivé par défaut) :** seule fonctionnalité pouvant émettre un flux, et uniquement si un administrateur configure explicitement l'adresse d'un serveur **Ollama** intranet (variable `OLLAMA_BASE`). Le flux est alors purement interne au GHT et ne transporte **aucune donnée nominative patient (IPP, DDN, Nom)**, seulement les libellés cliniques bruts à coder. Sans cette configuration, le module est inactif.
 
 ---
 
 ## 5. Sécurité et Conformité Réglementaire
 
-### 5.1 Sécurisation de l'IPC (Communication Inter-Processus)
-Pour empêcher qu'un autre utilisateur ou un processus malveillant présent sur la même machine puisse interroger l'API Python locale :
-*   Un **jeton Bearer unique** (token d'authentification) est généré de manière pseudo-aléatoire au lancement de l'application par l'hôte C#.
-*   Ce jeton est requis pour chaque appel d'API entre la WebView2 et le backend FastAPI. Toute requête dépourvue de ce jeton est immédiatement rejetée avec un code d'erreur HTTP 401.
+### 5.1 Absence de Surface Réseau (in-process)
+L'application ne comporte **aucune interface de communication réseau**, même locale :
+*   Le frontend appelle le backend Python par le **pont in-process** de l'hôte (fonction native `js_api`), à l'intérieur d'un seul et même processus. Aucun serveur HTTP, aucun port, aucune socket n'est ouvert.
+*   Il n'existe donc **rien à authentifier ni à interroger** depuis un autre processus ou depuis le réseau : la surface d'attaque et de fuite liée à un service HTTP local est nulle par conception.
 
 ### 5.2 Conformité RGPD et Règlements de Santé
 *   **Souveraineté des Données :** Aucune donnée de santé à caractère personnel ne sort du poste de travail de l'utilisateur ou du réseau interne sécurisé du GHT.

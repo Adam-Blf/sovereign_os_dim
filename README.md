@@ -38,19 +38,19 @@ RGPD-safe, aucune donnée patient n'est transmise.**
 flowchart TB
     UI["Frontend WebView2<br/>frontend/ - HTML - Tailwind - Chart.js"]
     HOST["Hôte desktop<br/>main.py pywebview - .exe C# .NET 8"]
-    BR["Bridge<br/>backend/bridge.py - REST 127.0.0.1 - token Bearer"]
-    API["backend/interfaces/<br/>api - fastapi_app - bridge"]
+    API["backend/interfaces/api.py<br/>pont pywebview in-process (aucune socket)"]
+    SENT["backend/interfaces/_sentinel.py<br/>cockpit - ML - audit - heatmap - workflow"]
     PROC["backend/pmsi + orgchart<br/>parsing 23 formats ATIH - MPI - structure"]
     AUDIT["backend/quality<br/>preflight DRUIDES - 15 validateurs"]
     ML["backend/ml/<br/>XGBoost - LightGBM - 3 modèles"]
     DB["SQLite<br/>Master Patient Index - persistance"]
-    PHP["php/<br/>SovereignClient - dashboards BIQuery"]
 
-    UI --> HOST --> BR --> API
+    UI -->|window.pywebview.api| HOST --> API
+    API --> SENT
     API --> PROC --> DB
     API --> AUDIT
-    API --> ML
-    PHP --> BR
+    SENT --> ML
+    SENT --> PROC
 ```
 
 ## Fonctionnalités
@@ -65,7 +65,7 @@ flowchart TB
 - **Analyse d'activité par UM** *(V35)* - drop-zone HTML5 accessible clavier, parsing RPS/RAA asynchrone en chunks 5000 lignes, détection des UM dormantes, export CSV UTF-8 BOM, badges rouges clignotants sur l'arbre.
 - **Dashboard Live** - 4 graphiques Chart.js + 6 KPI dérivés du MPI, export PDF paysage.
 - **Inspector Terminal** - décomposition ligne par ligne avec 15 validations, pseudonymisation auto.
-- **Bridge HTTP REST** - endpoints sécurisés 127.0.0.1 + token Bearer pour intégration PHP.
+- **100% local, zéro réseau** - aucun serveur HTTP, aucune socket en écoute. Le frontend appelle Python via le pont in-process de pywebview (`window.pywebview.api`). Aucune surface de fuite de données.
 - **Moulinette FICHCOMP** *(V37)* - moulinette Excel vers fichier plat FICHCOMP/FICHDMI à largeur fixe (suppléments transports, médicaments, dispositifs médicaux). Nettoyage du classeur source, propagation des dates, génération du format ATIH puis contrôle de longueur (53 caractères médicament, 50 caractères DMI). Code source dans `tools/moulinette_fichcomp/`.
 - **Export PDF** - organigrammes, rapports preflight, dashboards BIQuery (HTML→PDF).
 - **Guide utilisateur** *(V36)* - `docs/Sovereign_OS_DIM_Guide.pdf` (38 pages, polices Unicode, orientation métier, page Roadmap, références ATIH/ARS vérifiées).
@@ -170,8 +170,7 @@ deps, lint).
 
 ```
 sovereign_os_dim/
-├── main.py                 - Point d'entrée pywebview (desktop)
-├── bridge.py               - Point d'entrée bridge HTTP (PHP)
+├── main.py                 - Point d'entrée pywebview (desktop, 100% local)
 ├── backend/                   - Coeur métier, rangé par domaine
 │   ├── pmsi/               - Domaine PMSI : moteur ATIH (scan, MPI, export)
 │   │   └── data_processor.py
@@ -180,10 +179,9 @@ sovereign_os_dim/
 │   ├── quality/            - Domaine qualité : preflight DRUIDES + workflow
 │   │   ├── audit.py
 │   │   └── workflow.py
-│   └── interfaces/         - Couche d'exposition (frontend, PHP)
-│       ├── api.py          - API exposée au frontend
-│       ├── fastapi_app.py  - Application FastAPI
-│       └── bridge.py       - Serveur REST local (intégration PHP)
+│   └── interfaces/         - Pont pywebview in-process (aucun serveur)
+│       ├── api.py          - Méthodes exposées au frontend (js_api)
+│       └── _sentinel.py    - Logique des écrans v2 (cockpit, ML, audit...)
 ├── frontend/
 │   ├── index.html
 │   ├── css/style.css
@@ -232,7 +230,7 @@ sovereign_os_dim/
 |--------|--------|
 | Desktop | Python 3.12 + pywebview, ou C# .NET 8 + WebView2 |
 | Frontend | HTML + Tailwind CDN + Chart.js + anime.js + Lucide |
-| Bridge HTTP | Flask (Python) ou ASP.NET Core (C#) |
+| Pont backend | pywebview `js_api` in-process (aucun serveur, aucune socket) |
 | Persistance | SQLite (`Microsoft.Data.Sqlite` pour le port C#) |
 | PDF | fpdf2 (Unicode Segoe UI / DejaVu, fallback latin-1) |
 | Parser ATIH | Regex positionnel largeur fixe, lecture latin-1 |
@@ -242,8 +240,8 @@ sovereign_os_dim/
 
 ## Sécurité et RGPD
 
-- **100 % local** - aucun envoi externe, aucune télémétrie.
-- **Bridge HTTP** - binding uniquement 127.0.0.1, token Bearer obligatoire, CORS restrictif.
+- **100 % local, zéro réseau** - aucun serveur HTTP, aucune socket en écoute, aucun port ouvert, aucun envoi externe, aucune télémétrie. Communication frontend/backend uniquement in-process via le pont pywebview.
+- **Aucune surface de fuite** - la suppression de toute couche HTTP retire la principale surface d'attaque et de fuite de données.
 - **Anonymisation** - k-anonymity (k≥5) pour les exports recherche.
 - **Audit log art. 30 RGPD** - chaque traitement horodaté.
 - **Pseudonymisation IPP** - optionnelle pour rapports non-nominatifs.
