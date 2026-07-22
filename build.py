@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM - Script de build Python
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.0 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.1 - Station DIM GHT Sud Paris
 #
 #  Description :
 #    Compile l'application en .exe portable Windows via PyInstaller.
@@ -53,32 +53,15 @@ HIDDEN_IMPORTS = [
     # Modules du projet - normalement auto-détectés, mais on les explicite
     # pour que l'omission d'un import indirect ne casse pas le build.
     "backend.orgchart.structure",
-    "backend.interfaces.bridge",
     "backend.interfaces.api",
+    "backend.interfaces._sentinel",
     "backend.pmsi.data_processor",
-    "backend.interfaces.fastapi_app",
     "backend.ml",
     "backend.ml.predict",
     "backend.ml.synthetic",
-    # Excel (utilisé par le bridge pour /api/import-excel)
+    # Excel (moulinette FICHCOMP, import CSV/Excel)
     "openpyxl",
-    # FastAPI v2 (V37+) · uvicorn charge h11/httptools/anyio dynamiquement
-    "fastapi",
-    "uvicorn",
-    "uvicorn.loops.asyncio",
-    "uvicorn.lifespan.on",
-    "uvicorn.protocols.http.h11_impl",
-    "uvicorn.protocols.websockets.auto",
-    "uvicorn.logging",
-    "h11",
-    "anyio",
-    "anyio._backends._asyncio",
-    "sniffio",
-    "starlette",
-    "starlette.routing",
-    "pydantic",
-    "pydantic_core",
-    # ML (XGBoost stack) · embarqué pour inférence locale
+    # ML (XGBoost stack) - embarqué pour inférence locale
     "xgboost",
     "lightgbm",
     "sklearn.ensemble._forest",
@@ -91,11 +74,6 @@ COLLECT_ALL = [
     "webview",
     "clr_loader",
     "pythonnet",
-    "fastapi",
-    "uvicorn",
-    "starlette",
-    "pydantic",
-    "pydantic_core",
 ]
 
 # Modules à inclure avec leurs données (poids des modèles ML, etc.)

@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM - API v3.0
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.0 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.1 - Station DIM GHT Sud Paris
 #  Date    : 2026-03-02
 #
 #  Description:
@@ -26,6 +26,7 @@ import csv
 import webview
 from backend.pmsi.data_processor import DataProcessor
 from backend.orgchart.structure import parse_structure, render_tree_pdf
+from backend.interfaces import _sentinel
 
 
 class Api:
@@ -405,3 +406,68 @@ class Api:
     def get_pending_logs(self):
         """Récupère les logs en attente (drain pattern)."""
         return self.processor.get_logs()
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # ECRANS SENTINEL V2 - in-process, aucun serveur ni socket
+    # Le frontend appelle ces méthodes via window.pywebview.api (pont local).
+    # La logique vit dans backend/interfaces/_sentinel.py et réutilise
+    # self.processor (état partagé avec le reste de l'app).
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def get_health(self):
+        return _sentinel.health()
+
+    def get_cockpit(self):
+        return _sentinel.cockpit(self.processor)
+
+    def get_health_monitor(self):
+        return _sentinel.health_monitor(self.processor)
+
+    def ml_predict_format(self, payload):
+        return _sentinel.predict_format(payload)
+
+    def ml_predict_collision_risk(self, payload):
+        return _sentinel.predict_collision_risk(payload)
+
+    def ml_predict_ddn_validity(self, payload):
+        return _sentinel.predict_ddn_validity(payload)
+
+    def ml_cim_suggest(self, payload):
+        return _sentinel.cim_suggest(payload)
+
+    def ars_score_lot(self, payload):
+        return _sentinel.ars_score_lot(payload)
+
+    def get_audit_events(self, limit=30):
+        return _sentinel.audit_events(limit)
+
+    def audit_verify(self):
+        return _sentinel.audit_verify()
+
+    def get_idv_stats(self):
+        return _sentinel.idv_stats(self.processor)
+
+    def cespa_check(self):
+        return _sentinel.cespa_check(self.processor)
+
+    def get_diff(self):
+        return _sentinel.diff_lots(self.processor)
+
+    def get_heatmap_sectors(self):
+        return _sentinel.heatmap_sectors(self.processor)
+
+    def get_twin_scenarios(self):
+        return _sentinel.twin_scenarios(self.processor)
+
+    def get_pivot(self):
+        """Vue pivot croisée format x secteur, dérivée du MPI courant."""
+        return _sentinel.diff_lots(self.processor)
+
+    def workflow_pending(self, stage=None, limit=100):
+        return _sentinel.workflow_pending(stage, limit)
+
+    def workflow_add(self, payload):
+        return _sentinel.workflow_add(payload)
+
+    def workflow_advance(self, item_id, new_stage):
+        return _sentinel.workflow_advance(item_id, new_stage)

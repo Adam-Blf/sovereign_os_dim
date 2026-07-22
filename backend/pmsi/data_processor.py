@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM - DATA PROCESSOR v3.1
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.0 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.1 - Station DIM GHT Sud Paris
 #  Date    : 2026-03-03
 #
 #  Description:

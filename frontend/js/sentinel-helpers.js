@@ -168,25 +168,82 @@
       </div>`;
   }
 
-  /** Wrapper fetch · renvoie {ok, data, error}. PROD · pas de mock auto. */
+  /**
+   * Pont 100% local. Route un ancien chemin d'API v2 vers une methode du pont
+   * pywebview in-process (window.pywebview.api). Aucun fetch, aucune socket,
+   * aucun flux reseau. Conserve le contrat de retour {ok, data, status, error}.
+   */
   async function api(path, init) {
-    const base = window.SOVEREIGN_API_BASE || "http://127.0.0.1:8766";
     const opts = init || {};
-    opts.headers = Object.assign({}, opts.headers || {});
-    if (window.SOVEREIGN_API_TOKEN) {
-      opts.headers["Authorization"] = "Bearer " + window.SOVEREIGN_API_TOKEN;
+    const method = (opts.method || "GET").toUpperCase();
+    let body = opts.body;
+    if (typeof body === "string") {
+      try { body = JSON.parse(body); } catch { /* garde tel quel */ }
     }
-    if (opts.body && typeof opts.body !== "string") {
-      opts.headers["Content-Type"] = "application/json";
-      opts.body = JSON.stringify(opts.body);
+    // Separer le chemin des parametres de requete.
+    const [rawPath, qs] = String(path).split("?");
+    const params = {};
+    if (qs) {
+      for (const kv of qs.split("&")) {
+        const [k, v] = kv.split("=");
+        if (k) params[decodeURIComponent(k)] = decodeURIComponent(v || "");
+      }
     }
+
+    const bridge = window.pywebview && window.pywebview.api;
+    if (!bridge) {
+      return { ok: false, status: 0, data: null, error: "Pont local indisponible" };
+    }
+
     try {
-      const r = await fetch(base + path, opts);
-      const data = r.headers.get("content-type")?.includes("json")
-        ? await r.json() : await r.text();
-      return { ok: r.ok, status: r.status, data };
+      let data;
+      switch (true) {
+        case rawPath === "/health":
+          data = await bridge.get_health(); break;
+        case rawPath === "/api/v2/cockpit":
+          data = await bridge.get_cockpit(); break;
+        case rawPath === "/api/v2/health-monitor":
+          data = await bridge.get_health_monitor(); break;
+        case rawPath === "/api/v2/ml/predict-format":
+          data = await bridge.ml_predict_format(body); break;
+        case rawPath === "/api/v2/ml/predict-collision-risk":
+          data = await bridge.ml_predict_collision_risk(body); break;
+        case rawPath === "/api/v2/ml/predict-ddn-validity":
+          data = await bridge.ml_predict_ddn_validity(body); break;
+        case rawPath === "/api/v2/ml/cim-suggest":
+          data = await bridge.ml_cim_suggest(body); break;
+        case rawPath === "/api/v2/ars/score-lot":
+          data = await bridge.ars_score_lot(body); break;
+        case rawPath === "/api/v2/audit/events":
+          data = await bridge.get_audit_events(Number(params.limit) || 30); break;
+        case rawPath === "/api/v2/audit/verify":
+          data = await bridge.audit_verify(); break;
+        case rawPath === "/api/v2/idv/stats":
+          data = await bridge.get_idv_stats(); break;
+        case rawPath === "/api/v2/cespa/check":
+          data = await bridge.cespa_check(); break;
+        case rawPath === "/api/v2/diff":
+          data = await bridge.get_diff(); break;
+        case rawPath === "/api/v2/heatmap/sectors":
+          data = await bridge.get_heatmap_sectors(); break;
+        case rawPath === "/api/v2/twin/scenarios":
+          data = await bridge.get_twin_scenarios(); break;
+        case rawPath === "/api/v2/pivot":
+          data = await bridge.get_pivot(); break;
+        case rawPath === "/api/v2/workflow/pending":
+          data = await bridge.workflow_pending(params.stage || null, Number(params.limit) || 100); break;
+        case rawPath === "/api/v2/workflow/add":
+          data = await bridge.workflow_add(body); break;
+        case rawPath.startsWith("/api/v2/workflow/advance/"):
+          data = await bridge.workflow_advance(
+            Number(rawPath.split("/").pop()), params.new_stage || (body && body.new_stage)
+          ); break;
+        default:
+          return { ok: false, status: 404, data: null, error: "Route locale inconnue : " + rawPath };
+      }
+      return { ok: true, status: 200, data };
     } catch (e) {
-      return { ok: false, status: 0, data: null, error: e.message };
+      return { ok: false, status: 500, data: null, error: (e && e.message) || String(e) };
     }
   }
 

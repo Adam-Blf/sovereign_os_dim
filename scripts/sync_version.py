@@ -37,8 +37,6 @@ TARGETS = [
     # Le template utilise {v} pour la version complète (V35.0)
     # et {vshort} pour la version courte (V35).
     ("backend/interfaces/api.py", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
-    ("backend/interfaces/bridge.py", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
-    ("backend/interfaces/bridge.py", r'version="V\d+\.\d+"', 'version="{v}"'),
     ("backend/pmsi/data_processor.py", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
     ("backend/orgchart/structure.py", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
     ("backend/__init__.py", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
