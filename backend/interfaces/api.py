@@ -471,3 +471,9 @@ class Api:
 
     def workflow_advance(self, item_id, new_stage):
         return _sentinel.workflow_advance(item_id, new_stage)
+
+    def get_duree_sejour(self):
+        return _sentinel.duree_sejour()
+
+    def get_regroupement_patients(self):
+        return _sentinel.regroupement_patients()

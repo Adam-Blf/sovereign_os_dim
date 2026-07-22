@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   SENTINEL VIEWS · vues V36+ branchées sur FastAPI v2 · PROD
+   SENTINEL VIEWS - vues V36+ branchées sur le pont local in-process - PROD
    ─────────────────────────────────────────────────────────────────────────
-   ZÉRO donnée fictive. Chaque vue fetch /api/v2/* et affiche soit les
+   ZÉRO donnée fictive. Chaque vue appelle le pont local et affiche soit les
    vraies données, soit un empty state explicite. Aucun mock fallback.
    ═══════════════════════════════════════════════════════════════════════════ */
 (function () {
@@ -18,9 +18,9 @@
   function apiOffline(name, status) {
     return emptyState({
       icon: "wifi-off",
-      title: "Backend FastAPI v2 non joignable",
-      body: `L'écran ${name} nécessite l'API sur le port 8766. `
-          + `Statut: ${status || "offline"}. Aucune donnée fictive n'est `
+      title: "Pont local indisponible",
+      body: `L'écran ${name} n'a pas pu joindre le pont local in-process. `
+          + `Statut : ${status || "indisponible"}. Aucune donnée fictive n'est `
           + "affichée en attente.",
     });
   }
@@ -28,24 +28,24 @@
   // ── Health monitor ─────────────────────────────────────────────────────
   async function renderHealth() {
     renderInto(sectionHead({
-      eyebrow: "Supervision", title: "Health monitor",
-      meta: "Auto-refresh manuel",
+      eyebrow: "Supervision", title: "Supervision technique",
+      meta: "Actualisation manuelle",
     }) + loadingState());
     const r = await api("/api/v2/health-monitor");
     if (!r.ok) {
       renderInto(sectionHead({ eyebrow: "Supervision",
-        title: "Health monitor" }) + apiOffline("Health monitor", r.status));
+        title: "Supervision technique" }) + apiOffline("Supervision technique", r.status));
       return;
     }
     const d = r.data;
     renderInto(
-      sectionHead({ eyebrow: "Supervision", title: "Health monitor",
-        meta: `Uptime · ${d.uptime_hours} h` }) +
+      sectionHead({ eyebrow: "Supervision", title: "Supervision technique",
+        meta: `Temps de fonctionnement - ${d.uptime_hours} h` }) +
       `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;">
-        ${kpi({ label: "Uptime", value: d.uptime_hours, unit: "h", accent: TEAL })}
-        ${kpi({ label: "RAM", value: d.ram_mb || "-", unit: d.ram_mb ? "Mo" : "", accent: NAVY })}
-        ${kpi({ label: "Req/min", value: d.requests_per_min || "-", accent: GOLD })}
-        ${kpi({ label: "Erreurs 24h", value: d.errors_24h || 0, accent: SUCCESS })}
+        ${kpi({ label: "Temps de fonctionnement", value: d.uptime_hours, unit: "h", accent: TEAL })}
+        ${kpi({ label: "Mémoire vive", value: d.ram_mb || "-", unit: d.ram_mb ? "Mo" : "", accent: NAVY })}
+        ${kpi({ label: "Appels par minute", value: d.requests_per_min || "-", accent: GOLD })}
+        ${kpi({ label: "Erreurs sur 24 heures", value: d.errors_24h || 0, accent: SUCCESS })}
       </div>` +
       card({ title: "Vérifications système", icon: "activity",
         body: d.checks.map(c => `
@@ -62,10 +62,10 @@
           </div>`).join("") }));
   }
 
-  // ── Sentinel ARS · score réel via /api/v2/ars/score-lot ────────────────
+  // ── Sentinel ARS - score réel via /api/v2/ars/score-lot ────────────────
   async function renderArs() {
     renderInto(sectionHead({
-      eyebrow: "Prédicteur DRUIDES", title: "Sentinel ARS",
+      eyebrow: "Prédicteur DRUIDES", title: "Sentinelle agence régionale de santé",
       meta: "Aucun lot scoré pour l'instant",
     }) + emptyState({
       icon: "shield",
@@ -78,7 +78,7 @@
     }));
   }
 
-  // ── CeSPA · validateur réel via /api/v2/cespa/check ───────────────────
+  // ── CeSPA - validateur réel via /api/v2/cespa/check ───────────────────
   async function renderCespa() {
     renderInto(sectionHead({ eyebrow: "Réforme financement psy",
       title: "CeSPA / CATTG" }) + loadingState());
@@ -102,7 +102,7 @@
     }
     renderInto(
       sectionHead({ eyebrow: "Réforme financement psy", title: "CeSPA / CATTG",
-        meta: `RPS: ${d.rps_lines} · RAA: ${d.raa_lines}` }) +
+        meta: `RPS: ${d.rps_lines} - RAA: ${d.raa_lines}` }) +
       card({ title: "Règles arrêté 4 juillet 2025", icon: "shield",
         body: d.rules.map((rule, i) => {
           const ratio = rule.total > 0 ? Math.round(rule.ok / rule.total * 100) : 0;
@@ -118,19 +118,19 @@
         }).join("") }));
   }
 
-  // ── Diff lots mensuels · agrégat réel ──────────────────────────────────
+  // ── Diff lots mensuels - agrégat réel ──────────────────────────────────
   async function renderDiff() {
     renderInto(sectionHead({ eyebrow: "Anti-régression",
-      title: "Diff lots mensuels" }) + loadingState());
+      title: "Comparaison des lots mensuels" }) + loadingState());
     const r = await api("/api/v2/diff");
     if (!r.ok) {
       renderInto(sectionHead({ eyebrow: "Anti-régression",
-        title: "Diff lots mensuels" }) + apiOffline("Diff", r.status));
+        title: "Comparaison des lots mensuels" }) + apiOffline("Comparaison des lots", r.status));
       return;
     }
     if (!r.data.has_data) {
       renderInto(sectionHead({ eyebrow: "Anti-régression",
-        title: "Diff lots mensuels" }) + emptyState({
+        title: "Comparaison des lots mensuels" }) + emptyState({
         icon: "git-compare",
         title: r.data.message || "Aucune comparaison disponible",
         body: "Le diff nécessite des lots traités. Importer un lot pour "
@@ -140,7 +140,7 @@
     }
     const rows = r.data.rows;
     renderInto(sectionHead({ eyebrow: "Anti-régression",
-      title: "Diff lots mensuels", meta: `${rows.length} indicateurs` }) +
+      title: "Comparaison des lots mensuels", meta: `${rows.length} indicateurs` }) +
       card({ title: "Comparaison volumétrique", icon: "git-compare", padding: 0,
         body: `<table style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead><tr style="background:var(--bg-hover);">
@@ -164,78 +164,141 @@
           </tr>`).join("")}</tbody></table>` }));
   }
 
-  // ── CimSuggester · provider réel via Ollama ────────────────────────────
+  // ── CimSuggester - modèle local par défaut, Ollama en option ───────────
   async function renderCimSuggester() {
     renderInto(sectionHead({
-      eyebrow: "IA codage CIM-10", title: "CimSuggester",
-      meta: "Provider · vérification…",
+      eyebrow: "IA codage CIM-10", title: "Suggestion diagnostique",
+      meta: "Provider - vérification…",
     }) + loadingState("Test du provider LLM"));
     const r = await api("/api/v2/ml/cim-suggest", {
       method: "POST", body: { das: [], actes: [], notes: "" },
     });
     if (!r.ok) {
       renderInto(sectionHead({ eyebrow: "IA codage CIM-10",
-        title: "CimSuggester" }) + apiOffline("CimSuggester", r.status));
+        title: "Suggestion diagnostique" }) + apiOffline("CimSuggester", r.status));
       return;
     }
-    if (r.data.provider === "disabled") {
-      renderInto(sectionHead({
-        eyebrow: "IA codage CIM-10", title: "CimSuggester",
-        meta: "Provider désactivé",
-      }) + emptyState({
-        icon: "brain",
-        title: "Provider LLM non configuré",
-        body: "Pour activer la suggestion CIM-10, définir la variable "
-            + "d'environnement OLLAMA_BASE (ex: http://127.0.0.1:11434) "
-            + "et redémarrer le service. Aucune suggestion fictive n'est "
-            + "produite tant que le LLM n'est pas configuré.",
-      }));
-      return;
-    }
-    // Provider Ollama actif · afficher l'interface de saisie
+    const isLocal = r.data.provider === "local";
+    // Provider actif (local par défaut ou Ollama si OLLAMA_BASE configuré)
     renderInto(
-      sectionHead({ eyebrow: "IA codage CIM-10", title: "CimSuggester",
-        meta: "Provider · Ollama (live)" }) +
+      sectionHead({ eyebrow: "IA codage CIM-10", title: "Suggestion diagnostique",
+        meta: isLocal ? "Provider - modèle local" : "Provider - Ollama (live)" }) +
       card({ title: "Saisir DAS / actes / notes pour suggestion", icon: "edit-3",
-        body: "<em>Formulaire à brancher · POST /api/v2/ml/cim-suggest</em>" }));
+        body: "<em>Formulaire à brancher - POST /api/v2/ml/cim-suggest</em>" }));
   }
 
   async function renderLstm() {
-    renderInto(sectionHead({
-      eyebrow: "Modèle LSTM", title: "Prédicteur DMS",
-      meta: "Modèle non encore déployé",
-    }) + emptyState({
-      icon: "trending-up",
-      title: "Prédicteur DMS · roadmap V38",
-      body: "Le modèle LSTM de prédiction de durée de séjour n'est pas "
-          + "encore entraîné. Voir le plan d'implémentation dans le guide PDF.",
-    }));
+    const head = sectionHead({
+      eyebrow: "Modèle local entraîné",
+      title: "Prédicteur de durée de séjour",
+      meta: "Estimations issues de données synthétiques",
+    });
+    renderInto(head + loadingState("Chargement du modèle"));
+    const r = await api("/api/v2/duree-sejour");
+    if (!r.ok || !r.data || !r.data.has_model) {
+      renderInto(head + emptyState({
+        icon: "trending-up",
+        title: "Modèle non entraîné",
+        body: "Lancer : python -m backend.ml.train_sejour_models",
+      }));
+      return;
+    }
+    const d = r.data;
+    const rows = (d.par_groupe || []).map(g => `
+      <tr style="border-bottom:1px solid var(--border-card);">
+        <td style="padding:8px 12px;font-weight:700;color:${NAVY};">${g.groupe}</td>
+        <td style="padding:8px 12px;">${g.libelle}</td>
+        <td style="padding:8px 12px;text-align:right;font-variant-numeric:tabular-nums;">${g.duree_moyenne_jours} j</td>
+        <td style="padding:8px 12px;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted-color);">± ${g.ecart_type_jours} j</td>
+      </tr>`).join("");
+    renderInto(head + `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;">
+        ${kpi({ label: "Erreur absolue moyenne", value: d.erreur_absolue_moyenne_jours + " jours", accent: TEAL })}
+        ${kpi({ label: "Coefficient de détermination", value: d.coefficient_determination, accent: NAVY })}
+        ${kpi({ label: "Données d'entraînement", value: "synthétiques", accent: GOLD })}
+      </div>
+      ${card({ title: "Durée moyenne estimée par groupe diagnostique", body: `
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+          <thead><tr style="text-align:left;color:var(--text-muted-color);text-transform:uppercase;font-size:10px;letter-spacing:0.08em;">
+            <th style="padding:8px 12px;">Groupe</th><th style="padding:8px 12px;">Libellé</th>
+            <th style="padding:8px 12px;text-align:right;">Durée moyenne</th><th style="padding:8px 12px;text-align:right;">Dispersion</th>
+          </tr></thead><tbody>${rows}</tbody>
+        </table>
+        <p style="margin-top:12px;font-size:11px;color:var(--text-muted-color);">
+          Modèle : ${d.algorithme}. ${d.donnees}. Les valeurs sont des estimations
+          statistiques, jamais une consigne de sortie pour un patient donné.
+        </p>` })}
+    `);
   }
 
   async function renderClustering() {
-    renderInto(sectionHead({
-      eyebrow: "UMAP + HDBSCAN", title: "Clustering patients",
-      meta: "Pipeline non encore déployé",
-    }) + emptyState({
-      icon: "scatter-chart",
-      title: "Clustering patients · roadmap V38",
-      body: "Le clustering UMAP+HDBSCAN nécessite un MPI peuplé d'au "
-          + "moins 1000 patients et une feature engineering dédiée.",
-    }));
+    const head = sectionHead({
+      eyebrow: "Projection en deux dimensions puis K-moyennes",
+      title: "Regroupement de patients",
+      meta: "Six archétypes issus de données synthétiques",
+    });
+    renderInto(head + loadingState("Chargement de la projection"));
+    const r = await api("/api/v2/regroupement-patients");
+    if (!r.ok || !r.data || !r.data.has_model) {
+      renderInto(head + emptyState({
+        icon: "scatter-chart",
+        title: "Modèle non entraîné",
+        body: "Lancer : python -m backend.ml.train_sejour_models",
+      }));
+      return;
+    }
+    const d = r.data;
+    const palette = [NAVY, TEAL, GOLD, ERROR, SUCCESS, WARNING];
+    const legend = (d.archetypes || []).map(a => `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px;">
+        <span style="width:10px;height:10px;border-radius:50%;background:${palette[a.identifiant % 6]};flex-shrink:0;"></span>
+        <span style="font-weight:600;">${a.libelle}</span>
+        <span style="color:var(--text-muted-color);margin-left:auto;font-variant-numeric:tabular-nums;">
+          ${a.effectif} patients - ${a.duree_moyenne_jours} j
+        </span>
+      </div>`).join("");
+    renderInto(head + `
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;">
+        ${card({ title: "Projection des patients", body: '<canvas id="clusters-canvas" height="300"></canvas>' })}
+        ${card({ title: "Archétypes", body: legend + `
+          <p style="margin-top:10px;font-size:11px;color:var(--text-muted-color);">
+            ${d.algorithme}. ${d.donnees}.
+          </p>` })}
+      </div>
+    `);
+    const ctx = document.getElementById("clusters-canvas");
+    if (ctx && window.Chart) {
+      const datasets = (d.archetypes || []).map(a => ({
+        label: a.libelle,
+        data: (d.points || []).filter(p => p.groupe_archetype === a.identifiant)
+          .map(p => ({ x: p.x, y: p.y })),
+        backgroundColor: palette[a.identifiant % 6] + "99",
+        pointRadius: 3,
+      }));
+      new Chart(ctx, {
+        type: "scatter",
+        data: { datasets },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { x: { display: false }, y: { display: false } },
+          animation: false,
+        },
+      });
+    }
   }
 
   async function renderHospitalTwin() {
     renderInto(sectionHead({ eyebrow: "Simulation DFA",
-      title: "Hospital Twin" }) + loadingState());
+      title: "Jumeau hospitalier" }) + loadingState());
     const r = await api("/api/v2/twin/scenarios");
     if (!r.ok) {
       renderInto(sectionHead({ eyebrow: "Simulation DFA",
-        title: "Hospital Twin" }) + apiOffline("Hospital Twin", r.status));
+        title: "Jumeau hospitalier" }) + apiOffline("Jumeau hospitalier", r.status));
       return;
     }
     if (!r.data.has_data) {
       renderInto(sectionHead({ eyebrow: "Simulation DFA",
-        title: "Hospital Twin" }) + emptyState({
+        title: "Jumeau hospitalier" }) + emptyState({
         icon: "database",
         title: r.data.message || "Simulation impossible",
         body: "Hospital Twin calcule l'impact tarifaire potentiel sur la "
@@ -246,7 +309,7 @@
     }
     const fr = n => n.toLocaleString("fr-FR");
     renderInto(sectionHead({ eyebrow: "Simulation DFA",
-      title: "Hospital Twin",
+      title: "Jumeau hospitalier",
       meta: `Base: ${fr(r.data.ipp_base)} IPP` }) +
       card({ title: "Scénarios d'impact tarifaire", icon: "target",
         body: r.data.scenarios.map((s, i) => `
@@ -270,16 +333,16 @@
 
   async function renderHeatmap() {
     renderInto(sectionHead({ eyebrow: "Sectorisation",
-      title: "Heatmap géographique" }) + loadingState());
+      title: "Carte de chaleur des secteurs" }) + loadingState());
     const r = await api("/api/v2/heatmap/sectors");
     if (!r.ok) {
       renderInto(sectionHead({ eyebrow: "Sectorisation",
-        title: "Heatmap géographique" }) + apiOffline("Heatmap", r.status));
+        title: "Carte de chaleur des secteurs" }) + apiOffline("Carte de chaleur", r.status));
       return;
     }
     if (!r.data.has_data) {
       renderInto(sectionHead({ eyebrow: "Sectorisation",
-        title: "Heatmap géographique" }) + emptyState({
+        title: "Carte de chaleur des secteurs" }) + emptyState({
         icon: "globe",
         title: "Aucune donnée géographique disponible",
         body: "L'agrégation par code postal nécessite des observations "
@@ -292,7 +355,7 @@
     const colorOf = i => ({ very_high: ERROR, high: WARNING,
       medium: TEAL, low: SUCCESS })[i] || "var(--text-muted-color)";
     renderInto(sectionHead({ eyebrow: "Sectorisation",
-      title: "Heatmap géographique",
+      title: "Carte de chaleur des secteurs",
       meta: `Top ${sectors.length} codes postaux` }) +
       card({ title: "File active par code postal", icon: "globe", body: `
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
@@ -318,7 +381,7 @@
       meta: "Backend en cours",
     }) + emptyState({
       icon: "table-2",
-      title: "Pivot ad hoc · backend en cours",
+      title: "Pivot ad hoc - backend en cours",
       body: "Le pivot interactif nécessite un endpoint /api/v2/pivot qui "
           + "agrège le MPI selon les axes choisis. Roadmap V37.2.",
     }));
@@ -349,7 +412,7 @@
     }
     renderInto(
       sectionHead({ eyebrow: "Lot courant", title: "Sélection des fichiers",
-        meta: `MPI · ${stats.total_ipp} IPP` }) +
+        meta: `MPI - ${stats.total_ipp} IPP` }) +
       `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
         ${kpi({ label: "Total IPP", value: stats.total_ipp, accent: NAVY })}
         ${kpi({ label: "Collisions", value: stats.collisions, accent: ERROR })}
@@ -358,10 +421,10 @@
       </div>`);
   }
 
-  // ── RGPD command center · lit les compteurs réels ──────────────────────
+  // ── RGPD command center - lit les compteurs réels ──────────────────────
   async function renderRgpd() {
     renderInto(sectionHead({ eyebrow: "Conformité",
-      title: "RGPD command center", meta: "Lecture audit DB…" })
+      title: "Protection des données", meta: "Lecture audit DB…" })
       + loadingState());
     const [healthR, verifyR] = await Promise.all([
       api("/health"),
@@ -369,15 +432,15 @@
     ]);
     if (!healthR.ok || !verifyR.ok) {
       renderInto(sectionHead({ eyebrow: "Conformité",
-        title: "RGPD command center" })
+        title: "Protection des données" })
         + apiOffline("RGPD", healthR.status || verifyR.status));
       return;
     }
     const audit = verifyR.data;
     const auditEvents = healthR.data.audit_events || 0;
     renderInto(
-      sectionHead({ eyebrow: "Conformité", title: "RGPD command center",
-        meta: `Chaîne · ${audit.valid ? "intègre" : "ALTÉRÉE"}` }) +
+      sectionHead({ eyebrow: "Conformité", title: "Protection des données",
+        meta: `Chaîne - ${audit.valid ? "intègre" : "ALTÉRÉE"}` }) +
       `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;
           margin-bottom:18px;">
         ${kpi({ label: "Événements audités", value: auditEvents,
@@ -396,7 +459,7 @@
         ${[
           ["L. 6113-7", "Obligation analyse activité par DIM"],
           ["L. 6113-8", "Conditions utilisation données T2A"],
-          ["R. 6113-5", "Exception secret médical · personnel DIM"],
+          ["R. 6113-5", "Exception secret médical - personnel DIM"],
           ["R. 6123-174", "Modes prise en charge psychiatrie (arrêté 4 juillet 2025)"],
         ].map((r, i) => `
           <div style="display:flex;gap:14px;padding:10px 0;
@@ -407,20 +470,20 @@
           </div>`).join("")}` }));
   }
 
-  // ── Audit chain · vraie liste depuis SQLite ────────────────────────────
+  // ── Audit chain - vraie liste depuis SQLite ────────────────────────────
   async function renderAudit() {
     renderInto(sectionHead({ eyebrow: "Traçabilité immutable",
-      title: "Audit chain", meta: "Lecture audit.db…" }) + loadingState());
+      title: "Journal d'audit chaîné", meta: "Lecture audit.db…" }) + loadingState());
     const r = await api("/api/v2/audit/events?limit=30");
     if (!r.ok) {
       renderInto(sectionHead({ eyebrow: "Traçabilité immutable",
-        title: "Audit chain" }) + apiOffline("Audit", r.status));
+        title: "Journal d'audit chaîné" }) + apiOffline("Journal d'audit", r.status));
       return;
     }
     const events = r.data;
     if (!events.length) {
       renderInto(sectionHead({ eyebrow: "Traçabilité immutable",
-        title: "Audit chain", meta: "0 événements" }) + emptyState({
+        title: "Journal d'audit chaîné", meta: "0 événements" }) + emptyState({
         icon: "history",
         title: "Le journal d'audit est vide",
         body: "Aucune action TIM/MIM n'a encore été enregistrée. Chaque "
@@ -429,7 +492,7 @@
       return;
     }
     renderInto(sectionHead({ eyebrow: "Traçabilité immutable",
-      title: "Audit chain", meta: `${events.length} événements récents` }) +
+      title: "Journal d'audit chaîné", meta: `${events.length} événements récents` }) +
       card({ title: "Événements", icon: "history", padding: 0,
         body: events.map((e, i) => `
           <div style="padding:12px 20px;
@@ -486,7 +549,7 @@
 
     const itemList = !items.length
       ? `<div style="font-size:12px;color:var(--text-muted-color);text-align:center;
-            padding:24px 0;">Aucun item en attente · pipeline propre.</div>`
+            padding:24px 0;">Aucun item en attente - pipeline propre.</div>`
       : items.map((it, i) => `
           <div style="display:grid;grid-template-columns:120px 1fr 110px 90px;
               gap:14px;align-items:center;padding:12px 0;
