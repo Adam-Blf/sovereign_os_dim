@@ -3920,7 +3920,7 @@ def main() -> None:
         description="Genere le guide metier PDF (TIM, medecin DIM, chef de pôle). "
         "Pour le guide developpeur, utiliser generate_guide_dev.py."
     )
-    default_output = os.path.join(ROOT, "Sovereign_OS_DIM_Guide.pdf")
+    default_output = os.path.join(ROOT, "docs", "Sovereign_OS_DIM_Guide.pdf")
     parser.add_argument("--output", default=default_output, help="Chemin du PDF (defaut , racine du depot).")
     args = parser.parse_args()
 
@@ -3947,7 +3947,7 @@ def main() -> None:
         expected = len(FEATURES) * 3 + 5  # +cover, sommaire, intro, roadmap, support
         print(f"[OK] Guide metier genere , {path}")
         print(f"      {pages} pages , {size_kb} Ko , attendu ~{expected} pages , {enriched}")
-        dev_guide = os.path.join(ROOT, "Sovereign_OS_DIM_Guide_Dev.pdf")
+        dev_guide = os.path.join(ROOT, "docs", "Sovereign_OS_DIM_Guide_Dev.pdf")
         if not os.path.exists(dev_guide):
             print("[INFO] Guide developpeur absent , lancer : python tools/generate_guide_dev.py")
     except Exception:

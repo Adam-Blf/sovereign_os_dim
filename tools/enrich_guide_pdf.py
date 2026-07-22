@@ -185,13 +185,13 @@ def main() -> None:  # pragma: no cover
     p.add_argument(
         "--in",
         dest="input",
-        default="Sovereign_OS_DIM_Guide.pdf",
+        default="docs/Sovereign_OS_DIM_Guide.pdf",
         help="Chemin du PDF source (défaut · racine du dépôt).",
     )
     p.add_argument(
         "--out",
         dest="output",
-        default="Sovereign_OS_DIM_Guide.pdf",
+        default="docs/Sovereign_OS_DIM_Guide.pdf",
         help="Chemin du PDF enrichi (défaut · même que --in, réécriture en place).",
     )
     args = p.parse_args()

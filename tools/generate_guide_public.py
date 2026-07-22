@@ -426,7 +426,7 @@ def main() -> None:  # pragma: no cover
     import argparse
 
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--output", default=os.path.join(ROOT, "Sovereign_OS_DIM_Guide_Public.pdf"))
+    p.add_argument("--output", default=os.path.join(ROOT, "docs", "Sovereign_OS_DIM_Guide_Public.pdf"))
     args = p.parse_args()
 
     path = build(args.output)

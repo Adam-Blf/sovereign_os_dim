@@ -997,7 +997,7 @@ def build_pdf(output_path: str) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Génère le guide développeur PDF de Sovereign OS DIM.")
-    default_output = os.path.join(ROOT, "Sovereign_OS_DIM_Guide_Dev.pdf")
+    default_output = os.path.join(ROOT, "docs", "Sovereign_OS_DIM_Guide_Dev.pdf")
     parser.add_argument(
         "--output",
         default=default_output,

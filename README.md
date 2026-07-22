@@ -68,7 +68,7 @@ flowchart TB
 - **Bridge HTTP REST** - endpoints sécurisés 127.0.0.1 + token Bearer pour intégration PHP.
 - **Moulinette FICHCOMP** *(V37)* - moulinette Excel vers fichier plat FICHCOMP/FICHDMI à largeur fixe (suppléments transports, médicaments, dispositifs médicaux). Nettoyage du classeur source, propagation des dates, génération du format ATIH puis contrôle de longueur (53 caractères médicament, 50 caractères DMI). Code source dans `tools/moulinette_fichcomp/`.
 - **Export PDF** - organigrammes, rapports preflight, dashboards BIQuery (HTML→PDF).
-- **Guide utilisateur** *(V36)* - `Sovereign_OS_DIM_Guide.pdf` (38 pages, polices Unicode, orientation métier, page Roadmap, références ATIH/ARS vérifiées).
+- **Guide utilisateur** *(V36)* - `docs/Sovereign_OS_DIM_Guide.pdf` (38 pages, polices Unicode, orientation métier, page Roadmap, références ATIH/ARS vérifiées).
 
 ## Formats ATIH supportés
 
@@ -202,11 +202,17 @@ sovereign_os_dim/
 │   ├── predict.py             - Inference (auto-détecte XGB / LGBM / RF)
 │   ├── data/                  - Datasets - synthétique + atih_specs_2026
 │   └── models/                - Modèles entraînés (.json / .pkl / .lgbm.txt)
-├── docs/research/             - Dossier de recherche vérifié (ATIH/ARS/PMSI)
-│   ├── atih.md
-│   ├── ars_idf_dim.md
-│   ├── pmsi_formats_history.md
-│   └── dim_business_value.md
+├── docs/                      - Documentation (PDF livrables + recherche)
+│   ├── Dossier_Conformite_DSI.pdf   - Dossier conformité SI/DSN (PDF)
+│   ├── documentation_securite_dsi.md - Source Markdown du dossier DSI
+│   ├── Sovereign_OS_DIM_Guide.pdf     - Guide métier (TIM, médecin DIM, chef de pôle)
+│   ├── Sovereign_OS_DIM_Guide_Dev.pdf - Guide développeur (DSI, contributeurs)
+│   ├── Sovereign_OS_DIM_Guide_Public.pdf - Guide grand public
+│   └── research/              - Dossier de recherche vérifié (ATIH/ARS/PMSI)
+│       ├── atih.md
+│       ├── ars_idf_dim.md
+│       ├── pmsi_formats_history.md
+│       └── dim_business_value.md
 ├── tools/
 │   ├── generate_manual.py     - PDF mode d'emploi court (utilisateurs)
 │   ├── generate_guide.py      - PDF guide métier 38 pages (TIM, médecin DIM, chef de pôle)
@@ -217,8 +223,6 @@ sovereign_os_dim/
 │   ├── test_data_processor.py - 260 tests Python
 │   └── frontend/
 │       └── test_activity_analysis.mjs - 30 tests JS
-├── Sovereign_OS_DIM_Guide.pdf     - Guide métier (TIM, médecin DIM, chef de pôle)
-├── Sovereign_OS_DIM_Guide_Dev.pdf - Guide développeur (DSI, contributeurs)
 └── README.md
 ```
 
