@@ -1,0 +1,12 @@
+{
+  "name": "sovereign-os-dim",
+  "version": "37.3.0",
+  "private": true,
+  "description": "Outillage de test JS uniquement - le frontend applicatif (frontend/) reste zero dependance, vanilla JS. Jamais installe sur poste hopital ni embarque dans le build PyInstaller.",
+  "scripts": {
+    "test": "node tests/frontend/test_activity_analysis.mjs && node tests/frontend/test_render_smoke.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.61.1"
+  }
+}

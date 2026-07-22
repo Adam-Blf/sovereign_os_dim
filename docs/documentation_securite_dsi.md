@@ -1,7 +1,7 @@
 # Dossier de Présentation Fonctionnelle et Technique
 ### Conformité SI et Sécurité Informatique - Station PMSI
-**Projet :** Sovereign OS DIM (V37.2)  
-**Date :** 24 avril 2026  
+**Projet :** Sovereign OS DIM (V37.3)  
+**Date :** synchronisée automatiquement avec la version du projet (`scripts/sync_version.py`)  
 **Émetteur :** Apprenti Ingénieur PMSI, Département de l'Information Médicale (DIM)  
 **Destinataires :** Direction des Systèmes d'Information (DSI), Département de l'Information Médicale (DIM), Direction des Ressources Numériques (DSN)  
 **Établissement :** GHT Psy Sud Paris (GH Paul Guiraud / Fondation Vallée / EPS Erasme)  
@@ -44,7 +44,7 @@ L'application repose sur un modèle hybride de type application de bureau, combi
 ```mermaid
 flowchart TB
     UI["Interface Utilisateur (WebView2)<br/>HTML5 - Tailwind CSS - Chart.js"]
-    HOST["Hôte Bureau (pywebview ou C# .NET 8)<br/>SovereignOS.Desktop.exe"]
+    HOST["Hôte Bureau (Python + pywebview)<br/>Sovereign_OS_DIM.exe"]
     API["Moteur Métier Python 3.12<br/>Validation PMSI - Modèles ML XGBoost"]
     DB["Base de Données Locale SQLite<br/>Table Master Patient Index (MPI)"]
 
@@ -64,7 +64,7 @@ in-process), **sans aucun serveur HTTP, sans port en écoute et sans socket rés
 *   **Machine Learning :** Modèles d'aide à la décision locaux basés sur **XGBoost** et **LightGBM** (auto-détection du meilleur algorithme) pour la validation des dates de naissance (AUC 0.86), le score de risque de collision MPI (AUC 1.0) et la classification des formats de fichiers ATIH (58 classes, exactitude 0.77).
 
 ### 2.2 Mode d'Exécution et Déploiement
-*   **Portable et Sans Privilèges :** L'application est fournie sous la forme d'un exécutable unique et autonome (`SovereignOS.Desktop.exe`). Elle s'exécute dans l'espace utilisateur standard du système d'exploitation Windows.
+*   **Portable et Sans Privilèges :** L'application est fournie sous la forme d'un exécutable unique et autonome (`Sovereign_OS_DIM_Portable.exe`, ou d'un dossier `Sovereign_OS_DIM/` pour un démarrage plus rapide). Elle s'exécute dans l'espace utilisateur standard du système d'exploitation Windows.
 *   **Aucune Installation Requise :** L'exécutable n'a pas besoin de droits d'administrateur local ni d'écriture dans le registre Windows (`HKEY_LOCAL_MACHINE`). Elle peut être exécutée directement depuis un dossier de travail utilisateur ou un lecteur réseau.
 
 ---
@@ -94,7 +94,7 @@ L'architecture réseau de l'application a été conçue pour éviter toute surfa
 sequenceDiagram
     participant Utilisateur as Utilisateur (TIM/DIM)
     participant DPI as Fichiers SIH (DPI / GAM / BIQuery)
-    participant App as SovereignOS.Desktop.exe (Local)
+    participant App as Sovereign_OS_DIM.exe (Local)
     participant LLM as Serveur LLM Interne GHT (Optionnel)
 
     Utilisateur->>DPI: Extraction manuelle (fichiers plats ATIH)
@@ -116,7 +116,7 @@ sequenceDiagram
 ### 4.2 Flux Réseau Externes et Internes
 *   **Aucun serveur, aucun port en écoute :** l'application n'ouvre aucune socket et n'expose aucun service HTTP. La communication entre l'interface WebView et le moteur Python se fait exclusivement par appels de fonctions **in-process** (pont natif pywebview), à l'intérieur du même processus. Il n'existe donc aucune surface réseau à interroger, ni en local ni depuis l'extérieur.
 *   **Fonctionnement 100 % hors-ligne :** aucun appel extranet ni cloud n'est effectué par défaut.
-*   **Module de Suggestion CIM-10 (CimSuggester - Optionnel, désactivé par défaut) :** seule fonctionnalité pouvant émettre un flux, et uniquement si un administrateur configure explicitement l'adresse d'un serveur **Ollama** intranet (variable `OLLAMA_BASE`). Le flux est alors purement interne au GHT et ne transporte **aucune donnée nominative patient (IPP, DDN, Nom)**, seulement les libellés cliniques bruts à coder. Sans cette configuration, le module est inactif.
+*   **Module de Suggestion CIM-10 (CimSuggester) :** actif par défaut, mais 100 % local et sans flux réseau - il s'appuie sur un modèle statistique léger entraîné localement (`backend/ml/cim_suggester.py`), embarqué dans l'application. Le nombre de suggestions et le seuil de confiance retenu sont pilotables via `CIM_SUGGEST_TOP_K` et `CIM_SUGGEST_MIN_CONFIDENCE`. Un serveur **Ollama** intranet (variable `OLLAMA_BASE`, optionnelle) peut remplacer ce modèle local ; c'est alors la seule configuration pouvant émettre un flux réseau, purement interne au GHT, ne transportant **aucune donnée nominative patient (IPP, DDN, Nom)**, seulement les libellés cliniques bruts à coder.
 
 ---
 

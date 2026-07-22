@@ -125,6 +125,36 @@ def test_cim_suggester_suggest_returns_list_for_french_text():
     assert suggestions[0]["code"] == "F32.2"
 
 
+def test_cim_suggester_top_and_min_confidence_are_parameterizable():
+    """top / min_confidence pilotent le nombre et le seuil de suggestions."""
+    from backend.ml.cim_suggester import suggest
+
+    top1 = suggest("syndrome depressif majeur", top=1)
+    assert len(top1) == 1
+
+    strict = suggest("syndrome depressif majeur", min_confidence=0.99)
+    assert len(strict) <= len(suggest("syndrome depressif majeur", min_confidence=0.0))
+
+
+def test_sentinel_cim_suggest_reads_top_k_and_min_confidence_env(monkeypatch):
+    """cim_suggest() transmet CIM_SUGGEST_TOP_K / CIM_SUGGEST_MIN_CONFIDENCE."""
+    monkeypatch.setenv("CIM_SUGGEST_TOP_K", "1")
+    monkeypatch.setenv("CIM_SUGGEST_MIN_CONFIDENCE", "0.02")
+    import importlib
+
+    from backend.interfaces import _sentinel
+
+    importlib.reload(_sentinel)
+    try:
+        result = _sentinel.cim_suggest({"das": [], "actes": [], "notes": "syndrome depressif majeur"})
+        assert result["provider"] == "local"
+        assert len(result["suggestions"]) <= 1
+    finally:
+        monkeypatch.delenv("CIM_SUGGEST_TOP_K", raising=False)
+        monkeypatch.delenv("CIM_SUGGEST_MIN_CONFIDENCE", raising=False)
+        importlib.reload(_sentinel)
+
+
 def test_sentinel_returns_plain_dicts_when_empty():
     """Sur un MPI vide, les écrans v2 renvoient des dicts honnêtes (pas de crash)."""
     from backend.interfaces.api import Api
