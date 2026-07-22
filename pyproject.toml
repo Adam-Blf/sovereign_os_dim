@@ -1,7 +1,7 @@
 [project]
 name = "sovereign-os-dim"
-version = "37.2.0"
-description = "Station DIM PMSI · GHT Sud Paris · moteur ATIH + MPI + identito-vigilance"
+version = "37.3.0"
+description = "Station DIM PMSI - GHT Sud Paris - moteur ATIH + MPI + identito-vigilance"
 requires-python = ">=3.12"
 readme = "README.md"
 license = { text = "MIT" }
@@ -10,9 +10,9 @@ authors = [
 ]
 
 # ════════════════════════════════════════════════════════════════════════════
-# RUFF · lint + format config
+# RUFF - lint + format config
 # Keeps local ruff check and CI ruff check in lock-step.
-# Rules selected below · safe defaults for a WPF+Flask+pywebview codebase.
+# Rules selected below - safe defaults for a WPF+Flask+pywebview codebase.
 # Line length matches the existing codebase (no noise on current code).
 # ════════════════════════════════════════════════════════════════════════════
 [tool.ruff]
@@ -30,17 +30,17 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint]
-# Enabled rule sets · the set the codebase already passes today.
+# Enabled rule sets - the set the codebase already passes today.
 # Adding I/UP/B/SIM later would require a cleanup pass (~52 findings).
-#   E, W · pycodestyle (style + warnings)
-#   F    · pyflakes (unused imports, undefined names, dead vars)
+#   E, W - pycodestyle (style + warnings)
+#   F    - pyflakes (unused imports, undefined names, dead vars)
 select = ["E", "W", "F"]
 ignore = [
-    "E501",  # line too long · keep current wrapping (~110 chars target)
+    "E501",  # line too long - keep current wrapping (~110 chars target)
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# Tests · tolerate ambiguous single-letter loop vars occasionally
+# Tests - tolerate ambiguous single-letter loop vars occasionally
 "tests/**/*.py" = ["E741"]
 
 [tool.ruff.format]
@@ -49,7 +49,7 @@ indent-style = "space"
 line-ending = "lf"
 
 # ════════════════════════════════════════════════════════════════════════════
-# PYTEST · discovery + defaults
+# PYTEST - discovery + defaults
 # ════════════════════════════════════════════════════════════════════════════
 [tool.pytest.ini_options]
 testpaths = ["tests"]

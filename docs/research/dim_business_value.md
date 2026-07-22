@@ -1,18 +1,18 @@
-# DIM · Valeur métier quantifiée 2026
+# DIM - Valeur métier quantifiée 2026
 
-> Source · synthèse research-analyst (4 mai 2026), URLs vérifiées sur ARS Bretagne, lesPMSI, ATIH, ScienceDirect (étude OPTIC), HAS.
+> Source - synthèse research-analyst (4 mai 2026), URLs vérifiées sur ARS Bretagne, lesPMSI, ATIH, ScienceDirect (étude OPTIC), HAS.
 
 ## 1. Pain points DIM (par fréquence)
 
 | # | Pain point | Coût TIM estimé |
 |---|-----------|-----------------|
-| 1 | **Rejet e-PMSI / DRUIDES** · taux anomalies RPSA national 10,5 %, meilleurs étab. 6,3 % | 13-20 h TIM/mois pour 100 anomalies |
-| 2 | **Collisions IDV / IPP doublonnés** · taux chaînage national 95,4 %, meilleurs 99,5 % | 20-45 min/doublon |
-| 3 | **Retard transmission ARS** · DFA suspendue jusqu'à régularisation | 8-16 h correction + flux DFA différé |
-| 4 | **FicUM incomplet** · UM non rattachée → RPSA non exporté (DRUIDES depuis M1 2025) | 4-8 h investigation/incident |
-| 5 | **DP absent / codes Z génériques** · dégrade DQC (2 % du financement) | jusqu'à 1 M€/an perdu sur étab. 50 M€ |
+| 1 | **Rejet e-PMSI / DRUIDES** - taux anomalies RPSA national 10,5 %, meilleurs étab. 6,3 % | 13-20 h TIM/mois pour 100 anomalies |
+| 2 | **Collisions IDV / IPP doublonnés** - taux chaînage national 95,4 %, meilleurs 99,5 % | 20-45 min/doublon |
+| 3 | **Retard transmission ARS** - DFA suspendue jusqu'à régularisation | 8-16 h correction + flux DFA différé |
+| 4 | **FicUM incomplet** - UM non rattachée → RPSA non exporté (DRUIDES depuis M1 2025) | 4-8 h investigation/incident |
+| 5 | **DP absent / codes Z génériques** - dégrade DQC (2 % du financement) | jusqu'à 1 M€/an perdu sur étab. 50 M€ |
 
-## 2. Coût d'erreur · CHS de 800 lits
+## 2. Coût d'erreur - CHS de 800 lits
 
 | Erreur | Impact |
 |--------|--------|
@@ -32,18 +32,18 @@
 | Contrôle qualité MCO | médiane ~3 min/dossier (CHR Metz-Thionville) |
 | Tableau de bord chef de pôle | 4-8 h (vs 1-2 h avec IA) |
 
-**Note** · ratio 1:2 entre temps déclaré et réel (LesPMSI) → les agents sous-estiment systématiquement.
+**Note** - ratio 1:2 entre temps déclaré et réel (LesPMSI) → les agents sous-estiment systématiquement.
 
 ## 4. ROI documenté
 
 | Solution | ROI publié |
 |----------|-----------|
-| **Étude OPTIC** (CHRU Tours, 2022) | **1 470 € de gain par RSS recodé** · 70 % des 111 RSS analysés revalorisables |
-| **Sclépios IA** (CH Cateau-Cambrésis) | **520 K€/an** valorisés sur 19 000 passages · 15 min/patient économisées |
-| **Ospi Cod+** | 46 % temps codage économisé · 50 % automation séjours simples · 1 500 €/séjour ciblé |
-| **Dedalus + Sancare** | 50-60 % réduction temps codage · 400+ établissements |
+| **Étude OPTIC** (CHRU Tours, 2022) | **1 470 € de gain par RSS recodé** - 70 % des 111 RSS analysés revalorisables |
+| **Sclépios IA** (CH Cateau-Cambrésis) | **520 K€/an** valorisés sur 19 000 passages - 15 min/patient économisées |
+| **Ospi Cod+** | 46 % temps codage économisé - 50 % automation séjours simples - 1 500 €/séjour ciblé |
+| **Dedalus + Sancare** | 50-60 % réduction temps codage - 400+ établissements |
 
-**Vigilance** · LesPMSI souligne que beaucoup de chiffres IA fournisseurs ne sont **pas audités indépendamment**. Seule l'étude OPTIC (Revue d'Épidémiologie 2022) a métrique publique vérifiée.
+**Vigilance** - LesPMSI souligne que beaucoup de chiffres IA fournisseurs ne sont **pas audités indépendamment**. Seule l'étude OPTIC (Revue d'Épidémiologie 2022) a métrique publique vérifiée.
 
 ## 5. Indicateurs qualité PMSI suivis ARS
 
@@ -85,7 +85,7 @@
 | 2028 | 90 % |
 | **2029** | **0 %** (exposition pleine) |
 
-→ Pression PMSI **explosive sur 2027-2029** · pas de filet de sécurité après 2028.
+→ Pression PMSI **explosive sur 2027-2029** - pas de filet de sécurité après 2028.
 
 ## 7. Tendances IA en DIM (état art 2026)
 
@@ -95,9 +95,9 @@
 | **NLP du DPI** | DIMbox/Alicante, Ospi Cod+, Maincare CORA, Sclépios |
 | **Contrôle post-codage** | OPTIC CHRU Tours (16 algos REGEX), 0,8 % yield mais 1 470 €/RSS |
 | **IDV par ML** | Lifen, Vigident (pas de publication académique avec métriques auditées) |
-| **Prédiction rejet PMSI** | **gap identifié** · pas de solution commerciale dédiée 2026 |
+| **Prédiction rejet PMSI** | **gap identifié** - pas de solution commerciale dédiée 2026 |
 
-→ Sovereign OS DIM positionnement · combler le gap **IDV ML + prédiction rejet** avec XGBoost local.
+→ Sovereign OS DIM positionnement - combler le gap **IDV ML + prédiction rejet** avec XGBoost local.
 
 ## 8. KPIs dashboard chef DIM (mensuels recommandés)
 
@@ -132,16 +132,16 @@
 
 ## 9. Sources
 
-- [ARS Bretagne · Bilan PMSI-PSY 2021](https://www.bretagne.ars.sante.fr/bilan-synthetique-pmsi-2021-psychiatrie-rim-p)
-- [ATIH · Financement psychiatrie](https://www.atih.sante.fr/financement-des-etablissements/psy)
-- [LesPMSI · DRUIDES PSY 2025](https://www.lespmsi.com/druides-en-pmsi-psy-en-2025/)
-- [LesPMSI · Coût codage PMSI](https://www.lespmsi.com/calculer-le-cout-du-codage-du-pmsi-elements-de-reflexion/)
-- [LesPMSI · Durée contrôle qualité MCO](https://www.lespmsi.com/les-determinants-de-la-duree-du-controle-qualite-du-codage-pmsi-mco-etude-chr-metz-thionville/)
-- [LesPMSI · IA pour DIM](https://www.lespmsi.com/lia-pour-les-dim-en-dehors-du-codage/)
-- [ScienceDirect · OPTIC CHRU Tours 2022](https://www.sciencedirect.com/science/article/pii/S0398762022000852)
-- [APM News · Sécurisation prolongée 2028](https://www.apmnews.com/freestory/10/427983/reforme-du-financement-de%C2%A0la%C2%A0psychiatrie-la%C2%A0securisation-prolongee-jusqu-en-2028)
-- [HAS · IQSS psychiatrie](https://www.has-sante.fr/jcms/c_970481/fr/indicateurs-de-qualite-et-de-securite-des-soins-en-etablissements-de-sante)
-- [Scansante · OVALIDE PSY](https://www.scansante.fr/actualites/tableaux-detailles-de-validation-du-pmsi-psy)
-- [MySIH · Outils DIM](https://www.mysih.fr/au-coeur-des-dim-quels-outils-pour-traiter-les-informations-medicales/)
-- [Ospi · Codage PMSI IA](https://ospi.fr/codage-pmsi-par-ia/)
-- [Lifen · Identitovigilance](https://www.lifen.fr/ressources/blog/comment-ameliorer-lidentitovigilance-tout-en-dechargeant-le-personnel-hospitalier)
+- [ARS Bretagne - Bilan PMSI-PSY 2021](https://www.bretagne.ars.sante.fr/bilan-synthetique-pmsi-2021-psychiatrie-rim-p)
+- [ATIH - Financement psychiatrie](https://www.atih.sante.fr/financement-des-etablissements/psy)
+- [LesPMSI - DRUIDES PSY 2025](https://www.lespmsi.com/druides-en-pmsi-psy-en-2025/)
+- [LesPMSI - Coût codage PMSI](https://www.lespmsi.com/calculer-le-cout-du-codage-du-pmsi-elements-de-reflexion/)
+- [LesPMSI - Durée contrôle qualité MCO](https://www.lespmsi.com/les-determinants-de-la-duree-du-controle-qualite-du-codage-pmsi-mco-etude-chr-metz-thionville/)
+- [LesPMSI - IA pour DIM](https://www.lespmsi.com/lia-pour-les-dim-en-dehors-du-codage/)
+- [ScienceDirect - OPTIC CHRU Tours 2022](https://www.sciencedirect.com/science/article/pii/S0398762022000852)
+- [APM News - Sécurisation prolongée 2028](https://www.apmnews.com/freestory/10/427983/reforme-du-financement-de%C2%A0la%C2%A0psychiatrie-la%C2%A0securisation-prolongee-jusqu-en-2028)
+- [HAS - IQSS psychiatrie](https://www.has-sante.fr/jcms/c_970481/fr/indicateurs-de-qualite-et-de-securite-des-soins-en-etablissements-de-sante)
+- [Scansante - OVALIDE PSY](https://www.scansante.fr/actualites/tableaux-detailles-de-validation-du-pmsi-psy)
+- [MySIH - Outils DIM](https://www.mysih.fr/au-coeur-des-dim-quels-outils-pour-traiter-les-informations-medicales/)
+- [Ospi - Codage PMSI IA](https://ospi.fr/codage-pmsi-par-ia/)
+- [Lifen - Identitovigilance](https://www.lifen.fr/ressources/blog/comment-ameliorer-lidentitovigilance-tout-en-dechargeant-le-personnel-hospitalier)

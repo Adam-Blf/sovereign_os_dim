@@ -47,7 +47,7 @@
     <link rel="stylesheet" href="css/style.css">
 
     <style>
-        /* Reset typographique de base · le reste vit dans design-tokens.css */
+        /* Reset typographique de base - le reste vit dans design-tokens.css */
         body {
             background-color: var(--slate-50);
             color: var(--slate-900);
@@ -68,7 +68,7 @@
 <body
     class="flex h-screen w-screen font-sans select-none overflow-hidden bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-500">
 
-    <!-- BOOT SCREEN · épuré, identité Sovereign OS DIM unifiée -->
+    <!-- BOOT SCREEN - épuré, identité Sovereign OS DIM unifiée -->
     <div id="boot-overlay"
         class="fixed inset-0 z-[9999] bg-gh-terminal flex flex-col items-center justify-center text-white transition-all duration-700">
         <div class="text-center w-full max-w-xl px-8 relative z-10 animate-fade-in flex flex-col items-center">
@@ -82,12 +82,12 @@
                 </div>
             </div>
 
-            <p class="eyebrow text-gh-teal/80 mb-3">Station DIM · GHT Sud Paris</p>
+            <p class="eyebrow text-gh-teal/80 mb-3">Station DIM - GHT Sud Paris</p>
             <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-2 leading-tight">
                 Sovereign OS DIM
             </h1>
             <p class="text-blue-200/60 text-sm font-medium mb-12 max-w-sm">
-                Traitement local des fichiers ATIH · 100&nbsp;% offline · RGPD-safe
+                Traitement local des fichiers ATIH - 100&nbsp;% offline - RGPD-safe
             </p>
 
             <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden mb-6">
@@ -109,7 +109,7 @@
     <!-- UI ROOT -->
     <div id="app-root" class="hidden flex h-full w-full opacity-0 transition-opacity duration-1000 relative z-10">
 
-        <!-- SIDEBAR · navigation principale, identité Sovereign OS DIM -->
+        <!-- SIDEBAR - navigation principale, identité Sovereign OS DIM -->
         <aside class="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50 shadow-md no-print transition-colors duration-300">
             <!-- Brand -->
             <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-4">
@@ -134,17 +134,17 @@
                 <button id="nav-dashboard"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="layout-grid" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
-                    <span class="font-semibold text-sm">Dashboard</span>
+                    <span class="font-semibold text-sm">Tableau de bord</span>
                 </button>
                 <button id="nav-cockpit"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="trending-up" class="w-5 h-5 text-gh-teal"></i>
-                    <span class="font-semibold text-sm">Cockpit chef DIM</span>
+                    <span class="font-semibold text-sm">Cockpit du chef de département</span>
                 </button>
                 <button id="nav-health"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="activity" class="w-5 h-5 text-gh-teal"></i>
-                    <span class="font-semibold text-sm">Health monitor</span>
+                    <span class="font-semibold text-sm">Supervision technique</span>
                 </button>
 
                 <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
@@ -153,7 +153,7 @@
                 <button id="nav-ars"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="shield" class="w-5 h-5 text-gh-warning"></i>
-                    <span class="font-semibold text-sm">Sentinel ARS</span>
+                    <span class="font-semibold text-sm">Sentinelle agence régionale de santé</span>
                 </button>
                 <button id="nav-cespa"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
@@ -163,7 +163,7 @@
                 <button id="nav-diff"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="git-compare" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
-                    <span class="font-semibold text-sm">Diff lots mensuels</span>
+                    <span class="font-semibold text-sm">Comparaison des lots mensuels</span>
                 </button>
 
                 <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
@@ -172,17 +172,17 @@
                 <button id="nav-cim"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="brain" class="w-5 h-5 text-gh-teal"></i>
-                    <span class="font-semibold text-sm">CimSuggester</span>
+                    <span class="font-semibold text-sm">Suggestion diagnostique</span>
                 </button>
                 <button id="nav-lstm"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="trending-up" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
-                    <span class="font-semibold text-sm">Prédicteur DMS</span>
+                    <span class="font-semibold text-sm">Prédicteur de durée de séjour</span>
                 </button>
                 <button id="nav-cluster"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="layers" class="w-5 h-5 text-gh-teal"></i>
-                    <span class="font-semibold text-sm">Clustering UMAP</span>
+                    <span class="font-semibold text-sm">Regroupement de patients</span>
                 </button>
 
                 <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
@@ -191,12 +191,12 @@
                 <button id="nav-twin"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="database" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
-                    <span class="font-semibold text-sm">Hospital Twin</span>
+                    <span class="font-semibold text-sm">Jumeau hospitalier</span>
                 </button>
                 <button id="nav-heatmap"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="globe" class="w-5 h-5 text-gh-teal"></i>
-                    <span class="font-semibold text-sm">Heatmap géo</span>
+                    <span class="font-semibold text-sm">Carte de chaleur des secteurs</span>
                 </button>
                 <button id="nav-pivot"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
@@ -228,12 +228,12 @@
                 <button id="nav-pilot"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="file-down" class="w-5 h-5 text-gh-teal"></i>
-                    <span class="font-semibold text-sm">PMSI Pilot CSV</span>
+                    <span class="font-semibold text-sm">Exports du programme de médicalisation</span>
                 </button>
                 <button id="nav-csv"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="table-2" class="w-5 h-5 text-gh-success"></i>
-                    <span class="font-semibold text-sm">Import CSV</span>
+                    <span class="font-semibold text-sm">Import de fichiers tableurs</span>
                 </button>
                 <button id="nav-structure"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
@@ -247,17 +247,17 @@
                 <button id="nav-rgpd"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="fingerprint" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
-                    <span class="font-semibold text-sm">RGPD</span>
+                    <span class="font-semibold text-sm">Protection des données</span>
                 </button>
                 <button id="nav-audit"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="history" class="w-5 h-5 text-gh-teal"></i>
-                    <span class="font-semibold text-sm">Audit chain</span>
+                    <span class="font-semibold text-sm">Journal d'audit chaîné</span>
                 </button>
                 <button id="nav-workflow"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
                     <i data-lucide="workflow" class="w-5 h-5 text-gh-success"></i>
-                    <span class="font-semibold text-sm">Workflows</span>
+                    <span class="font-semibold text-sm">Files de travail</span>
                 </button>
 
                 <div class="px-6 pt-6 pb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
@@ -270,7 +270,7 @@
                 </button>
             </nav>
 
-            <!-- Footer · profil opérateur -->
+            <!-- Footer - profil opérateur -->
             <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
                 <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div class="w-10 h-10 rounded-lg bg-gh-navy text-white flex items-center justify-center font-bold text-xs shadow-sm">
@@ -289,9 +289,9 @@
             </div>
         </aside>
 
-        <!-- MAIN · zone principale d'affichage des vues -->
+        <!-- MAIN - zone principale d'affichage des vues -->
         <main class="flex-1 flex flex-col min-w-0 bg-slate-100/60 dark:bg-[#0B1120] relative overflow-hidden transition-colors duration-300">
-            <!-- Header · titre de vue + horloge + actions -->
+            <!-- Header - titre de vue + horloge + actions -->
             <header class="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0 no-print transition-colors duration-300">
                 <div>
                     <h2 id="view-title-main"
@@ -300,7 +300,7 @@
                     </h2>
                     <p id="view-subtitle-main"
                         class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase mt-1 tracking-[0.18em]">
-                        Station DIM · GHT Sud Paris
+                        Station DIM - GHT Sud Paris
                     </p>
                 </div>
                 <div class="flex items-center gap-6">
@@ -322,7 +322,7 @@
                 </div>
             </header>
 
-            <!-- Viewport · vues injectées par app.js -->
+            <!-- Viewport - vues injectées par app.js -->
             <div id="os-viewport" class="flex-1 overflow-auto p-8 custom-scroll relative bg-slate-50/50 dark:bg-transparent">
                 <!-- Vues injectées dynamiquement par app.js -->
             </div>

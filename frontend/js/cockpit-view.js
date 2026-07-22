@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   COCKPIT CHEF DIM · vue exécutive mensuelle · PROD
+   COCKPIT CHEF DIM - vue exécutive mensuelle - PROD
    ─────────────────────────────────────────────────────────────────────────
-   Lit les vraies données via /api/v2/cockpit. Aucune donnée fictive ·
+   Lit les vraies données via /api/v2/cockpit. Aucune donnée fictive -
    si l'API renvoie has_data=false (MPI vide), on affiche un empty state
    qui invite à traiter un premier lot ATIH.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -30,22 +30,22 @@
     renderInto(
       sectionHead({
         eyebrow: "Vue mensuelle",
-        title: `Activité GHT · ${monthLabel}`,
+        title: `Activité GHT - ${monthLabel}`,
         meta: "Lecture du MPI…",
       }) + loadingState("Récupération des KPIs depuis /api/v2/cockpit"));
 
     const r = await api("/api/v2/cockpit");
 
-    // API down ou erreur · empty state · pas de fallback mock
+    // API down ou erreur - empty state - pas de fallback mock
     if (!r.ok) {
       renderInto(
         sectionHead({
           eyebrow: "Vue mensuelle",
-          title: `Activité GHT · ${monthLabel}`,
+          title: `Activité GHT - ${monthLabel}`,
           meta: `API indisponible (${r.status || "offline"})`,
         }) + emptyState({
           icon: "wifi-off",
-          title: "Backend FastAPI v2 non joignable",
+          title: "Pont local indisponible",
           body: "Vérifier que le service tourne sur le port 8766. "
               + "L'application reste navigable mais aucune donnée live ne "
               + "peut être affichée. Aucun chiffre fictif n'est inventé.",
@@ -55,12 +55,12 @@
 
     const data = r.data;
 
-    // MPI vide · empty state explicite
+    // MPI vide - empty state explicite
     if (!data.has_data) {
       renderInto(
         sectionHead({
           eyebrow: "Vue mensuelle",
-          title: `Activité GHT · ${monthLabel}`,
+          title: `Activité GHT - ${monthLabel}`,
           meta: "MPI vide",
         }) + emptyState({
           icon: "database",
@@ -86,14 +86,14 @@
           body: "Le calcul de la file active glissante nécessite "
               + "12 mois de données traitées."
         })
-      : card({ title: "File active glissante · 12 mois", icon: "trending-up",
+      : card({ title: "File active glissante - 12 mois", icon: "trending-up",
           body: histogramHTML(data.file_active_history) });
 
     const alertsCard = data.sector_alerts.length === 0
       ? card({ title: "Alertes secteur", icon: "alert-triangle", body: `
           <div style="font-size:12px;color:${slate[500]};
               text-align:center;padding:18px 0;">
-            Aucune alerte cette période · qualité PMSI nominale.
+            Aucune alerte cette période - qualité PMSI nominale.
           </div>` })
       : card({ title: "Alertes secteur", icon: "alert-triangle",
           body: data.sector_alerts.map((a, i) =>
@@ -102,14 +102,14 @@
     renderInto(
       sectionHead({
         eyebrow: "Vue mensuelle",
-        title: `Activité GHT · ${monthLabel}`,
-        meta: `Source: ${data.month} · MPI live`,
+        title: `Activité GHT - ${monthLabel}`,
+        meta: `Source: ${data.month} - MPI live`,
         action: `<span style="display:inline-flex;align-items:center;gap:5px;
             padding:4px 10px;border-radius:999px;font-size:10px;font-weight:700;
             letter-spacing:0.14em;text-transform:uppercase;
             background:#ECFDF5;color:${SUCCESS};">
           <span style="width:6px;height:6px;border-radius:999px;
-              background:${SUCCESS};"></span>API LIVE</span>`,
+              background:${SUCCESS};"></span>PONT LOCAL</span>`,
       }) +
       `<div style="display:grid;grid-template-columns:repeat(${data.kpis.length},1fr);
                    gap:14px;margin-bottom:18px;">${kpiCards}</div>` +

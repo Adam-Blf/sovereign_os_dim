@@ -45,8 +45,84 @@ def test_api_exposes_v2_methods():
         "get_heatmap_sectors",
         "get_twin_scenarios",
         "workflow_pending",
+        "get_duree_sejour",
+        "get_regroupement_patients",
     ):
         assert callable(getattr(api, method, None)), f"Api.{method} manquante"
+
+
+def test_duree_sejour_returns_plain_dict_with_model():
+    """Le prédicteur de durée de séjour lit l'artefact entraîné et le sert tel quel."""
+    from backend.interfaces.api import Api
+
+    result = Api().get_duree_sejour()
+    assert result["has_model"] is True
+    assert "par_groupe" in result
+    assert "erreur_absolue_moyenne_jours" in result
+    assert "coefficient_determination" in result
+
+
+def test_duree_sejour_missing_artifact_reports_has_model_false(monkeypatch):
+    """Sans artefact entraîné, la fonction renvoie un dict honnête, pas un crash."""
+    import pathlib
+
+    original_exists = pathlib.Path.exists
+
+    def fake_exists(self):
+        if self.name == "duree_sejour_meta.json":
+            return False
+        return original_exists(self)
+
+    monkeypatch.setattr(pathlib.Path, "exists", fake_exists)
+
+    from backend.interfaces.api import Api
+
+    result = Api().get_duree_sejour()
+    assert result["has_model"] is False
+    assert "message" in result
+
+
+def test_regroupement_patients_returns_plain_dict_with_model():
+    """Le regroupement de patients lit l'artefact entraîné et le sert tel quel."""
+    from backend.interfaces.api import Api
+
+    result = Api().get_regroupement_patients()
+    assert result["has_model"] is True
+    assert "points" in result
+    assert "archetypes" in result
+
+
+def test_regroupement_patients_missing_artifact_reports_has_model_false(monkeypatch):
+    """Sans artefact entraîné, la fonction renvoie un dict honnête, pas un crash."""
+    import pathlib
+
+    original_exists = pathlib.Path.exists
+
+    def fake_exists(self):
+        if self.name == "regroupement_patients.json":
+            return False
+        return original_exists(self)
+
+    monkeypatch.setattr(pathlib.Path, "exists", fake_exists)
+
+    from backend.interfaces.api import Api
+
+    result = Api().get_regroupement_patients()
+    assert result["has_model"] is False
+    assert "message" in result
+
+
+def test_cim_suggester_suggest_returns_list_for_french_text():
+    """Le suggesteur local renvoie des codes CIM-10 plausibles, sans réseau."""
+    from backend.ml.cim_suggester import suggest
+
+    suggestions = suggest("syndrome depressif majeur")
+    assert isinstance(suggestions, list)
+    assert len(suggestions) > 0
+    for s in suggestions:
+        assert set(s.keys()) == {"code", "label", "confidence"}
+        assert 0.0 <= s["confidence"] <= 1.0
+    assert suggestions[0]["code"] == "F32.2"
 
 
 def test_sentinel_returns_plain_dicts_when_empty():

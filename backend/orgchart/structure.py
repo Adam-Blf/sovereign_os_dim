@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM - STRUCTURE PARSER v1.0
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.2 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.3 - Station DIM GHT Sud Paris
 #
 #  Description :
 #    Parseur du "fichier de structure" d'un établissement : hiérarchie des
@@ -395,7 +395,7 @@ def _draw_org_node(pdf, node: dict, x: float, y: float, node_w: float, node_h: f
     chevauchements aux petites échelles :
       - ligne 1 (haut, ~33% h) : CODE en gras coloré
       - ligne 2 (milieu, ~33% h) : LIBELLÉ en slate (tronqué si besoin)
-      - ligne 3 (bas, ~24% h)   : LEVEL · SECTEUR en petit gris
+      - ligne 3 (bas, ~24% h)   : LEVEL - SECTEUR en petit gris
 
     Le CODE a la priorité absolue : il s'affiche toujours, c'est la
     ligne que l'utilisateur utilise pour identifier l'unité médicale.
@@ -447,7 +447,7 @@ def _draw_org_node(pdf, node: dict, x: float, y: float, node_w: float, node_h: f
     pdf.set_text_color(51, 65, 85)
     pdf.cell(inner_w, line_h, label, new_x="LMARGIN", new_y="NEXT")
 
-    # ── Ligne 3 : META (LEVEL · SECTEUR) ─────────────────────────────────
+    # ── Ligne 3 : META (LEVEL - SECTEUR) ─────────────────────────────────
     # Affichage compact : on skip si le node est trop petit pour une 3e ligne.
     if line_h >= 2.0:
         meta_bits = []

@@ -1,20 +1,20 @@
 name: Sync repo topics
 
 # Quand on modifie .github/topics.yml et qu'on push, le workflow remplace
-# l'ensemble des topics du repo via l'API GitHub. Idempotent · ne fait rien
+# l'ensemble des topics du repo via l'API GitHub. Idempotent - ne fait rien
 # si la liste est déjà à jour.
 #
-# IMPORTANT · ce workflow nécessite un Personal Access Token avec scope
+# IMPORTANT - ce workflow nécessite un Personal Access Token avec scope
 # `public_repo` (ou `repo` pour les privés) stocké en secret repo
 # `TOPICS_PAT`. Le GITHUB_TOKEN natif ne peut pas modifier les topics
 # (limite GitHub Actions, pas un bug du workflow).
 #
-# Setup une seule fois ·
+# Setup une seule fois -
 #   1. github.com → Settings → Developer settings → PAT classique
 #      → générer avec scope `public_repo` (et `repo` si repos privés)
-#   2. dans CHAQUE repo cible · Settings → Secrets → Actions
-#      → New repository secret · nom `TOPICS_PAT`, valeur = le PAT
-#   3. ou en bulk via gh ·
+#   2. dans CHAQUE repo cible - Settings → Secrets → Actions
+#      → New repository secret - nom `TOPICS_PAT`, valeur = le PAT
+#   3. ou en bulk via gh -
 #      gh secret set TOPICS_PAT --repos Adam-Blf/repo1,Adam-Blf/repo2
 #
 # Si le secret n'est pas défini, le workflow se termine en SUCCESS avec un
@@ -41,7 +41,7 @@ jobs:
         run: |
           if [ -z "${TOPICS_PAT:-}" ]; then
             echo "missing=true" >> "$GITHUB_OUTPUT"
-            echo "::warning::secrets.TOPICS_PAT not set · skip · see workflow comments"
+            echo "::warning::secrets.TOPICS_PAT not set - skip - see workflow comments"
           else
             echo "missing=false" >> "$GITHUB_OUTPUT"
           fi
@@ -52,7 +52,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ ! -f .github/topics.yml ]; then
-            echo "::warning::no .github/topics.yml · nothing to do"
+            echo "::warning::no .github/topics.yml - nothing to do"
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi

@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM - DATA PROCESSOR v3.1
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.2 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.3 - Station DIM GHT Sud Paris
 #  Date    : 2026-03-03
 #
 #  Description:
@@ -833,9 +833,9 @@ class DataProcessor:
         totals["collisions"] = sum(1 for d in self.mpi.values() if len(d["history"]) > 1)
 
         self._log(
-            f"✅ {totals['files_processed']} fichiers traités en parallèle · "
-            f"{totals['lines_valid']:,} lignes · "
-            f"{totals['ipp_unique']:,} IPP · "
+            f"✅ {totals['files_processed']} fichiers traités en parallèle - "
+            f"{totals['lines_valid']:,} lignes - "
+            f"{totals['ipp_unique']:,} IPP - "
             f"{totals['collisions']} collisions"
         )
         return totals
@@ -1094,8 +1094,8 @@ class DataProcessor:
                 stats["files_skipped"] += 1
 
         self._log(
-            f"📦 Export : {stats['csv_count']} CSV · "
-            f"{stats['lines_exported']:,} lignes · "
+            f"📦 Export : {stats['csv_count']} CSV - "
+            f"{stats['lines_exported']:,} lignes - "
             f"{stats['ddn_corrected']} DDN corrigées"
         )
         return {"stats": stats, "files": generated, "output_dir": output_dir}
@@ -1168,7 +1168,7 @@ class DataProcessor:
             return {"error": str(e)}
 
         self._log(
-            f"🧹 Sanitized : {base} → {stats['out']}/{stats['in']} lignes · "
+            f"🧹 Sanitized : {base} → {stats['out']}/{stats['in']} lignes - "
             f"{stats['pivoted']} pivots injectés"
         )
         return {"path": out_path, "name": out_name, "stats": stats}

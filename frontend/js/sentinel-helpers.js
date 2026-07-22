@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   SENTINEL HELPERS · primitives partagées par toutes les vues portées
+   SENTINEL HELPERS - primitives partagées par toutes les vues portées
    ─────────────────────────────────────────────────────────────────────────
-   Source · docs/design/sentinel-refonte/project/screens/shared.jsx
-   Vanilla JS · zéro dépendance React. Charge via index.html avant les vues.
+   Source - docs/design/sentinel-refonte/project/screens/shared.jsx
+   Vanilla JS - zéro dépendance React. Charge via index.html avant les vues.
    ═══════════════════════════════════════════════════════════════════════════ */
 (function () {
   "use strict";
@@ -135,8 +135,8 @@
     return vp;
   }
 
-  /** État vide générique · à utiliser quand l'API ne renvoie pas de données.
-   *  PROD · jamais de données fictives. icon = nom Lucide. */
+  /** État vide générique - à utiliser quand l'API ne renvoie pas de données.
+   *  PROD - jamais de données fictives. icon = nom Lucide. */
   function emptyState({ title, body, icon, action }) {
     return `
       <div style="background:var(--bg-card);border:1px solid var(--border-card);border-radius:12px;
@@ -155,7 +155,7 @@
       </div>`;
   }
 
-  /** Loading state · skeleton card pendant l'attente de l'API */
+  /** Loading state - skeleton card pendant l'attente de l'API */
   function loadingState(label) {
     return `
       <div style="background:var(--bg-card);border:1px solid var(--border-card);border-radius:12px;
@@ -230,6 +230,10 @@
           data = await bridge.get_twin_scenarios(); break;
         case rawPath === "/api/v2/pivot":
           data = await bridge.get_pivot(); break;
+        case rawPath === "/api/v2/duree-sejour":
+          data = await bridge.get_duree_sejour(); break;
+        case rawPath === "/api/v2/regroupement-patients":
+          data = await bridge.get_regroupement_patients(); break;
         case rawPath === "/api/v2/workflow/pending":
           data = await bridge.workflow_pending(params.stage || null, Number(params.limit) || 100); break;
         case rawPath === "/api/v2/workflow/add":

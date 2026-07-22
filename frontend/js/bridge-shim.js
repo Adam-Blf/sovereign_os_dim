@@ -1,5 +1,5 @@
 /*
- * bridge-shim.js · adapts the frontend to the C# ASP.NET Core bridge
+ * bridge-shim.js - adapts the frontend to the C# ASP.NET Core bridge
  * and the native WebView2 host. When loaded, it exposes
  * window.pywebview.api.<method>() shims that translate to fetch('/api/...')
  * calls, and forwards native-dialog methods to the host via postMessage.
@@ -104,21 +104,21 @@
     export_structure_pdf: (filePath, outputPath) =>
       call('POST', '/api/export-structure-pdf', { FilePath: filePath, OutputPath: outputPath }),
 
-    // DRUIDES pre-flight · catches errors before e-PMSI upload
+    // DRUIDES pre-flight - catches errors before e-PMSI upload
     validate_preflight: () => call('POST', '/api/validate'),
 
     // Drain log buffer (pattern de pywebview-style progress stream)
     get_pending_logs: () => call('GET', '/api/logs'),
 
-    // Diagnostic line-by-line · retourne la décomposition champ par champ
+    // Diagnostic line-by-line - retourne la décomposition champ par champ
     inspect_line: (filePath, lineNumber) =>
       call('POST', '/api/inspect', { FilePath: filePath, LineNumber: lineNumber }),
 
-    // Prévisualisation Excel · 100 premières lignes du premier feuillet
+    // Prévisualisation Excel - 100 premières lignes du premier feuillet
     import_excel: (filePath, maxRows = 100) =>
       call('POST', '/api/import-excel', { FilePath: filePath, MaxRows: maxRows }),
 
-    // IA suggestion DP · quand ERR-DIAG-ABSENT détecté
+    // IA suggestion DP - quand ERR-DIAG-ABSENT détecté
     suggest_dp: (umLabel, sectorType, modeLegal, freeText, topK = 3) =>
       call('POST', '/api/suggest-dp', { UmLabel: umLabel, SectorType: sectorType, ModeLegal: modeLegal, FreeText: freeText, TopK: topK }),
 
@@ -129,7 +129,7 @@
     get_mpi_stats: () => call('GET', '/api/mpi/stats'),
     mpi_clear: () => call('POST', '/api/mpi/clear'),
 
-    // Dashboard live · agrégats MPI pour Chart.js
+    // Dashboard live - agrégats MPI pour Chart.js
     dashboard_live: () => call('GET', '/api/dashboard'),
 
     // HTML → PDF (for BIQuery dashboards saved as .html, and the bundled manual)
@@ -173,5 +173,5 @@
 
   window.pywebview = window.pywebview || {};
   window.pywebview.api = api;
-  console.info('[bridge-shim] pywebview.api → http bridge at ' + BRIDGE + ' · host dialogs ' + (host.enabled ? 'ON' : 'OFF'));
+  console.info('[bridge-shim] pywebview.api → http bridge at ' + BRIDGE + ' - host dialogs ' + (host.enabled ? 'ON' : 'OFF'));
 })();

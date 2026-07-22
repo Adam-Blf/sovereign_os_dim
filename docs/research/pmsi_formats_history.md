@@ -1,9 +1,9 @@
-# PMSI Formats History 2000-2026 · Référence XGBoost
+# PMSI Formats History 2000-2026 - Référence XGBoost
 
-> Source · synthèse research-analyst (4 mai 2026), URLs vérifiées sur format-pmsi.fr / lespmsi.com / atih.sante.fr / SNDS.
+> Source - synthèse research-analyst (4 mai 2026), URLs vérifiées sur format-pmsi.fr / lespmsi.com / atih.sante.fr / SNDS.
 
-**Encoding** · tous les fichiers PMSI utilisent **Latin-1 (ISO-8859-1)**.
-**Format DDN** · varie par format · DDMMYYYY (RSS groupé, VID-IPP) vs YYYYMMDD (HAD, SSR/SMR, PSY, RSS non-groupé 022+).
+**Encoding** - tous les fichiers PMSI utilisent **Latin-1 (ISO-8859-1)**.
+**Format DDN** - varie par format - DDMMYYYY (RSS groupé, VID-IPP) vs YYYYMMDD (HAD, SSR/SMR, PSY, RSS non-groupé 022+).
 
 ---
 
@@ -11,7 +11,7 @@
 
 | Champ | Position du token | Pattern |
 |-------|------------------|---------|
-| **HAD** | **pos 1-3** | `H01`-`H0B`, `H17`-`H1B` (unique · seul champ qui met le format en tête) |
+| **HAD** | **pos 1-3** | `H01`-`H0B`, `H17`-`H1B` (unique - seul champ qui met le format en tête) |
 | **MCO RSS/RUM** | pos 10-12 | `011`-`023` (non-grp), `111`-`123` (grp) |
 | **MCO RSA** | pos 10-12 | `215`-`220` |
 | **MCO FICHCOMP** | pos 10-11 (2 chars) | type code (MO, DM, etc.) |
@@ -23,9 +23,9 @@
 
 ---
 
-## PSY · RPS (Résumé Par Séquence) · priorité GHT Sud Paris
+## PSY - RPS (Résumé Par Séquence) - priorité GHT Sud Paris
 
-Structure unique · **double FINESS** (juridique + géographique) en tête.
+Structure unique - **double FINESS** (juridique + géographique) en tête.
 
 | Format | Années actives | Token pos 19-21 | IPP pos | DDN pos | Min length |
 |--------|---------------|-----------------|---------|---------|-----------|
@@ -36,7 +36,7 @@ Structure unique · **double FINESS** (juridique + géographique) en tête.
 | RPS P09-P11 | 2018-2020 | `P09`-`P11` | 22-41 | 42-49 | ~152+ var |
 | **RPS P12** | **~2021 - present** | `P12` | 22-41 | 42-49 | ~152+ var |
 
-### RPS P05 · positions détaillées (référence ATIH)
+### RPS P05 - positions détaillées (référence ATIH)
 
 | Champ | Position |
 |-------|---------|
@@ -57,7 +57,7 @@ Structure unique · **double FINESS** (juridique + géographique) en tête.
 | Jours de présence | 125-127 |
 | Diagnostic principal | 141-148 |
 
-## PSY · RAA (Résumé d'Activité Ambulatoire)
+## PSY - RAA (Résumé d'Activité Ambulatoire)
 
 Même structure que RPS, token au pos 19-21.
 
@@ -71,9 +71,9 @@ Même structure que RPS, token au pos 19-21.
 
 ---
 
-## HAD · RPSS (token pos 1-3, unique)
+## HAD - RPSS (token pos 1-3, unique)
 
-Structure unique · format en tête, double FINESS, IPP **pos 22-41**.
+Structure unique - format en tête, double FINESS, IPP **pos 22-41**.
 
 | Format | Années | Token pos 1-3 | FINESS jur | FINESS géo | IPP | DDN |
 |--------|--------|--------------|-----------|-----------|-----|-----|
@@ -87,9 +87,9 @@ Structure unique · format en tête, double FINESS, IPP **pos 22-41**.
 
 ---
 
-## MCO · RSS/RUM (sans IPP, identifié par N° séjour)
+## MCO - RSS/RUM (sans IPP, identifié par N° séjour)
 
-Format DDN · DDMMYYYY pour grouped, YYYYMMDD pour non-grouped 022+.
+Format DDN - DDMMYYYY pour grouped, YYYYMMDD pour non-grouped 022+.
 
 | Format (non-grp/grp) | Années | Token 10-12 | FINESS | DDN | Format DDN |
 |---------------------|--------|------------|--------|-----|-----------|
@@ -100,11 +100,11 @@ Format DDN · DDMMYYYY pour grouped, YYYYMMDD pour non-grouped 022+.
 | RSS 122 / 022 | mar 2023 - jan 2026 | `122`/`022` | grp 16-24 / non-grp 1-9 | grp 78-85 / non-grp 63-70 | grp DDMMYYYY / non-grp YYYYMMDD |
 | **RSS 123 / 023** | **jan 2026+** | `123`/`023` | 1-9 (non-grp) | 63-70 | YYYYMMDD |
 
-**Pas d'IPP dans RSS/RUM standard** · l'IPP vit dans VID-HOSP, RSF-A (depuis 2020), RSF-ACE A (depuis 2019).
+**Pas d'IPP dans RSS/RUM standard** - l'IPP vit dans VID-HOSP, RSF-A (depuis 2020), RSF-ACE A (depuis 2019).
 
 ---
 
-## SSR/SMR · RHS (sans IPP)
+## SSR/SMR - RHS (sans IPP)
 
 | Format | Années | Type | Token | FINESS | DDN |
 |--------|--------|------|-------|--------|-----|
@@ -115,11 +115,11 @@ Format DDN · DDMMYYYY pour grouped, YYYYMMDD pour non-grouped 022+.
 | RHS M0C/M1C | 2022-2024 | non-grp/grp | `M0C`/`M1C` | 1-9 / 14-22 | 68-75 / 81-88 |
 | **RHS M0D/M1D** | **2025-2026** | non-grp/grp | `M0D`/`M1D` | 1-9 / 14-22 | 69-76 / 82-89 |
 
-**Discriminant grouped vs non-grouped** · filler 10 chars en tête (positions 1-10) si grouped.
+**Discriminant grouped vs non-grouped** - filler 10 chars en tête (positions 1-10) si grouped.
 
 ---
 
-## Transversal · VID-HOSP (4 champs partagés)
+## Transversal - VID-HOSP (4 champs partagés)
 
 NIR aux positions 1-13, format au pos 49-52.
 
@@ -148,24 +148,24 @@ NIR aux positions 1-13, format au pos 49-52.
 
 ## Stratégie features XGBoost
 
-1. **char[0:3]** · si match `H01`-`H1B` → HAD direct
-2. **char[10:13]** · si match `M0X`/`M1X` → SSR/SMR · si `0XX`/`1XX` → MCO RSS · si `215`-`220` → RSA
-3. **char[19:22]** · si match `P0X`/`P12`/`P14` → PSY direct
-4. **char[49:53]** · si match `V0XX` → VID-HOSP · si `I00A` → VID-IPP
-5. **Length brackets** · 466 = VID-HOSP V014 · 106 = VID-IPP · 105 = FICHCOMP MO · 81 = RAA min · 154 = RPS P05
-6. **Double FINESS test** · char[0:9] et char[9:18] tous deux numériques 9-chars → PSY signature
-7. **Leading filler 10 chars** · indique RSS/RHS grouped
+1. **char[0:3]** - si match `H01`-`H1B` → HAD direct
+2. **char[10:13]** - si match `M0X`/`M1X` → SSR/SMR - si `0XX`/`1XX` → MCO RSS - si `215`-`220` → RSA
+3. **char[19:22]** - si match `P0X`/`P12`/`P14` → PSY direct
+4. **char[49:53]** - si match `V0XX` → VID-HOSP - si `I00A` → VID-IPP
+5. **Length brackets** - 466 = VID-HOSP V014 - 106 = VID-IPP - 105 = FICHCOMP MO - 81 = RAA min - 154 = RPS P05
+6. **Double FINESS test** - char[0:9] et char[9:18] tous deux numériques 9-chars → PSY signature
+7. **Leading filler 10 chars** - indique RSS/RHS grouped
 
 ---
 
 ## Sources
 
 - [ATIH Formats PMSI 2026](https://www.atih.sante.fr/formats-pmsi-2026-0)
-- [format-pmsi.fr · catalogue complet](https://www.format-pmsi.fr/)
-- [format-pmsi.fr · PSY RPS P05](https://www.format-pmsi.fr/PSY/RPS/P05/)
-- [format-pmsi.fr · HAD H0B](https://www.format-pmsi.fr/HAD/RPSS/H0B/)
-- [lespmsi.com · RPS RAA 2017](https://www.lespmsi.com/nouveaux-formats-rps-et-raa-en-2017/)
-- [lespmsi.com · VID-HOSP 2025](https://www.lespmsi.com/evolutions-du-vid-hosp-en-2025/)
-- [lespmsi.com · VID-IPP PSY](https://www.lespmsi.com/format-du-fichier-vid-ipp-chainage-des-ipp-pour-lambulatoire-des-etablissements-daf-psy/)
-- [refpmsi · denisgustin](https://denisgustin.github.io/refpmsi/articles/formats_pmsi.html)
+- [format-pmsi.fr - catalogue complet](https://www.format-pmsi.fr/)
+- [format-pmsi.fr - PSY RPS P05](https://www.format-pmsi.fr/PSY/RPS/P05/)
+- [format-pmsi.fr - HAD H0B](https://www.format-pmsi.fr/HAD/RPSS/H0B/)
+- [lespmsi.com - RPS RAA 2017](https://www.lespmsi.com/nouveaux-formats-rps-et-raa-en-2017/)
+- [lespmsi.com - VID-HOSP 2025](https://www.lespmsi.com/evolutions-du-vid-hosp-en-2025/)
+- [lespmsi.com - VID-IPP PSY](https://www.lespmsi.com/format-du-fichier-vid-ipp-chainage-des-ipp-pour-lambulatoire-des-etablissements-daf-psy/)
+- [refpmsi - denisgustin](https://denisgustin.github.io/refpmsi/articles/formats_pmsi.html)
 - [SNDS PSY documentation](https://documentation-snds.health-data-hub.fr/snds/fiches/pmsi_psy)

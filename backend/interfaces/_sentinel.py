@@ -215,13 +215,24 @@ def predict_ddn_validity(payload: dict) -> dict:
 
 
 def cim_suggest(payload: dict) -> dict:
-    """Suggestions CIM-10 via Ollama intranet si configuré, sinon désactivé."""
+    """Suggestions de codes diagnostiques.
+
+    Fournisseur par défaut : modèle local entraîné sur libellés synthétiques
+    (backend/ml/cim_suggester.py), disponible sans aucune configuration.
+    Si un serveur Ollama intranet est configuré (OLLAMA_BASE), il prend la main.
+    """
     payload = payload or {}
     das = payload.get("das", []) or []
     actes = payload.get("actes", []) or []
     notes = payload.get("notes", "") or ""
     if not OLLAMA_BASE:
-        return {"suggestions": [], "provider": "disabled"}
+        from backend.ml.cim_suggester import suggest as _local_suggest
+
+        texte = " ".join([*das, *actes, notes]).strip()
+        sugg = _local_suggest(texte)
+        if sugg:
+            audit.append(OPERATOR, "CIM_SUGGEST_LOCAL", f"das={len(das)}")
+        return {"suggestions": sugg, "provider": "local"}
     from urllib.parse import urlparse
 
     parsed = urlparse(OLLAMA_BASE)
@@ -459,3 +470,33 @@ def workflow_advance(item_id: int, new_stage: str) -> dict:
         raise LookupError(f"Item {item_id} introuvable")
     audit.append(OPERATOR, "WORKFLOW_ADVANCE", f"item#{item_id} -> {new_stage}")
     return item
+
+
+def duree_sejour() -> dict:
+    """Prédicteur de durée de séjour : métriques et statistiques par groupe.
+
+    Lit les artefacts entraînés par backend/ml/train_sejour_models.py
+    (données synthétiques uniquement, sorties présentées comme estimations).
+    """
+    import json
+    from pathlib import Path
+
+    meta_path = Path(__file__).resolve().parent.parent / "ml" / "models" / "duree_sejour_meta.json"
+    if not meta_path.exists():
+        return {"has_model": False, "message": "Modèle non entraîné - python -m backend.ml.train_sejour_models"}
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    meta["has_model"] = True
+    return meta
+
+
+def regroupement_patients() -> dict:
+    """Regroupement de patients : projection 2D et archétypes (synthétique)."""
+    import json
+    from pathlib import Path
+
+    art_path = Path(__file__).resolve().parent.parent / "ml" / "models" / "regroupement_patients.json"
+    if not art_path.exists():
+        return {"has_model": False, "message": "Modèle non entraîné - python -m backend.ml.train_sejour_models"}
+    art = json.loads(art_path.read_text(encoding="utf-8"))
+    art["has_model"] = True
+    return art

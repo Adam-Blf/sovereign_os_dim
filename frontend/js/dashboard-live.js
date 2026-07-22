@@ -1,8 +1,8 @@
 /*
- * dashboard-live.js · overlay "Live Stats" avec 4 graphiques Chart.js
- * alimentés par /api/dashboard (derrière le bouton 📊 · F4).
+ * dashboard-live.js - overlay "Live Stats" avec 4 graphiques Chart.js
+ * alimentés par /api/dashboard (derrière le bouton 📊 - F4).
  *
- * Pourquoi overlay et non extension du Dashboard existant ·
+ * Pourquoi overlay et non extension du Dashboard existant -
  *   app.js est fermé en IIFE, toute extension du rendu Dashboard
  *   demande un fork. L'overlay permet d'ajouter la valeur sans risque.
  */
@@ -67,7 +67,7 @@
             <div style="font-family:'Consolas',monospace; font-size:10px;
                         letter-spacing:0.4em; text-transform:uppercase; opacity:0.8;">Live Stats</div>
             <h2 style="font-size:1.75rem; font-weight:900; font-style:italic; letter-spacing:-0.02em;
-                       text-transform:uppercase; margin:0.25rem 0 0;">Dashboard · Analytics</h2>
+                       text-transform:uppercase; margin:0.25rem 0 0;">Dashboard - Analytics</h2>
           </div>
           <div style="display:flex; gap:0.75rem;">
             <button id="dashlive-refresh" style="border:0; background:rgba(255,255,255,0.25); color:#fff;
@@ -100,7 +100,7 @@
           </div>
           <div class="dashlive-card">
             <h3 style="margin:0 0 1rem; font-size:13px; text-transform:uppercase; letter-spacing:0.1em; color:#475569;">
-              Top 10 IPP · nombre d'observations</h3>
+              Top 10 IPP - nombre d'observations</h3>
             <div id="dashlive-top-ipp" style="font-family:'Consolas',monospace; font-size:12px;"></div>
           </div>
         </div>
@@ -127,14 +127,14 @@
 
   async function refresh() {
     if (!window.pywebview?.api?.dashboard_live) {
-      alert('API dashboard_live non disponible · bridge pas démarré ?');
+      alert('API dashboard_live non disponible - bridge pas démarré ?');
       return;
     }
     let data;
     try {
       data = await window.pywebview.api.dashboard_live();
     } catch (e) {
-      alert('Erreur · ' + e.message);
+      alert('Erreur - ' + e.message);
       return;
     }
 
@@ -159,11 +159,11 @@
     charts = [];
 
     if (typeof Chart === 'undefined') {
-      console.warn('[dashboard-live] Chart.js pas chargé · graphes skip.');
+      console.warn('[dashboard-live] Chart.js pas chargé - graphes skip.');
       return;
     }
 
-    // Chart 1 · champ PMSI (doughnut)
+    // Chart 1 - champ PMSI (doughnut)
     const byField = data.byField || {};
     const fieldLabels = Object.keys(byField);
     const fieldColours = fieldLabels.map(f => SECTOR_COLOURS[f] || PALETTE.navy);
@@ -176,7 +176,7 @@
       options: { responsive: true, plugins: { legend: { position: 'right' } } },
     }));
 
-    // Chart 2 · DDN par décennie (bar)
+    // Chart 2 - DDN par décennie (bar)
     const decades = data.ddnDecades || {};
     charts.push(new Chart(document.getElementById('dashlive-chart-ddn'), {
       type: 'bar',
@@ -187,7 +187,7 @@
       options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
     }));
 
-    // Chart 3 · tailles fichiers (bar horizontal)
+    // Chart 3 - tailles fichiers (bar horizontal)
     const sizes = data.sizeBuckets || {};
     charts.push(new Chart(document.getElementById('dashlive-chart-sizes'), {
       type: 'bar',
@@ -198,7 +198,7 @@
       options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } },
     }));
 
-    // Top 10 IPP · rendu liste
+    // Top 10 IPP - rendu liste
     const container = document.getElementById('dashlive-top-ipp');
     const topIpp = data.topIpp || [];
     container.innerHTML = topIpp.length === 0

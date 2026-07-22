@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM - API v3.0
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.2 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.3 - Station DIM GHT Sud Paris
 #  Date    : 2026-03-02
 #
 #  Description:
@@ -471,3 +471,9 @@ class Api:
 
     def workflow_advance(self, item_id, new_stage):
         return _sentinel.workflow_advance(item_id, new_stage)
+
+    def get_duree_sejour(self):
+        return _sentinel.duree_sejour()
+
+    def get_regroupement_patients(self):
+        return _sentinel.regroupement_patients()

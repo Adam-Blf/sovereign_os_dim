@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM - Point d'entrée principal V37
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.2 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.3 - Station DIM GHT Sud Paris
 #
 #  Description :
 #    Application desktop 100% locale. AUCUN serveur, AUCUNE socket, AUCUN flux
@@ -38,7 +38,7 @@ if sys.platform == "win32":
 for _stream in (sys.stdout, sys.stderr):
     try:
         _stream.reconfigure(encoding="utf-8", errors="replace")
-    except (AttributeError, ValueError):  # pragma: no cover · stream null sous .exe
+    except (AttributeError, ValueError):  # pragma: no cover - stream null sous .exe
         pass
 
 
@@ -51,7 +51,7 @@ def _safe_print(*args, **kwargs):
             msg = " ".join(str(a) for a in args)
             sys.stdout.write(msg.encode("ascii", "replace").decode("ascii") + "\n")
         except Exception:
-            pass  # mode --windowed avec stdout=None · on abandonne silencieusement
+            pass  # mode --windowed avec stdout=None - on abandonne silencieusement
 
 
 def _check_dependencies():
@@ -63,7 +63,7 @@ def _check_dependencies():
 
     if sys.platform == "win32":
         try:
-            import clr  # noqa · pythonnet
+            import clr  # noqa - pythonnet
         except ImportError:
             errors.append(
                 "pythonnet n'est pas installé.\n"
@@ -73,19 +73,19 @@ def _check_dependencies():
     try:
         import webview  # noqa
     except ImportError:
-        errors.append("pywebview n'est pas installé · pip install pywebview>=5.3.2")
+        errors.append("pywebview n'est pas installé - pip install pywebview>=5.3.2")
 
     # Aucune dépendance serveur : l'application est 100% locale (pont pywebview).
 
     if errors:
         _safe_print("=" * 60)
-        _safe_print("  [ERR] DÉPENDANCES MANQUANTES · Sovereign OS DIM")
+        _safe_print("  [ERR] DÉPENDANCES MANQUANTES - Sovereign OS DIM")
         _safe_print("=" * 60)
         _safe_print("")
         for e in errors:
-            _safe_print(f"  · {e}")
+            _safe_print(f"  - {e}")
         _safe_print("")
-        _safe_print("  Astuce · pip install -r requirements.txt")
+        _safe_print("  Astuce - pip install -r requirements.txt")
         _safe_print("")
         sys.exit(1)
 
@@ -125,7 +125,7 @@ def main() -> None:
         sys.exit(1)
 
     webview.create_window(
-        title="Sovereign OS V37.2 · Station DIM · GHT Psy Sud Paris",
+        title="Sovereign OS V37.3 - Station DIM - GHT Psy Sud Paris",
         url=index_html,
         js_api=api,
         width=1440,

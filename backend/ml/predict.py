@@ -1,18 +1,18 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
- backend/ml/predict.py · Inférence des modèles XGBoost entraînés
+ backend/ml/predict.py - Inférence des modèles XGBoost entraînés
 ═══════════════════════════════════════════════════════════════════════════════
 
 API d'inférence légère utilisée par le backend Python (api.py / bridge.py)
 pour appeler les modèles ML sans recharger les .json à chaque requête.
 
-Modèles attendus dans backend/ml/models/ ·
-- format_detector.json   · classifieur multi-classe
-- collision_risk.json    · classifieur binaire
-- ddn_validity.json      · classifieur binaire
-- format_classes.json    · mapping label_id → label_name
+Modèles attendus dans backend/ml/models/ -
+- format_detector.json   - classifieur multi-classe
+- collision_risk.json    - classifieur binaire
+- ddn_validity.json      - classifieur binaire
+- format_classes.json    - mapping label_id → label_name
 
-Usage ·
+Usage -
     from backend.ml import predict_format, load_models
     load_models()  # une seule fois au boot
     pred, proba = predict_format("12345678   1980  ...")  # ligne brute
@@ -29,7 +29,7 @@ from typing import Any
 
 import numpy as np
 
-from .synthetic import _line_features, _mpi_features  # noqa · partage features
+from .synthetic import _line_features, _mpi_features  # noqa - partage features
 
 
 def _resolve_models_dir() -> str:
@@ -49,7 +49,7 @@ def _resolve_models_dir() -> str:
         ):
             if os.path.isdir(c):
                 return c
-    return candidate  # fallback · le caller verra l'absence proprement
+    return candidate  # fallback - le caller verra l'absence proprement
 
 
 MODELS_DIR = _resolve_models_dir()
@@ -100,10 +100,10 @@ def _load_one(base_filename: str) -> Any | None:
 
 
 def _proba(model: Any, X: np.ndarray) -> np.ndarray:
-    """Wrapper · predict_proba pour XGBoost/sklearn, predict pour LightGBM Booster."""
+    """Wrapper - predict_proba pour XGBoost/sklearn, predict pour LightGBM Booster."""
     if hasattr(model, "predict_proba"):
         return model.predict_proba(X)
-    # LightGBM Booster · predict renvoie déjà des probas
+    # LightGBM Booster - predict renvoie déjà des probas
     p = model.predict(X)
     if p.ndim == 1:
         return np.column_stack([1 - p, p])
@@ -146,7 +146,7 @@ def load_models() -> dict[str, Any]:
 def _line_to_array(line: str) -> np.ndarray:
     """Vectorise une ligne dans le même ordre de features que train.py."""
     feats = _line_features(line)
-    # Ordre stable · DOIT matcher LINE_FEATURES dans train.py
+    # Ordre stable - DOIT matcher LINE_FEATURES dans train.py
     keys = [
         "length",
         "len_bucket",
@@ -194,7 +194,7 @@ def predict_format(line: str) -> tuple[str | None, float]:
 def predict_collision_risk(features: dict) -> float:
     """
     Prédit la probabilité qu'un IPP soit en collision.
-    `features` doit contenir · ipp_freq, ddn_variance_days, n_distinct_finess,
+    `features` doit contenir - ipp_freq, ddn_variance_days, n_distinct_finess,
     n_distinct_modalities, ipp_with_letters, year_min, year_span.
     """
     models = load_models()

@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Tests fonctionnels · analyse d'activité UM (helpers frontend)
-// Exécute · `node tests/frontend/test_activity_analysis.mjs`
-// Objectif · valider collectUmLeaves / detectAtihFormat / countUmActivity
+// Tests fonctionnels - analyse d'activité UM (helpers frontend)
+// Exécute - `node tests/frontend/test_activity_analysis.mjs`
+// Objectif - valider collectUmLeaves / detectAtihFormat / countUmActivity
 // sans lancer de navigateur. On extrait les 4 helpers du fichier app.js et
 // on les exécute en isolation via `new Function(...)`.
 // ══════════════════════════════════════════════════════════════════════════════
@@ -272,11 +272,11 @@ function test(name, fn) {
 }
 function eq(a, b, msg) {
     const A = JSON.stringify(a), B = JSON.stringify(b);
-    if (A !== B) throw new Error(`${msg || "eq"} · attendu ${B}, reçu ${A}`);
+    if (A !== B) throw new Error(`${msg || "eq"} - attendu ${B}, reçu ${A}`);
 }
 function ok(cond, msg) { if (!cond) throw new Error(msg || "condition false"); }
 
-// ── Fixture structure · reproduit la hiérarchie Fondation Vallée ──────────
+// ── Fixture structure - reproduit la hiérarchie Fondation Vallée ──────────
 const FIXTURE_TREE = [
     {
         code: "POLE_INFANTO", label: "Pôle Infanto-juvénile", level: "POLE",
@@ -306,10 +306,10 @@ const FIXTURE_TREE = [
     },
 ];
 
-// ── Fixture ATIH · forge un RPS 154 c et un RAA 96 c ──────────────────────
+// ── Fixture ATIH - forge un RPS 154 c et un RAA 96 c ──────────────────────
 // On concatène des champs fake et on injecte le code UM dans la zone classique.
 function forgeRpsLine(umCode, ipp = "IPP00000000000000001") {
-    // Total 154 chars · pad avec espaces + injecte UM à la position 79-82
+    // Total 154 chars - pad avec espaces + injecte UM à la position 79-82
     const finess = "750000012";                     // 9 (neutre, pas de collision avec codes UM 40xx)
     const seq = "0000001";                          // 7
     const rpsNum = "0001";                          // 4 (17-20)
@@ -336,7 +336,7 @@ function forgeRpsLine(umCode, ipp = "IPP00000000000000001") {
 }
 
 function forgeRaaLine(umCode, ipp = "IPP00000000000000001") {
-    // Total 96 chars · UM à la position ~56-59
+    // Total 96 chars - UM à la position ~56-59
     const finess = "750000012";                     // 9 (neutre, pas de collision avec codes UM 40xx)
     const seq = "0000001";                          // 7
     const rsaNum = "0001";                          // 4 (17-20)
@@ -355,14 +355,14 @@ function forgeRaaLine(umCode, ipp = "IPP00000000000000001") {
 // TESTS
 // ══════════════════════════════════════════════════════════════════════════════
 
-test("collectUmLeaves · extrait toutes les UM de l'arbre", () => {
+test("collectUmLeaves - extrait toutes les UM de l'arbre", () => {
     const leaves = collectUmLeaves(FIXTURE_TREE);
     eq(leaves.length, 6, "6 UM attendues");
     const codes = leaves.map(u => u.code).sort();
     eq(codes, ["4001", "4002", "4003", "4010", "4011", "4050"], "codes UM");
 });
 
-test("collectUmLeaves · déduplique sur code", () => {
+test("collectUmLeaves - déduplique sur code", () => {
     const dup = [
         { code: "POLE", level: "POLE", children: [
             { code: "SEC", level: "SECTEUR", children: [
@@ -376,7 +376,7 @@ test("collectUmLeaves · déduplique sur code", () => {
     eq(leaves[0].code, "4001");
 });
 
-test("collectUmLeaves · préserve parent (pôle/secteur)", () => {
+test("collectUmLeaves - préserve parent (pôle/secteur)", () => {
     const leaves = collectUmLeaves(FIXTURE_TREE);
     const u = leaves.find(x => x.code === "4001");
     ok(u, "UM 4001 trouvée");
@@ -385,26 +385,26 @@ test("collectUmLeaves · préserve parent (pôle/secteur)", () => {
     eq(u.sector, "I", "type ARS hérité");
 });
 
-test("collectUmLeaves · arbre vide", () => {
+test("collectUmLeaves - arbre vide", () => {
     eq(collectUmLeaves([]).length, 0);
     eq(collectUmLeaves(null).length, 0);
 });
 
-test("detectAtihFormat · RPS 154c", () => {
+test("detectAtihFormat - RPS 154c", () => {
     const lines = Array.from({ length: 10 }, () => forgeRpsLine("4001"));
     const d = detectAtihFormat(lines);
     eq(d.format, "RPS / RPSA");
     eq(d.length, 154);
 });
 
-test("detectAtihFormat · RAA 96c", () => {
+test("detectAtihFormat - RAA 96c", () => {
     const lines = Array.from({ length: 10 }, () => forgeRaaLine("4001"));
     const d = detectAtihFormat(lines);
     eq(d.format, "RAA / R3A / EDGAR");
     eq(d.length, 96);
 });
 
-test("detectAtihFormat · mixte · mode dominante gagne", () => {
+test("detectAtihFormat - mixte - mode dominante gagne", () => {
     const lines = [
         ...Array.from({ length: 50 }, () => forgeRpsLine("4001")),
         ...Array.from({ length: 5 }, () => forgeRaaLine("4002")),
@@ -413,12 +413,12 @@ test("detectAtihFormat · mixte · mode dominante gagne", () => {
     eq(d.format, "RPS / RPSA", "RPS majoritaire");
 });
 
-test("detectAtihFormat · vide", () => {
+test("detectAtihFormat - vide", () => {
     eq(detectAtihFormat([]).format, "INCONNU");
     eq(detectAtihFormat(["x"]).format, "INCONNU"); // < 50 chars filtré
 });
 
-test("countUmActivity · RPS · compte par UM", () => {
+test("countUmActivity - RPS - compte par UM", () => {
     const lines = [
         forgeRpsLine("4001"), forgeRpsLine("4001"), forgeRpsLine("4001"),
         forgeRpsLine("4002"),
@@ -432,14 +432,14 @@ test("countUmActivity · RPS · compte par UM", () => {
     eq(counts.get("4050"), 1);
 });
 
-test("countUmActivity · ligne unique compte 1 fois une UM même si occurence multiple", () => {
+test("countUmActivity - ligne unique compte 1 fois une UM même si occurence multiple", () => {
     // Code "4001" présent 2 fois dans la même ligne
     const line = "4001xxx4001xxx" + " ".repeat(150);
     const counts = countUmActivity([line.slice(0, 154)], ["4001"]);
     eq(counts.get("4001"), 1, "1 ligne = 1 comptage max par UM");
 });
 
-test("countUmActivity · RAA · fonctionne à 96c", () => {
+test("countUmActivity - RAA - fonctionne à 96c", () => {
     const lines = [forgeRaaLine("4010"), forgeRaaLine("4010"), forgeRaaLine("4011")];
     const counts = countUmActivity(lines, ["4010", "4011", "4012"]);
     eq(counts.get("4010"), 2);
@@ -447,22 +447,22 @@ test("countUmActivity · RAA · fonctionne à 96c", () => {
     eq(counts.get("4012"), 0);
 });
 
-test("countUmActivity · codes longs priorisés (évite match partiel)", () => {
-    // "40012" contient "4001" en préfixe · un match sur le code long ne doit pas
+test("countUmActivity - codes longs priorisés (évite match partiel)", () => {
+    // "40012" contient "4001" en préfixe - un match sur le code long ne doit pas
     // générer aussi un match sur le court dans la même position.
     const line = ("xxx40012xxx").padEnd(154);
     const counts = countUmActivity([line], ["4001", "40012"]);
     eq(counts.get("40012"), 1, "40012 matché");
-    // Sur le code court · match potentiel ailleurs dans la ligne · ici 0
+    // Sur le code court - match potentiel ailleurs dans la ligne - ici 0
     eq(counts.get("4001"), 0, "4001 pas surcompté");
 });
 
-test("countUmActivity · liste codes vide", () => {
+test("countUmActivity - liste codes vide", () => {
     const counts = countUmActivity([forgeRpsLine("4001")], []);
     eq(counts.size, 0);
 });
 
-test("countUmActivity · 1000 lignes × 50 UM · perf < 150ms", () => {
+test("countUmActivity - 1000 lignes × 50 UM - perf < 150ms", () => {
     const codes = Array.from({ length: 50 }, (_, i) => String(4000 + i));
     const lines = Array.from({ length: 1000 }, (_, i) => forgeRpsLine(codes[i % 50]));
     const t0 = performance.now();
@@ -473,7 +473,7 @@ test("countUmActivity · 1000 lignes × 50 UM · perf < 150ms", () => {
     eq(counts.get("4000"), 20);
 });
 
-test("countUmActivityAsync · même résultat que la version sync", async () => {
+test("countUmActivityAsync - même résultat que la version sync", async () => {
     const codes = ["4001", "4002", "4003"];
     const lines = [
         ...Array.from({ length: 100 }, () => forgeRpsLine("4001")),
@@ -486,7 +486,7 @@ test("countUmActivityAsync · même résultat que la version sync", async () => 
     eq(sync.get("4003"), async_.get("4003"));
 });
 
-test("countUmActivityAsync · callback progression · 0 → 100", async () => {
+test("countUmActivityAsync - callback progression - 0 → 100", async () => {
     const codes = ["4001"];
     const lines = Array.from({ length: 12000 }, () => forgeRpsLine("4001"));
     const pcts = [];
@@ -496,7 +496,7 @@ test("countUmActivityAsync · callback progression · 0 → 100", async () => {
     ok(pcts[0] > 0 && pcts[0] < 100, "premier callback intermédiaire");
 });
 
-test("extractPeriodFromFilenames · AAAAMM dans nom de fichier", () => {
+test("extractPeriodFromFilenames - AAAAMM dans nom de fichier", () => {
     const p = extractPeriodFromFilenames(["RPS_202410.txt", "RAA_202411.txt", "RPS_202412.txt"]);
     ok(p, "période détectée");
     eq(p.years, ["2024"]);
@@ -504,23 +504,23 @@ test("extractPeriodFromFilenames · AAAAMM dans nom de fichier", () => {
     eq(p.label, "2024");
 });
 
-test("extractPeriodFromFilenames · plusieurs années", () => {
+test("extractPeriodFromFilenames - plusieurs années", () => {
     const p = extractPeriodFromFilenames(["RPS_2023.txt", "RPS_2024.txt", "RPS_2025.txt"]);
     ok(p);
     eq(p.label, "2023 → 2025");
 });
 
-test("extractPeriodFromFilenames · MMAAAA format alternatif", () => {
+test("extractPeriodFromFilenames - MMAAAA format alternatif", () => {
     const p = extractPeriodFromFilenames(["RAA_102024.txt", "RAA_112024.txt"]);
     ok(p);
     eq(p.years, ["2024"]);
 });
 
-test("extractPeriodFromFilenames · pas de date = null", () => {
+test("extractPeriodFromFilenames - pas de date = null", () => {
     eq(extractPeriodFromFilenames(["sans_date.txt", "export.txt"]), null);
 });
 
-test("parseStructureText · CSV avec header standard", () => {
+test("parseStructureText - CSV avec header standard", () => {
     const csv = `LEVEL;CODE;PARENT;LABEL
 POLE;POLE_I;;Pole Infanto-juv
 SECTEUR;94I01;POLE_I;Secteur Gentilly
@@ -535,13 +535,13 @@ UM;4002;94I01;HC Adolescents`;
     eq(p.tree[0].children[0].children[0].code, "4001");
 });
 
-test("parseStructureText · detection sector_type I via code 94I01", () => {
+test("parseStructureText - detection sector_type I via code 94I01", () => {
     const csv = `CODE;PARENT;LABEL\n94I01;;Secteur`;
     const p = parseStructureText(csv);
     eq(p.tree[0].sector_type, "I");
 });
 
-test("parseStructureText · propagation sector_type aux enfants UM", () => {
+test("parseStructureText - propagation sector_type aux enfants UM", () => {
     const csv = `LEVEL;CODE;PARENT;LABEL
 SECTEUR;94I01;;Secteur I
 UM;4001;94I01;HDJ`;
@@ -549,27 +549,27 @@ UM;4001;94I01;HDJ`;
     eq(p.tree[0].children[0].sector_type, "I", "UM herite du secteur");
 });
 
-test("parseStructureText · auto-detect separator virgule", () => {
+test("parseStructureText - auto-detect separator virgule", () => {
     const csv = `CODE,PARENT,LABEL\nROOT,,Racine\nA,ROOT,Enfant A`;
     const p = parseStructureText(csv);
     eq(p.summary.total_nodes, 2);
 });
 
-test("parseStructureText · auto-detect separator tab", () => {
+test("parseStructureText - auto-detect separator tab", () => {
     const csv = `CODE\tPARENT\tLABEL\nROOT\t\tRacine\nA\tROOT\tEnfant A`;
     const p = parseStructureText(csv);
     eq(p.summary.total_nodes, 2);
 });
 
-test("parseStructureText · sans header tombe sur ordre positionnel", () => {
-    // Pas de header · ordre level/code/parent/label
+test("parseStructureText - sans header tombe sur ordre positionnel", () => {
+    // Pas de header - ordre level/code/parent/label
     const csv = `POLE;MYPOLE;;Un pole
 UM;4001;MYPOLE;Une UM`;
     const p = parseStructureText(csv);
     ok(p.summary.total_nodes >= 1);
 });
 
-test("parseStructureText · dedup sur code duplique", () => {
+test("parseStructureText - dedup sur code duplique", () => {
     const csv = `CODE;PARENT;LABEL
 A;;Root
 A;;Duplicate`;
@@ -577,19 +577,19 @@ A;;Duplicate`;
     eq(p.summary.total_nodes, 1);
 });
 
-test("parseStructureText · vide retourne arbre vide", () => {
+test("parseStructureText - vide retourne arbre vide", () => {
     const p = parseStructureText("");
     eq(p.summary.total_nodes, 0);
     eq(p.tree.length, 0);
 });
 
-test("parseStructureText · heuristique UMD depuis le label", () => {
+test("parseStructureText - heuristique UMD depuis le label", () => {
     const csv = `CODE;PARENT;LABEL\nUMD_HC;;UMD Henri Colin`;
     const p = parseStructureText(csv);
     eq(p.tree[0].sector_type, "D");
 });
 
-test("scénario métier complet · 3 UM sans activité sur 6", () => {
+test("scénario métier complet - 3 UM sans activité sur 6", () => {
     const leaves = collectUmLeaves(FIXTURE_TREE);
     const rpsLines = [
         ...Array.from({ length: 15 }, () => forgeRpsLine("4001")),
@@ -616,6 +616,6 @@ Promise.allSettled(pendingTests).then(() => {
         const icon = r.ok ? "\x1b[32m✔\x1b[0m" : "\x1b[31m✘\x1b[0m";
         console.log(`  ${icon} ${r.name}${r.ok ? "" : "\n      " + r.err}`);
     });
-    console.log(`\n${pass}/${pass + fail} tests verts${fail > 0 ? ` · \x1b[31m${fail} échec(s)\x1b[0m` : " · \x1b[32mtout OK\x1b[0m"}\n`);
+    console.log(`\n${pass}/${pass + fail} tests verts${fail > 0 ? ` - \x1b[31m${fail} échec(s)\x1b[0m` : " - \x1b[32mtout OK\x1b[0m"}\n`);
     process.exit(fail > 0 ? 1 : 0);
 });

@@ -1,0 +1,87 @@
+{
+ "type": "regression",
+ "algorithme": "XGBoost (300 arbres, profondeur 5)",
+ "donnees": "20 000 séjours synthétiques (aucune donnée réelle)",
+ "erreur_absolue_moyenne_jours": 11.1,
+ "coefficient_determination": 0.404,
+ "variables": [
+  "groupe diagnostique",
+  "âge",
+  "mode légal de soins",
+  "secteur",
+  "nombre d'actes",
+  "réadmission"
+ ],
+ "par_groupe": [
+  {
+   "groupe": "F0",
+   "libelle": "Troubles mentaux organiques",
+   "duree_moyenne_jours": 51.8,
+   "ecart_type_jours": 19.0,
+   "sejours_synthetiques": 2010
+  },
+  {
+   "groupe": "F1",
+   "libelle": "Troubles liés aux substances psychoactives",
+   "duree_moyenne_jours": 27.3,
+   "ecart_type_jours": 11.8,
+   "sejours_synthetiques": 2037
+  },
+  {
+   "groupe": "F2",
+   "libelle": "Schizophrénie et troubles délirants",
+   "duree_moyenne_jours": 58.6,
+   "ecart_type_jours": 22.8,
+   "sejours_synthetiques": 2032
+  },
+  {
+   "groupe": "F3",
+   "libelle": "Troubles de l'humeur",
+   "duree_moyenne_jours": 40.7,
+   "ecart_type_jours": 15.1,
+   "sejours_synthetiques": 1997
+  },
+  {
+   "groupe": "F4",
+   "libelle": "Troubles névrotiques et anxieux",
+   "duree_moyenne_jours": 24.1,
+   "ecart_type_jours": 10.2,
+   "sejours_synthetiques": 1996
+  },
+  {
+   "groupe": "F5",
+   "libelle": "Syndromes comportementaux",
+   "duree_moyenne_jours": 33.0,
+   "ecart_type_jours": 13.6,
+   "sejours_synthetiques": 2051
+  },
+  {
+   "groupe": "F6",
+   "libelle": "Troubles de la personnalité",
+   "duree_moyenne_jours": 30.2,
+   "ecart_type_jours": 12.6,
+   "sejours_synthetiques": 1971
+  },
+  {
+   "groupe": "F7",
+   "libelle": "Retard mental",
+   "duree_moyenne_jours": 44.0,
+   "ecart_type_jours": 17.0,
+   "sejours_synthetiques": 2038
+  },
+  {
+   "groupe": "F8",
+   "libelle": "Troubles du développement psychologique",
+   "duree_moyenne_jours": 36.1,
+   "ecart_type_jours": 14.2,
+   "sejours_synthetiques": 1889
+  },
+  {
+   "groupe": "F9",
+   "libelle": "Troubles apparaissant dans l'enfance",
+   "duree_moyenne_jours": 28.8,
+   "ecart_type_jours": 11.1,
+   "sejours_synthetiques": 1979
+  }
+ ]
+}
