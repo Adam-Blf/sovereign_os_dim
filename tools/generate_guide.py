@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM - Generateur de guide PDF complet (fpdf2)
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V35.0 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.2 - Station DIM GHT Sud Paris
 #
 #  Description -
 #    Produit `Sovereign_OS_DIM_Guide.pdf` a la racine du depot - un seul
@@ -1894,8 +1894,8 @@ FEATURES = [
             "Posture sécurité de l'application ,\n\n"
             "- Aucune donnée envoyee sur internet , traitement 100 % "
             "local sur le poste DIM.\n"
-            "- Aucun accès réseau extérieur , l'application fonctionne "
-            "entierement hors-ligne, y compris le pont PHP.\n"
+            "- Aucun accès réseau , l'application fonctionne entierement "
+            "hors-ligne, sans serveur ni port en écoute (pont in-process).\n"
             "- Toutes les données patient restent sur le poste DIM, "
             "jamais dans le nuage informatique ni sur un serveur partagé.\n\n"
             "Conformite RGPD ,\n"

@@ -138,10 +138,7 @@ python -m bandit -r backend/ -ll
 # CVE audit sur les dépendances
 pip-audit -r requirements.txt
 
-# Smoke test backend sur un vrai lot ATIH (nécessite D:/Adam/ monté)
-python scripts/analyze_real_data.py
-
-# Rebuild .exe C# (nécessite .NET 8 SDK, source dans dev/hospitalier/SovereignOS.DIM.CSharp)
+# Rebuild .exe C# (portage optionnel, nécessite .NET 8 SDK)
 dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 ```
 

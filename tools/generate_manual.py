@@ -6,7 +6,7 @@
 #
 #  Description:
 #    Script utilitaire qui produit `docs/Sovereign_OS_DIM_Manuel.pdf`, le
-#    mode d'emploi officiel du bridge PHP et de la visualisation Excel.
+#    mode d'emploi officiel de la station (application 100 % locale).
 #    Utilise fpdf2 (fork moderne de PyFPDF - licence LGPL), installable via
 #    `pip install fpdf2>=2.8`.
 #
@@ -14,7 +14,7 @@
 #    python tools/generate_manual.py [--output chemin/manuel.pdf]
 #
 #  Pourquoi un générateur plutôt qu'un PDF commité ?
-#    - Le PDF se régénère à chaque évolution du bridge (endpoints, options)
+#    - Le PDF se régénère à chaque évolution de l'application
 #    - Pas de binaire obèse à maintenir dans l'historique git
 #    - Le contenu reste la source de vérité dans ce fichier
 # ══════════════════════════════════════════════════════════════════════════════
@@ -310,28 +310,26 @@ SECTIONS = [
         [
             (
                 "p",
-                "Sovereign OS DIM peut etre integre au systeme d'information "
-                "hospitalier existant (SIH) via un module de connexion "
-                "securise. Cette section concerne uniquement les equipes "
-                "techniques de la DSI - les TIM n'ont pas a s'en preoccuper.",
+                "Sovereign OS DIM est une application 100 % locale : elle "
+                "n'ouvre aucun serveur, aucun port et n'emet aucun flux "
+                "reseau. Cette section resume ce que la DSI doit savoir - "
+                "les TIM n'ont pas a s'en preoccuper.",
             ),
-            ("h", "Cas d'usage"),
+            ("h", "Ce que cela garantit"),
             (
                 "p",
-                "L'integration DSI permet a une application PHP existante "
-                "(portail intranet, outil de reporting) d'interroger "
-                "directement Sovereign OS DIM pour obtenir les donnees PMSI "
-                "traitees, sans que le TIM ait a exporter manuellement.",
+                "Les donnees PMSI traitees restent sur le poste de travail. "
+                "L'interface et le moteur metier s'executent dans le meme "
+                "processus (pont natif in-process), il n'existe donc aucune "
+                "surface reseau a securiser ni a superviser. Les exports "
+                "(CSV, PDF) sont declenches manuellement par le TIM.",
             ),
-            ("h", "Mise en oeuvre"),
+            ("h", "Contact"),
             (
                 "p",
-                "La configuration technique (URL, cle d'acces, parametres "
-                "reseau) est documentee dans la notice d'integration "
-                "disponible aupres du support : "
-                "adam.beloucif@psysudparis.fr. "
-                "La DSI ne doit pas modifier les fichiers de configuration "
-                "sans accord prealable avec l'editeur.",
+                "Documentation technique complete dans le guide developpeur "
+                "et le dossier de conformite DSI (dossier docs/ du projet). "
+                "Support : adam.beloucif@psysudparis.fr.",
             ),
         ],
     ),
@@ -398,15 +396,15 @@ def build_pdf(output_path: str) -> str:
     pdf.cell(0, 12, "Sovereign OS DIM V34.0", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Montserrat", "", 13)
     pdf.set_text_color(71, 85, 105)
-    pdf.cell(0, 8, "Bridge PHP + Visualisation Excel multi-fichiers", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 8, "Application 100 % locale - information DSI", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(6)
     pdf.set_font("Montserrat", "I", 10)
     pdf.set_text_color(100, 116, 139)
     pdf.multi_cell(
         0,
         6,
-        "Ce document decrit l'architecture du bridge HTTP, l'installation, "
-        "l'utilisation du client PHP et la visualisation graphique d'un ou "
+        "Ce document decrit l'architecture 100 % locale, l'installation, "
+        "l'utilisation quotidienne et la visualisation graphique d'un ou "
         "plusieurs classeurs Excel.",
     )
     pdf.ln(10)

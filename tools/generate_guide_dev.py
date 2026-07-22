@@ -2,12 +2,12 @@
 #  SOVEREIGN OS DIM - Générateur du guide développeur PDF (fpdf2)
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V36.0 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.2 - Station DIM GHT Sud Paris
 #
 #  Description -
-#    Produit `Sovereign_OS_DIM_Guide_Dev.pdf` à la racine du dépôt.
+#    Produit `docs/Sovereign_OS_DIM_Guide_Dev.pdf`.
 #    Ce guide est destiné aux développeurs et aux équipes DSI.
-#    Il documente l'architecture, le bridge HTTP, le module ML,
+#    Il documente l'architecture, le pont local in-process, le module ML,
 #    la sécurité, la CI/CD et les conventions de contribution.
 #
 #  Usage -
@@ -264,9 +264,9 @@ SECTIONS = [
         "category": "Stack",
         "content": lambda pdf: _render_stack(pdf),
     },
-    # ══════ 3 - BRIDGE HTTP & PHP ══════
+    # ══════ 3 - PONT LOCAL IN-PROCESS ══════
     {
-        "title": "Bridge HTTP et intégration PHP",
+        "title": "Pont local in-process (pywebview)",
         "category": "API",
         "content": lambda pdf: _render_bridge(pdf),
     },
@@ -307,22 +307,23 @@ def _render_architecture(pdf):
     _subheading(pdf, "Vue d'ensemble")
     _body_text(
         pdf,
-        "Sovereign OS DIM est un monolithe desktop PyInstaller. "
-        "Le runtime desktop C# (.NET 8 + WebView2) héberge une fenêtre "
-        "native Windows dans laquelle tourne un frontend HTML/CSS/JS. "
-        "Le backend Python est lancé en sous-processus et exposé via "
-        "un bridge HTTP local (127.0.0.1 uniquement).",
+        "Sovereign OS DIM est un monolithe desktop PyInstaller, 100% local. "
+        "L'hôte (pywebview en Python, ou C# .NET 8 + WebView2 pour le "
+        "portage) affiche un frontend HTML/CSS/JS dans une fenêtre native. "
+        "Le backend Python s'exécute dans le même processus et n'ouvre "
+        "aucun serveur : le frontend l'appelle via le pont in-process "
+        "de pywebview (js_api). Aucune socket, aucun port, aucun flux réseau.",
     )
 
     _subheading(pdf, "Couches")
     rows = [
         ("Couche", "Technologie", "Rôle"),
-        ("Desktop shell", "C# .NET 8 + WebView2", "Fenêtre native, IPC, packaging"),
-        ("Frontend", "HTML + Tailwind + Chart.js", "UI rendue dans WebView2"),
-        ("Backend API", "Python 3.12 + FastAPI/aiohttp", "Traitement PMSI, bridge HTTP"),
-        ("Données", "SQLite (Microsoft.Data.Sqlite)", "MPI persisté, résolutions IDV"),
+        ("Hôte desktop", "pywebview (ou C# .NET 8 + WebView2)", "Fenêtre native, pont js_api, packaging"),
+        ("Frontend", "HTML + Tailwind + Chart.js (vendorisés)", "UI rendue dans WebView2"),
+        ("Pont local", "backend/interfaces/api.py + _sentinel.py", "Appels in-process, aucun serveur"),
+        ("Données", "SQLite locale", "MPI persisté, résolutions IDV"),
         ("ML", "XGBoost, LightGBM, scikit-learn", "Assistance TIM (3 modèles)"),
-        ("PDF", "fpdf2 >= 2.8 (LGPL)", "Génération guides + exports"),
+        ("PDF", "fpdf2 >= 2.8 (LGPL) + Montserrat", "Génération guides + exports"),
     ]
     for i, row in enumerate(rows):
         _table_row(pdf, row, [45, 65, 70], header=(i == 0))
@@ -332,18 +333,19 @@ def _render_architecture(pdf):
     _body_text(
         pdf,
         "1. L'utilisateur interagit avec le frontend (WebView2).\n"
-        "2. Les requêtes passent par le bridge HTTP (127.0.0.1:8765) "
-        "avec un token Bearer (env var SOVEREIGN_BRIDGE_TOKEN).\n"
+        "2. Le JavaScript appelle window.pywebview.api.<methode>() : "
+        "l'appel traverse le pont natif, sans HTTP ni socket.\n"
         "3. Le backend Python traite les fichiers ATIH en parallèle "
         "(ThreadPoolExecutor, max 8 workers) et écrit en SQLite.\n"
-        "4. Les résultats sont renvoyés en JSON au frontend.",
+        "4. Les résultats reviennent en dictionnaires JSON-sérialisables.",
     )
 
     _alert(
         pdf,
         "warn",
-        "Le bridge HTTP ne doit jamais écouter sur 0.0.0.0 - "
-        "127.0.0.1 uniquement. Toute modification expose les données patient.",
+        "Aucune couche réseau ne doit être réintroduite : le test "
+        "tests/test_no_network.py échoue si un serveur HTTP (Flask, "
+        "FastAPI, uvicorn) réapparaît dans l'application.",
     )
 
 
@@ -367,7 +369,7 @@ def _render_stack(pdf):
     _subheading(pdf, "Frontend")
     _body_text(
         pdf,
-        "HTML/CSS vanille + Tailwind CSS (CDN embarqué). Chart.js "
+        "HTML/CSS vanille + Tailwind CSS et Chart.js vendorisés en local (frontend/vendor, aucun CDN). Chart.js "
         "pour les graphiques. Aucun framework JS (React/Vue) - "
         "volontairement léger pour rester embarquable dans WebView2 "
         "sans build step. ES modules natifs (import/export).",
@@ -376,11 +378,11 @@ def _render_stack(pdf):
     _subheading(pdf, "C# Desktop Shell")
     _body_text(
         pdf,
-        "Microsoft.Web.WebView2 pour l'affichage HTML. "
-        "Microsoft.Data.Sqlite pour l'accès direct au MPI depuis C#. "
-        "WinForms comme conteneur de fenêtre. Le shell C# lance le "
-        "backend Python via Process.Start() et détecte son port via "
-        "stdout.",
+        "Portage optionnel de l'hôte : Microsoft.Web.WebView2 pour "
+        "l'affichage HTML, Microsoft.Data.Sqlite pour l'accès au MPI, "
+        "WinForms comme conteneur de fenêtre. Le shell C# charge le "
+        "même frontend et expose un pont natif équivalent au js_api "
+        "de pywebview, toujours sans serveur ni socket.",
     )
 
     _subheading(pdf, "Installation de l'environnement de développement")
@@ -396,7 +398,7 @@ def _render_stack(pdf):
             "# Lint + sécurité",
             "ruff check .",
             "bandit -r backend/",
-            "mypy backend/",
+            "python -m pytest tests/test_no_network.py",
             "",
             "# Build .exe",
             "python build.py",
@@ -405,77 +407,55 @@ def _render_stack(pdf):
 
 
 def _render_bridge(pdf):
-    _subheading(pdf, "Démarrage du bridge")
+    _subheading(pdf, "Principe")
     _body_text(
         pdf,
-        "Le bridge HTTP est un serveur FastAPI/aiohttp écoutant "
-        "exclusivement sur 127.0.0.1. Il est protégé par un token "
-        "Bearer passé en variable d'environnement. Le port par "
-        "défaut est 8765.",
+        "Le frontend n'utilise aucun serveur : chaque méthode publique de "
+        "la classe Api (backend/interfaces/api.py) est exposée au "
+        "JavaScript par pywebview sous window.pywebview.api.<methode>(). "
+        "La logique des écrans Sentinel v2 (cockpit, ML, audit, CeSPA, "
+        "diff, heatmap, twin, workflow) vit dans "
+        "backend/interfaces/_sentinel.py et partage le même "
+        "DataProcessor que le reste de l'application.",
     )
     _code_block(
         pdf,
         [
-            "# Démarrage minimal",
-            "SOVEREIGN_BRIDGE_TOKEN=secret python bridge.py --port 8765",
+            "# Côté JavaScript (frontend/js/sentinel-helpers.js)",
+            "const r = await window.pywebview.api.get_cockpit();",
             "",
-            "# Côté PHP (client)",
-            "export SOVEREIGN_BRIDGE_URL=http://127.0.0.1:8765",
-            "export SOVEREIGN_BRIDGE_TOKEN=secret",
-            "php -S 127.0.0.1:8080 -t php",
+            "# Côté Python (backend/interfaces/api.py)",
+            "def get_cockpit(self):",
+            "    return _sentinel.cockpit(self.processor)",
         ],
     )
 
-    _subheading(pdf, "Endpoints disponibles")
+    _subheading(pdf, "Méthodes du pont (écrans Sentinel v2)")
     rows = [
-        ("Méthode", "Route", "Auth", "Description"),
-        ("GET", "/health", "Non", "Ping - retourne {status: ok}"),
-        ("GET", "/mpi/stats", "Oui", "KPI Dashboard (fichiers, IPP, collisions)"),
-        ("POST", "/mpi/process", "Oui", "Lance traitement d'un dossier ATIH"),
-        ("GET", "/mpi/collisions", "Oui", "Liste des collisions IDV"),
-        ("POST", "/mpi/resolve", "Oui", "Résout une collision (IPP + DDN pivot)"),
-        ("GET", "/export/csv", "Oui", "Export MPI CSV normalisé"),
-        ("GET", "/export/txt/{id}", "Oui", "Export .txt sanitized d'un fichier ATIH"),
+        ("Méthode", "Écran", "Description"),
+        ("get_health()", "Health", "État des composants et modèles ML"),
+        ("get_cockpit()", "Cockpit", "KPI réels lus du MPI courant"),
+        ("ml_predict_format(p)", "ML", "Classification format ATIH (top 3)"),
+        ("ml_predict_collision_risk(p)", "ML", "Score de risque de collision IDV"),
+        ("ars_score_lot(p)", "Sentinel ARS", "Score qualité d'un lot avant envoi"),
+        ("get_audit_events(n)", "Audit", "Journal chaîné SHA-256 (art. 30 RGPD)"),
+        ("cespa_check()", "CeSPA", "Règles réforme PSY juillet 2025"),
+        ("get_heatmap_sectors()", "Heatmap", "File active par code postal"),
+        ("workflow_pending(s, n)", "Workflow", "Pipeline TIM, MIM, préflight, ARS"),
     ]
     for i, row in enumerate(rows):
-        _table_row(pdf, row, [20, 52, 18, 90], header=(i == 0))
+        _table_row(pdf, row, [58, 32, 90], header=(i == 0))
     pdf.ln(4)
 
-    _subheading(pdf, "Authentification")
+    _subheading(pdf, "Sécurité du pont")
     _body_text(
         pdf,
-        "Toutes les routes sauf /health nécessitent un header "
-        "Authorization: Bearer <TOKEN>. Le token est comparé à "
-        "SOVEREIGN_BRIDGE_TOKEN via hmac.compare_digest() pour "
-        "éviter les timing attacks. Retourne HTTP 401 si absent "
-        "ou invalide.",
-    )
-
-    _subheading(pdf, "CORS")
-    _body_text(
-        pdf,
-        "Origine autorisée - null (WebView2) et http://127.0.0.1 "
-        "uniquement. Toute autre origine est bloquée par les "
-        "headers CORS restrictifs. Méthodes autorisées - "
-        "GET, POST, OPTIONS.",
-    )
-
-    _subheading(pdf, "Exemple PHP")
-    _code_block(
-        pdf,
-        [
-            "<?php",
-            "$url   = getenv('SOVEREIGN_BRIDGE_URL');",
-            "$token = getenv('SOVEREIGN_BRIDGE_TOKEN');",
-            '$ch    = curl_init("$url/mpi/stats");',
-            "curl_setopt($ch, CURLOPT_HTTPHEADER, [",
-            '    "Authorization: Bearer $token",',
-            '    "Accept: application/json",',
-            "]);",
-            "curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);",
-            "$resp = json_decode(curl_exec($ch), true);",
-            "echo $resp['ipp_unique'];  // ex. 4821",
-        ],
+        "Les appels restent à l'intérieur du processus : il n'existe ni "
+        "port à protéger, ni jeton à gérer, ni CORS à configurer. Un "
+        "autre processus du poste ne peut pas interroger le backend, "
+        "car rien n'écoute. La surface d'attaque réseau est nulle par "
+        "conception, et le test tests/test_no_network.py le garantit "
+        "en intégration continue.",
     )
 
 
@@ -568,19 +548,11 @@ def _render_security(pdf):
     _subheading(pdf, "Périmètre réseau")
     _body_text(
         pdf,
-        "Le bridge HTTP écoute exclusivement sur 127.0.0.1. "
-        "Toute tentative de bind sur 0.0.0.0 est bloquée par "
-        "validation explicite au démarrage. Aucun port n'est "
-        "ouvert vers l'extérieur du poste.",
-    )
-
-    _subheading(pdf, "Authentification bridge")
-    _body_text(
-        pdf,
-        "Token Bearer via SOVEREIGN_BRIDGE_TOKEN (variable "
-        "d'environnement uniquement, jamais hardcodé). "
-        "Comparaison via hmac.compare_digest() (constant time). "
-        "HTTP 401 retourné sans détail sur l'erreur.",
+        "Aucun. L'application n'ouvre aucune socket et n'expose aucun "
+        "service HTTP, même sur 127.0.0.1. La communication frontend/"
+        "backend est in-process (pont pywebview). Le test "
+        "tests/test_no_network.py échoue en CI si une couche serveur "
+        "(Flask, FastAPI, uvicorn) est réintroduite.",
     )
 
     _subheading(pdf, "Validation des chemins")
@@ -596,20 +568,21 @@ def _render_security(pdf):
     _subheading(pdf, "Données patient (RGPD art. 9)")
     _body_text(
         pdf,
-        "Les IPP et DDN sont traités uniquement en mémoire RAM "
-        "pendant le traitement de lot. Après traitement, seule "
-        "la base SQLite locale contient les données (chiffrée "
-        "au repos via SQLCipher, clé dérivée du token). "
-        "Aucune télémétrie, aucun envoi réseau, 100 % local.",
+        "Les IPP et DDN sont traités en mémoire pendant le traitement "
+        "de lot. Seule la base SQLite locale du profil utilisateur "
+        "conserve le Master Patient Index. Aucune télémétrie, aucun "
+        "envoi réseau, 100 % local.",
     )
 
     _subheading(pdf, "Audit log art. 30 RGPD")
     _body_text(
         pdf,
-        "Toute résolution IDV (qui, quand, IPP, DDN retenue, "
-        "DDN rejetées) est journalisée dans audit.log (append-only). "
-        "Le log est lisible par le DPO et l'ARS sur demande. "
-        "Rétention 5 ans minimum (instruction DGOS/PF2/2020/143).",
+        "Chaque action sensible (résolution IDV, prédiction ML, scoring "
+        "de lot, workflow) est journalisée dans une table SQLite "
+        "append-only dont les entrées sont chaînées par SHA-256 "
+        "(backend/quality/audit.py). L'intégrité de la chaîne est "
+        "vérifiable via audit_verify(). Le journal est lisible par le "
+        "DPO et l'ARS sur demande.",
     )
 
     _subheading(pdf, "Anonymisation exports recherche")
@@ -621,18 +594,19 @@ def _render_security(pdf):
         "les exports pseudonymisés. Conforme MR-007.",
     )
 
-    _subheading(pdf, "Secrets et CI")
+    _subheading(pdf, "Variables d'environnement et CI")
     _code_block(
         pdf,
         [
-            "# Variables d'environnement requises (jamais committées)",
-            "SOVEREIGN_BRIDGE_TOKEN=<token>    # bridge auth",
-            "SQLCIPHER_KEY=<clé>               # chiffrement SQLite",
+            "# Variables d'environnement optionnelles (jamais committées)",
+            "SOVEREIGN_OPERATOR=<nom>   # opérateur inscrit dans l'audit",
+            "OLLAMA_BASE=<url>          # CimSuggester intranet (défaut: vide = off)",
+            "OLLAMA_MODEL=<modele>      # modèle Ollama (défaut: llama3.2:8b)",
             "",
             "# CI scan sécurité (GitHub Actions)",
-            "bandit -r backend/ -ll            # vulnérabilités Python",
-            "ruff check .                      # linting",
-            "mypy backend/                     # typage statique",
+            "bandit -r backend/ -ll     # vulnérabilités Python (bloquant)",
+            "pip-audit -r requirements.txt  # CVE dépendances",
+            "ruff check .               # linting",
         ],
     )
 
@@ -644,11 +618,11 @@ def _render_cicd(pdf):
     )
     rows = [
         ("Étape", "Commande", "Bloquant"),
-        ("Lint", "ruff check .", "Oui"),
-        ("Typage", "mypy backend/", "Oui"),
+        ("Tests Python", "pytest tests/ -v --tb=short", "Oui"),
         ("Sécurité", "bandit -r backend/ -ll", "Oui"),
-        ("Tests", "pytest tests/ -v --tb=short", "Oui"),
-        ("Build", "python build.py --check", "Non (avertissement)"),
+        ("Tests frontend", "node tests/frontend/test_activity_analysis.mjs", "Oui"),
+        ("CVE dépendances", "pip-audit -r requirements.txt", "Non (veille)"),
+        ("Lint + format", "ruff check / ruff format --check", "Non (veille)"),
     ]
     for i, row in enumerate(rows):
         _table_row(pdf, row, [30, 90, 30], header=(i == 0))
@@ -659,12 +633,12 @@ def _render_cicd(pdf):
         pdf,
         "Format - <type>(<scope>): <description>\n"
         "Types - feat, fix, docs, refactor, test, chore.\n"
-        "Scope - backend, frontend, ml, bridge, guide, ci.\n"
+        "Scope - backend, frontend, ml, guide, ci.\n"
         "Langue - anglais impératif, minuscules.\n"
         "Tirets longs (-) interdits dans les messages de commit.\n"
         "Exemples valides -\n"
         "  feat(ml): add RPS P15 format to ATIH_SPECS\n"
-        "  fix(bridge): prevent path traversal in /export/txt",
+        "  fix(pmsi): prevent path traversal in export paths",
     )
 
     _subheading(pdf, "Pull Requests")
@@ -771,14 +745,15 @@ def _render_contrib(pdf):
     _subheading(pdf, "Structure du dépôt")
     rows = [
         ("Dossier / Fichier", "Contenu"),
-        ("backend/", "Python : traitement PMSI, bridge HTTP, ML"),
+        ("backend/pmsi/", "Moteur ATIH : scan, MPI, exports"),
+        ("backend/orgchart/", "Structure Pôle/Secteur/UM, organigrammes"),
+        ("backend/quality/", "Audit chaîné SHA-256, workflow, préflight"),
+        ("backend/interfaces/", "Pont pywebview (api.py, _sentinel.py)"),
         ("backend/ml/", "Module ML : train.py, synthetic.py, modèles"),
-        ("frontend/", "HTML + Tailwind + Chart.js (toutes les vues)"),
-        ("php/", "Client PHP du bridge HTTP"),
-        ("tools/", "Générateurs PDF (guide, guide dev, manuel)"),
-        ("tests/", "Tests pytest"),
-        ("docs/", "Screenshots, PDFs générés"),
-        ("bridge.py", "Entrée du bridge HTTP (main Python)"),
+        ("frontend/", "HTML + Tailwind + Chart.js vendorisés"),
+        ("tools/", "Générateurs PDF, moulinette FICHCOMP, polices"),
+        ("tests/", "Tests pytest (dont test_no_network.py)"),
+        ("docs/", "PDF livrables, dossier DSI, recherche ATIH"),
         ("main.py", "Entrée de l'application desktop"),
         ("build.py", "Script PyInstaller (packaging .exe)"),
     ]
@@ -808,7 +783,7 @@ def _render_contrib(pdf):
             "pytest tests/ -v",
             "",
             "# Tests d'un module spécifique",
-            "pytest tests/test_bridge_security.py -v",
+            "pytest tests/test_no_network.py -v",
             "",
             "# Avec couverture",
             "pytest tests/ --cov=backend --cov-report=html",
@@ -906,7 +881,7 @@ def build_pdf(output_path: str) -> str:
         5,
         "Ce guide est destiné aux développeurs, aux équipes DSI et aux "
         "contributeurs du projet. Il documente l'architecture, la stack, "
-        "le bridge HTTP, le module ML, la sécurité et la CI/CD. "
+        "le pont local in-process, le module ML, la sécurité et la CI/CD. "
         "Pour le guide d'utilisation quotidienne (TIM, médecin DIM, "
         "chef de pôle), voir Sovereign_OS_DIM_Guide.pdf.",
         align="L",
@@ -1035,7 +1010,7 @@ def main() -> None:
                 ("Sommaire", 1),
                 ("1. Architecture générale", 2),
                 ("2. Stack technique et dépendances", 3),
-                ("3. Bridge HTTP et intégration PHP", 4),
+                ("3. Pont local in-process (pywebview)", 4),
                 ("4. Module ML - configuration et entraînement", 6),
                 ("5. Sécurité et conformité RGPD", 8),
                 ("6. CI/CD - pipeline et qualité", 9),
