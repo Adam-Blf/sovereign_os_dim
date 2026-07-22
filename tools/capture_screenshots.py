@@ -205,8 +205,107 @@ MOCK_RESPONSES = {
             }
         ],
     },
-    "/health": {"status": "ok", "version": "35.0"},
+    "/health": {
+        "status": "ok",
+        "version": "37.2",
+        "ml_models_loaded": {"format": True, "collision": True, "ddn": True},
+        "audit_events": 42,
+    },
     "/api/logs": [],
+    # ── Ecrans Sentinel v2 (pont local, stubbe pour la capture) ────────────
+    "/api/v2/cockpit": {
+        "month": "2026-07",
+        "has_data": True,
+        "kpis": [
+            {"label": "IPP uniques (MPI)", "value": "4 821", "unit": "", "sub": "132 résolus - 15 en attente", "accent": "teal"},
+            {"label": "Collisions actives", "value": "147", "unit": "", "sub": "sur 4 821 IPP", "accent": "warning"},
+            {"label": "Taux résolution", "value": "89.8", "unit": "%", "sub": "Auto + manuel", "accent": "warning"},
+            {"label": "Formats actifs", "value": "23", "unit": "", "sub": "ATIH supportés", "accent": "navy"},
+        ],
+        "file_active_history": [1204, 1387, 1512, 1489, 1603, 1521, 1205],
+        "sector_alerts": [],
+    },
+    "/api/v2/health-monitor": {
+        "uptime_hours": 6,
+        "ram_mb": 0,
+        "requests_per_min": 0,
+        "errors_24h": 0,
+        "checks": [
+            {"label": "MPI - IPP uniques", "ok": True, "value": "4 821"},
+            {"label": "ML XGBoost - format_detector", "ok": True, "value": "chargé"},
+            {"label": "ML - collision_risk", "ok": True, "value": "chargé"},
+            {"label": "ML - ddn_validity", "ok": True, "value": "chargé"},
+            {"label": "Audit log RGPD art. 30", "ok": True, "value": "42 événements"},
+            {"label": "Pont local in-process", "ok": True, "value": "aucun serveur réseau"},
+            {"label": "Intégrité chaîne audit", "ok": True, "value": "42 entrées - OK"},
+        ],
+    },
+    "/api/v2/ars/score-lot": {
+        "lot_name": "RPS_202409.txt",
+        "score": 87,
+        "risk": "low",
+        "issues_count": 3,
+        "has_ml": True,
+        "breakdown": [
+            {"check": "Cohérence format ATIH", "ok": True, "value": "96 %"},
+            {"check": "DDN valides", "ok": True, "value": "99 %"},
+            {"check": "Échantillon analysé", "ok": True, "value": "500 lignes"},
+        ],
+    },
+    "/api/v2/cespa/check": {
+        "has_data": True,
+        "rps_lines": 13787,
+        "raa_lines": 36797,
+        "rules": [
+            {"code": "R-CSP-01", "label": "Code structure CeSPA présent dans champ 23 RPS", "ok": 13787, "total": 13787, "required": True},
+            {"code": "R-CSP-02", "label": "Forfait CATTG facturable et acte tracé", "ok": 36797, "total": 36797, "required": True},
+            {"code": "R-CSP-04", "label": "Médecin responsable rattaché à structure CeSPA", "ok": 13787, "total": 13787, "required": True},
+            {"code": "R-CSP-09", "label": "Patient adulte (18 ans ou plus à l'admission)", "ok": 13787, "total": 13787, "required": True},
+        ],
+    },
+    "/api/v2/diff": {
+        "has_data": True,
+        "rows": [
+            {"indicator": "RPS", "current": 13787, "previous": 13102, "delta_abs": 685, "delta_pct": 5.2, "state": "up"},
+            {"indicator": "RAA", "current": 36797, "previous": 37514, "delta_abs": -717, "delta_pct": -1.9, "state": "down"},
+            {"indicator": "FICHSUP-PSY", "current": 218, "previous": 218, "delta_abs": 0, "delta_pct": 0.0, "state": "stable"},
+        ],
+    },
+    "/api/v2/heatmap/sectors": {
+        "has_data": True,
+        "sectors": [
+            {"code": "94800", "file_active": 812, "intensity": "very_high"},
+            {"code": "94270", "file_active": 590, "intensity": "high"},
+            {"code": "94250", "file_active": 402, "intensity": "medium"},
+            {"code": "94110", "file_active": 236, "intensity": "low"},
+        ],
+    },
+    "/api/v2/twin/scenarios": {
+        "has_data": True,
+        "ipp_base": 4821,
+        "scenarios": [
+            {"label": "Combler 5 % de DP manquants", "impact_eur": 248041, "confidence": 0.91},
+            {"label": "Améliorer chaînage de 1 point", "impact_eur": 70868, "confidence": 0.74},
+            {"label": "Préflight DRUIDES sur 100 % des lots", "impact_eur": 35434, "confidence": 0.88},
+        ],
+    },
+    "/api/v2/audit/events": [
+        {"ts": "2026-07-22T10:41:03", "who": "DIM_OPERATOR", "action": "ARS_SCORE_LOT", "target": "RPS_202409.txt", "sha256": "a" * 64},
+        {"ts": "2026-07-22T10:38:51", "who": "DIM_OPERATOR", "action": "ML_PREDICT_FORMAT", "target": "RPS", "sha256": "b" * 64},
+        {"ts": "2026-07-22T10:35:12", "who": "DIM_OPERATOR", "action": "WORKFLOW_ADD", "target": "item#12 IPP_042A7", "sha256": "c" * 64},
+    ],
+    "/api/v2/audit/verify": {"valid": True, "total_events": 42, "broken_at_id": None},
+    "/api/v2/idv/stats": {"total_ipp": 4821, "collisions": 147, "pending": 15, "resolved": 132},
+    "/api/v2/pivot": {"has_data": True, "rows": []},
+    "/api/v2/ml/cim-suggest": {"suggestions": [], "provider": "disabled"},
+    "/api/v2/workflow/pending": {
+        "counts": {"tim": 4, "mim": 2, "preflight": 1, "ars": 1, "done": 12},
+        "items": [
+            {"id": 12, "ipp": "IPP_042A7", "label": "DDN divergente à arbitrer", "stage": "tim"},
+            {"id": 11, "ipp": "IPP_019B2", "label": "DP manquant séjour long", "stage": "mim"},
+            {"id": 10, "ipp": "IPP_073C5", "label": "Chaînage à revalider", "stage": "preflight"},
+        ],
+    },
 }
 
 
@@ -310,6 +409,38 @@ def run():
             }
         """)
         page.wait_for_timeout(500)
+
+        # Greffe les methodes Sentinel v2 sur le pont stub (bridge-shim ne
+        # couvre que les methodes coeur). Chaque methode renvoie la reponse
+        # mockee correspondante via fetch, intercepte par context.route.
+        page.evaluate("""
+            () => {
+                const B = 'http://127.0.0.1:8787';
+                const get = (p) => fetch(B + p).then(r => r.json());
+                const api = (window.pywebview = window.pywebview || {}).api =
+                    (window.pywebview.api || {});
+                Object.assign(api, {
+                    get_health: () => get('/health'),
+                    get_cockpit: () => get('/api/v2/cockpit'),
+                    get_health_monitor: () => get('/api/v2/health-monitor'),
+                    ars_score_lot: () => get('/api/v2/ars/score-lot'),
+                    cespa_check: () => get('/api/v2/cespa/check'),
+                    get_diff: () => get('/api/v2/diff'),
+                    get_heatmap_sectors: () => get('/api/v2/heatmap/sectors'),
+                    get_twin_scenarios: () => get('/api/v2/twin/scenarios'),
+                    get_audit_events: () => get('/api/v2/audit/events'),
+                    audit_verify: () => get('/api/v2/audit/verify'),
+                    get_idv_stats: () => get('/api/v2/idv/stats'),
+                    get_pivot: () => get('/api/v2/pivot'),
+                    ml_cim_suggest: () => get('/api/v2/ml/cim-suggest'),
+                    workflow_pending: () => get('/api/v2/workflow/pending'),
+                    ml_predict_format: () => Promise.resolve({format: 'RPS_v14', confidence: 0.97, top3: []}),
+                    ml_predict_collision_risk: () => Promise.resolve({risk: 0.12, level: 'low'}),
+                    ml_predict_ddn_validity: () => Promise.resolve({valid_proba: 0.98, suspect: false}),
+                });
+            }
+        """)
+        page.wait_for_timeout(400)
 
         # Force le theme clair pour des captures lisibles en impression
         page.evaluate("document.documentElement.classList.remove('dark')")
