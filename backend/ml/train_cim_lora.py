@@ -7,10 +7,12 @@ Dépendances lourdes (torch, transformers, peft, datasets, accelerate) :
 voir requirements-train.txt, jamais installées sur poste hôpital ni dans le
 build PyInstaller - uniquement pour l'entraînement sur machine de dev.
 
-Aucun GPU sur cette machine (CPU uniquement) : les hyperparamètres sont
-choisis pour borner le temps d'exécution (max_steps, pas epoch-based), pas
-pour la qualité maximale. Voir docs/documentation_securite_dsi.md et le
-CHANGELOG pour le contexte.
+Detecte automatiquement CUDA (bf16 + batch plus large si disponible, sinon
+repli CPU fp32 + petit batch). Un run CPU 600 steps s'est avere trop lent
+(~178 s/step observe, ~30h) - voir notebooks/train_cim_lora_colab.ipynb pour
+lancer l'entrainement sur un GPU T4 gratuit (Google Colab), quelques minutes
+au lieu d'heures. Le cap max_steps (pas epoch-based) reste le garde-fou
+anti-derapage dans les deux cas.
 
 Usage :
     python -m backend.ml.train_cim_lora                 # run complet (max_steps=600)
@@ -99,10 +101,16 @@ def train(max_steps: int = 600) -> dict:
     examples = load_dataset_examples()
     print(f"[train_cim_lora] {len(examples)} exemples charges depuis {DATASET_PATH.name}")
 
+    has_cuda = torch.cuda.is_available()
+    dtype = torch.bfloat16 if has_cuda else torch.float32
+    batch_size = 8 if has_cuda else 2
+    grad_accum = 2 if has_cuda else 8
+    print(f"[train_cim_lora] accelerateur : {'CUDA (' + torch.cuda.get_device_name(0) + ')' if has_cuda else 'CPU uniquement'}")
+
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, dtype=torch.float32)
+    model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, dtype=dtype)
 
     lora_config = LoraConfig(
         r=8, lora_alpha=16, lora_dropout=0.05, bias="none",
@@ -122,12 +130,13 @@ def train(max_steps: int = 600) -> dict:
     training_args = TrainingArguments(
         output_dir=str(CHECKPOINT_DIR),
         max_steps=max_steps,
-        per_device_train_batch_size=2,
-        gradient_accumulation_steps=8,
+        per_device_train_batch_size=batch_size,
+        gradient_accumulation_steps=grad_accum,
         learning_rate=2e-4,
         lr_scheduler_type="cosine",
         warmup_ratio=0.03,
         gradient_checkpointing=True,
+        bf16=has_cuda,
         optim="adamw_torch",
         dataloader_num_workers=0,
         save_strategy="steps",
@@ -152,6 +161,7 @@ def train(max_steps: int = 600) -> dict:
 
     meta = {
         "base_model": BASE_MODEL,
+        "accelerator": torch.cuda.get_device_name(0) if has_cuda else "CPU",
         "dataset_examples": len(examples),
         "max_steps": max_steps,
         "steps_completed": train_result.global_step,
