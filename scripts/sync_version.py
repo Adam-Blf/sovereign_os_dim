@@ -44,6 +44,8 @@ TARGETS = [
     ("main.py", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
     ("tools/generate_manual.py", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
     ("README.md", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
+    # Badges shields.io du README (les 2 badges version)
+    ("README.md", r"badge/version-V\d+\.\d+", "badge/version-{v}"),
     # Frontend - titre + footer + boot screen
     ("frontend/index.html", r"Sovereign OS V\d+\.\d+", "Sovereign OS {v}"),
     ("frontend/index.html", r"GHT Sud Paris Station V\d+\.\d+", "GHT Sud Paris Station {v}"),

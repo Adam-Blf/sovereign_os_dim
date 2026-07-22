@@ -1,4 +1,4 @@
-![version](https://img.shields.io/badge/version-V37.0-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![ml](https://img.shields.io/badge/ml-XGBoost%20%2B%20LightGBM-FF6F00?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
+![version](https://img.shields.io/badge/version-V37.2-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![ml](https://img.shields.io/badge/ml-XGBoost%20%2B%20LightGBM-FF6F00?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
 
 # Sovereign OS DIM - Station PMSI
 
@@ -9,7 +9,7 @@
 
 [![CI](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml)
 ![Status](https://img.shields.io/badge/status-production-brightgreen)
-![Version](https://img.shields.io/badge/version-V37.0-blue)
+![Version](https://img.shields.io/badge/version-V37.2-blue)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
 ![C#](https://img.shields.io/badge/C%23-.NET_8-239120?logo=c-sharp&logoColor=white)
 ![WebView2](https://img.shields.io/badge/WebView2-Chromium-3C4A5A?logo=microsoftedge&logoColor=white)
