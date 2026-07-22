@@ -25,6 +25,8 @@ _BOOT_TS = time.time()
 OPERATOR = os.environ.get("SOVEREIGN_OPERATOR", "DIM_OPERATOR")
 OLLAMA_BASE = os.environ.get("OLLAMA_BASE", "")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "sovereign-cim")
+CIM_SUGGEST_TOP_K = int(os.environ.get("CIM_SUGGEST_TOP_K", "5"))
+CIM_SUGGEST_MIN_CONFIDENCE = float(os.environ.get("CIM_SUGGEST_MIN_CONFIDENCE", "0.02"))
 API_VERSION = "37.3"
 
 
@@ -229,7 +231,7 @@ def cim_suggest(payload: dict) -> dict:
         from backend.ml.cim_suggester import suggest as _local_suggest
 
         texte = " ".join([*das, *actes, notes]).strip()
-        sugg = _local_suggest(texte)
+        sugg = _local_suggest(texte, top=CIM_SUGGEST_TOP_K, min_confidence=CIM_SUGGEST_MIN_CONFIDENCE)
         if sugg:
             audit.append(OPERATOR, "CIM_SUGGEST_LOCAL", f"das={len(das)}")
         return {"suggestions": sugg, "provider": "local"}

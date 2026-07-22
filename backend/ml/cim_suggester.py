@@ -110,8 +110,13 @@ def train() -> None:
 _PIPE = None
 
 
-def suggest(text: str, top: int = 5) -> list[dict]:
-    """Top N codes suggérés pour un libellé clinique libre."""
+def suggest(text: str, top: int = 5, min_confidence: float = 0.02) -> list[dict]:
+    """Top N codes suggérés pour un libellé clinique libre.
+
+    `top` et `min_confidence` sont pilotables en production via les
+    variables d'environnement CIM_SUGGEST_TOP_K / CIM_SUGGEST_MIN_CONFIDENCE
+    (voir backend/interfaces/_sentinel.py::cim_suggest), sans redéploiement.
+    """
     global _PIPE
     if not text or not text.strip():
         return []
@@ -131,7 +136,7 @@ def suggest(text: str, top: int = 5) -> list[dict]:
             "confidence": round(float(proba[i]), 3),
         }
         for i in order
-        if proba[i] > 0.02
+        if proba[i] > min_confidence
     ]
 
 

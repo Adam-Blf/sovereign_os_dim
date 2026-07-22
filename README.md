@@ -84,7 +84,8 @@ flowchart TB
 
 ### Version portable (recommandée)
 
-Double-cliquez sur `SovereignOS.Desktop.exe`. Aucune installation, aucun droit administrateur requis.
+Double-cliquez sur `Sovereign_OS_DIM_Portable.exe` (généré par `python build.py`,
+voir ci-dessous). Aucune installation, aucun droit administrateur requis.
 
 ### Version code source
 
@@ -102,6 +103,24 @@ python main.py
 ```bash
 python build.py
 ```
+
+Produit `dist/Sovereign_OS_DIM/Sovereign_OS_DIM.exe` (dossier, plus rapide au
+démarrage) et `dist/Sovereign_OS_DIM_Portable.exe` (fichier unique, à distribuer).
+
+## Configuration
+
+Variables d'environnement, toutes optionnelles (l'appli tourne sans aucune
+d'entre elles définie, en mode 100% local par défaut) :
+
+| Variable | Défaut | Rôle |
+|----------|--------|------|
+| `SOVEREIGN_OPERATOR` | `DIM_OPERATOR` | Identité loguée dans le journal d'audit chaîné. |
+| `SOVEREIGN_AUDIT_DB` | `%LOCALAPPDATA%/...` | Chemin de la base SQLite d'audit. |
+| `SOVEREIGN_WORKFLOW_DB` | `%LOCALAPPDATA%/...` | Chemin de la base SQLite du workflow TIM/MIM. |
+| `OLLAMA_BASE` | *(vide)* | URL d'un serveur Ollama intranet pour le CimSuggester. Non défini = modèle local zéro-configuration. |
+| `OLLAMA_MODEL` | `sovereign-cim` | Modèle Ollama à utiliser si `OLLAMA_BASE` est défini. |
+| `CIM_SUGGEST_TOP_K` | `5` | Nombre de codes CIM-10 suggérés par le CimSuggester (local ou Ollama). |
+| `CIM_SUGGEST_MIN_CONFIDENCE` | `0.02` | Seuil de confiance minimal pour qu'une suggestion CIM-10 soit retenue. |
 
 ## Tests
 
@@ -158,12 +177,10 @@ deps, lint).
 | Ctrl+5 | Import CSV |
 | Ctrl+6 | Structure - arborescence + analyse activité UM |
 | Ctrl+7 | Tutoriel |
-| F1 | Manuel HTML |
-| F2 | Inspector Terminal |
-| F3 | Preflight DRUIDES |
-| F4 | Dashboard Live |
+| Ctrl+8 | Cockpit du chef de département |
+| Échap | Ferme les modales ouvertes |
 
-## Architecture
+## Structure du dépôt
 
 ```
 sovereign_os_dim/
