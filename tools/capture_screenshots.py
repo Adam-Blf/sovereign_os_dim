@@ -297,7 +297,35 @@ MOCK_RESPONSES = {
     "/api/v2/audit/verify": {"valid": True, "total_events": 42, "broken_at_id": None},
     "/api/v2/idv/stats": {"total_ipp": 4821, "collisions": 147, "pending": 15, "resolved": 132},
     "/api/v2/pivot": {"has_data": True, "rows": []},
-    "/api/v2/ml/cim-suggest": {"suggestions": [], "provider": "disabled"},
+    "/api/v2/ml/cim-suggest": {"suggestions": [], "provider": "local"},
+    "/api/v2/duree-sejour": {
+        "has_model": True,
+        "algorithme": "XGBoost (300 arbres, profondeur 5)",
+        "donnees": "20 000 séjours synthétiques (aucune donnée réelle)",
+        "erreur_absolue_moyenne_jours": 11.1,
+        "coefficient_determination": 0.404,
+        "par_groupe": [
+            {"groupe": "F2", "libelle": "Schizophrénie et troubles délirants", "duree_moyenne_jours": 58.6, "ecart_type_jours": 22.8},
+            {"groupe": "F0", "libelle": "Troubles mentaux organiques", "duree_moyenne_jours": 51.8, "ecart_type_jours": 19.0},
+            {"groupe": "F3", "libelle": "Troubles de l'humeur", "duree_moyenne_jours": 40.7, "ecart_type_jours": 15.1},
+            {"groupe": "F1", "libelle": "Troubles liés aux substances psychoactives", "duree_moyenne_jours": 27.3, "ecart_type_jours": 11.8},
+        ],
+    },
+    "/api/v2/regroupement-patients": {
+        "has_model": True,
+        "algorithme": "Projection UMAP (2 dimensions) puis K-moyennes (6 groupes)",
+        "donnees": "3 000 patients synthétiques (aucune donnée réelle)",
+        "archetypes": [
+            {"identifiant": 0, "libelle": "Séjours longs psychotiques", "effectif": 327, "duree_moyenne_jours": 36.3},
+            {"identifiant": 1, "libelle": "Épisodes de l'humeur, séjours moyens", "effectif": 583, "duree_moyenne_jours": 34.4},
+            {"identifiant": 2, "libelle": "Troubles anxieux, séjours courts", "effectif": 412, "duree_moyenne_jours": 18.2},
+        ],
+        "points": [
+            {"x": 13.07, "y": 7.28, "groupe_archetype": 0},
+            {"x": -4.2, "y": 11.5, "groupe_archetype": 1},
+            {"x": 2.1, "y": -6.4, "groupe_archetype": 2},
+        ],
+    },
     "/api/v2/workflow/pending": {
         "counts": {"tim": 4, "mim": 2, "preflight": 1, "ars": 1, "done": 12},
         "items": [
@@ -410,16 +438,58 @@ def run():
         """)
         page.wait_for_timeout(500)
 
-        # Greffe les methodes Sentinel v2 sur le pont stub (bridge-shim ne
-        # couvre que les methodes coeur). Chaque methode renvoie la reponse
-        # mockee correspondante via fetch, intercepte par context.route.
+        # Construit le pont mock complet directement ici (bridge-shim.js a ete
+        # supprime du frontend reel - il decrivait un hote C#/.NET fictif qui
+        # n'a jamais existe et contredisait l'architecture 100% locale). Ce
+        # script ne sert qu'a la capture de screenshots, jamais a l'app reelle.
+        # Chaque methode renvoie la reponse mockee correspondante via fetch,
+        # interceptee par context.route.
         page.evaluate("""
             () => {
                 const B = 'http://127.0.0.1:8787';
                 const get = (p) => fetch(B + p).then(r => r.json());
+                const post = (p, body) => fetch(B + p, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body || {}),
+                }).then(r => r.json());
                 const api = (window.pywebview = window.pywebview || {}).api =
                     (window.pywebview.api || {});
                 Object.assign(api, {
+                    // Methodes coeur (anciennement fournies par bridge-shim.js)
+                    get_folders: () => get('/api/folders'),
+                    add_folders: (list) => post('/api/folders', {Folders: list}),
+                    clear_folders: () => get('/api/folders'),
+                    scan_files: () => post('/api/scan'),
+                    process_all: () => post('/api/process'),
+                    scan_and_process: () => post('/api/scan-and-process'),
+                    get_matrix_info: () => get('/api/matrix'),
+                    identify_format: (filename) => post('/api/identify', {Filename: filename}),
+                    get_collisions: () => get('/api/collisions'),
+                    set_pivot: (ipp, ddn) => post('/api/resolve', {Ipp: ipp, Ddn: ddn}),
+                    auto_resolve: () => post('/api/auto-resolve'),
+                    get_dashboard_stats: () => get('/api/stats'),
+                    export_csv: () => post('/api/export'),
+                    export_csv_to: () => post('/api/export'),
+                    export_sanitized: () => post('/api/export-sanitized'),
+                    parse_structure: () => post('/api/structure'),
+                    load_structure: () => post('/api/structure'),
+                    export_structure_pdf: () => post('/api/export-structure-pdf'),
+                    validate_preflight: () => post('/api/validate'),
+                    get_pending_logs: () => get('/api/logs'),
+                    inspect_line: () => post('/api/inspect'),
+                    import_excel: () => post('/api/import-excel'),
+                    suggest_dp: () => post('/api/suggest-dp'),
+                    mpi_save: () => post('/api/mpi/save'),
+                    mpi_load: () => post('/api/mpi/load'),
+                    mpi_stats: () => get('/api/mpi/stats'),
+                    get_mpi_stats: () => get('/api/mpi/stats'),
+                    mpi_clear: () => post('/api/mpi/clear'),
+                    dashboard_live: () => get('/api/dashboard'),
+                    html_to_pdf: () => post('/api/html-to-pdf'),
+                    reset_all: () => post('/api/reset'),
+                    health: () => get('/health'),
+                    // Methodes Sentinel v2
                     get_health: () => get('/health'),
                     get_cockpit: () => get('/api/v2/cockpit'),
                     get_health_monitor: () => get('/api/v2/health-monitor'),
@@ -434,6 +504,8 @@ def run():
                     get_pivot: () => get('/api/v2/pivot'),
                     ml_cim_suggest: () => get('/api/v2/ml/cim-suggest'),
                     workflow_pending: () => get('/api/v2/workflow/pending'),
+                    get_duree_sejour: () => get('/api/v2/duree-sejour'),
+                    get_regroupement_patients: () => get('/api/v2/regroupement-patients'),
                     ml_predict_format: () => Promise.resolve({format: 'RPS_v14', confidence: 0.97, top3: []}),
                     ml_predict_collision_risk: () => Promise.resolve({risk: 0.12, level: 'low'}),
                     ml_predict_ddn_validity: () => Promise.resolve({valid_proba: 0.98, suspect: false}),

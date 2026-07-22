@@ -184,7 +184,6 @@ sovereign_os_dim/
 │   ├── css/style.css
 │   └── js/
 │       ├── app.js          - Logique principale + structure parser JS
-│       ├── bridge-shim.js  - Adapter C#/pywebview
 │       ├── preflight-view.js
 │       ├── dashboard-live.js
 │       ├── htmlpdf-view.js
