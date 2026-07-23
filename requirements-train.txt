@@ -1,0 +1,23 @@
+# ==============================================================================
+#  SOVEREIGN OS DIM - Dependances d'ENTRAINEMENT uniquement (LoRA CIM-10)
+# ==============================================================================
+#  Jamais installees sur un poste hopital / build PyInstaller : ces paquets
+#  (torch, transformers, peft, datasets, accelerate) sont lourds et ne servent
+#  qu'a produire l'adaptateur LoRA sur la machine de dev. Le pipeline shippe
+#  (requirements.txt) reste 100% local/offline sans ce stack - l'inference du
+#  modele fine-tune passe par Ollama (adaptateur GGUF), jamais par cette
+#  librairie Python en production. Installer via :
+#      pip install -r requirements-train.txt
+#  (si torch n'est pas deja present : pip install torch --index-url
+#   https://download.pytorch.org/whl/cpu)
+
+torch>=2.12.0
+transformers>=4.57.0
+peft>=0.19.0
+datasets>=5.0.0
+accelerate>=1.14.0
+
+# Conversion GGUF (scripts llama.cpp) - uniquement pour convertir l'adaptateur
+# LoRA entraine en .gguf servable par Ollama, pas pour l'entrainement lui-meme.
+gguf>=0.10.0
+sentencepiece>=0.2.0

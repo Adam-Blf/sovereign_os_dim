@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * SOVEREIGN OS V37.3 - Frontend Application Logic (Optimized)
+ * SOVEREIGN OS V37.4 - Frontend Application Logic (Optimized)
  * =============================================================================
  * Features:
  *   - Boot sequence with anime.js

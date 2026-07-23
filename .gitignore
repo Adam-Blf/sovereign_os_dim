@@ -65,6 +65,11 @@ tools/moulinette_fichcomp/Fichier/
 # rendu), jamais embarque dans l'app ni sur poste hopital (cf package.json)
 node_modules/
 
+# Entrainement LoRA CimSuggester - logs et checkpoints intermediaires locaux,
+# seul l'adaptateur final (backend/ml/models/cim_lora_adapter/) est commite
+backend/ml/models/_cim_lora_checkpoints/
+backend/ml/models/cim_lora_*.log
+
 # Jamais versionnes : hooks locaux, echantillons internes etablissement, scripts .bat (regle EDR)
 hooks/
 sample/

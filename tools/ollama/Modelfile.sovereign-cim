@@ -1,8 +1,11 @@
 # Modèle Ollama spécialisé pour la suggestion de codes diagnostiques
 # (classification internationale des maladies, chapitre psychiatrie).
-# Base : llama3.2 3 milliards de paramètres, exécution 100 % locale.
-# Création : ollama create sovereign-cim -f tools/ollama/Modelfile.sovereign-cim
-FROM llama3.2:3b
+# Base : Qwen2.5 0.5B + adaptateur LoRA entraîné sur dataset synthétique
+# CIM-10 (backend/ml/train_cim_lora.py / notebooks/train_cim_lora_colab.ipynb,
+# 600 steps, loss finale 0.155). Exécution 100 % locale.
+# Création : ollama create sovereign-cim-lora -f tools/ollama/Modelfile.sovereign-cim
+FROM qwen2.5:0.5b
+ADAPTER ./cim-lora-adapter.gguf
 PARAMETER temperature 0.2
 PARAMETER num_ctx 2048
 SYSTEM """Tu es un médecin du département d'information médicale d'un

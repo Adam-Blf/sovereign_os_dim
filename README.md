@@ -1,4 +1,4 @@
-![version](https://img.shields.io/badge/version-V37.3-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![ml](https://img.shields.io/badge/ml-XGBoost%20%2B%20LightGBM-FF6F00?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
+![version](https://img.shields.io/badge/version-V37.4-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![ml](https://img.shields.io/badge/ml-XGBoost%20%2B%20LightGBM-FF6F00?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
 
 # Sovereign OS DIM - Station PMSI
 
@@ -9,7 +9,7 @@
 
 [![CI](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml)
 ![Status](https://img.shields.io/badge/status-production-brightgreen)
-![Version](https://img.shields.io/badge/version-V37.3-blue)
+![Version](https://img.shields.io/badge/version-V37.4-blue)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
 ![C#](https://img.shields.io/badge/C%23-.NET_8-239120?logo=c-sharp&logoColor=white)
 ![WebView2](https://img.shields.io/badge/WebView2-Chromium-3C4A5A?logo=microsoftedge&logoColor=white)
@@ -59,7 +59,7 @@ flowchart TB
 - **Master Patient Index** - croisement IPP/DDN, persistance SQLite, reprise batch interrompu.
 - **Identitovigilance** - détection collisions, résolution automatique par fréquence majoritaire ou manuelle.
 - **Preflight DRUIDES** - 15 validateurs avant upload e-PMSI - FINESS, IPP, DDN, CIM-10, mode légal, secteur ARS, chaînage, duplicatas, orphelins.
-- **CimSuggester IA** - suggestion de code CIM-10 quand le DP est absent - modèle local (TF-IDF + régression logistique) par défaut, zéro configuration ; un serveur Ollama intranet peut le remplacer via `OLLAMA_BASE`.
+- **CimSuggester IA** - suggestion de code CIM-10 quand le DP est absent - modèle local (TF-IDF + régression logistique) par défaut, zéro configuration ; un serveur Ollama intranet peut le remplacer via `OLLAMA_BASE`. Adaptateur LoRA `sovereign-cim-lora` (Qwen2.5-0.5B fine-tuné sur dataset synthétique CIM-10, voir section Fine-tuning ci-dessous) **validé manuellement et promu** modèle Ollama `sovereign-cim` par défaut *(V37.4)*.
 - **Module ML** *(V36-V37.3)* - 6 modèles entraînés sur dataset synthétique, tous locaux : format_detector (58 classes, acc 0.77), collision_risk (AUC 1.0), ddn_validity (AUC 0.86) *(V36, XGBoost/LightGBM)* ; cim_suggester *(TF-IDF + régression logistique)* ; prédicteur de durée de séjour *(XGBoost, MAE 11.1 j, R² 0.404 sur 20 000 séjours synthétiques)* ; regroupement de patients *(KMeans + UMAP)* *(V37.3)*. Benchmark 4 algos par tâche sur les modèles V36 (XGB default + tuned, LightGBM, RF), garde le meilleur. Voir `backend/ml/`.
 - **Structure polaire** - arborescence Pôle/Secteur/UM avec organigramme vectoriel + export PDF multi-pages.
 - **Analyse d'activité par UM** *(V35)* - drop-zone HTML5 accessible clavier, parsing RPS/RAA asynchrone en chunks 5000 lignes, détection des UM dormantes, export CSV UTF-8 BOM, badges rouges clignotants sur l'arbre.
@@ -69,6 +69,32 @@ flowchart TB
 - **Moulinette FICHCOMP** *(V37)* - moulinette Excel vers fichier plat FICHCOMP/FICHDMI à largeur fixe (suppléments transports, médicaments, dispositifs médicaux). Nettoyage du classeur source, propagation des dates, génération du format ATIH puis contrôle de longueur (53 caractères médicament, 50 caractères DMI). Code source dans `tools/moulinette_fichcomp/`.
 - **Export PDF** - organigrammes, rapports preflight, dashboards BIQuery (HTML→PDF).
 - **Guides PDF** *(V37)* - `docs/Sovereign_OS_DIM_Guide.pdf` (38 pages, polices Unicode, orientation métier, page Roadmap, références ATIH/ARS vérifiées).
+
+## Fine-tuning LoRA CimSuggester
+
+Adaptateur LoRA réel (`backend/ml/models/cim_lora_adapter/`) entraîné sur
+`Qwen/Qwen2.5-0.5B-Instruct` à partir d'un dataset synthétique de 4800
+exemples (`backend/ml/gen_cim_lora_dataset.py`, seed=42, déterministe).
+600 steps, loss finale 0.155, ~88 min sur GPU T4 (voir
+`backend/ml/models/cim_lora_training_meta.json` pour les métriques
+complètes).
+
+- **Entraînement** : `python -m backend.ml.train_cim_lora --max-steps 600`
+  (CPU, ~30h) ou `notebooks/train_cim_lora_colab.ipynb` sur Google Colab
+  (GPU T4 gratuit, ~1h10 - voir règle Colab dans le CLAUDE.md du projet).
+- **Conversion GGUF** : `python tools/ollama/convert_cim_lora_to_gguf.py
+  --llama-cpp-dir <clone local de ggml-org/llama.cpp>` produit
+  `tools/ollama/cim-lora-adapter.gguf`.
+- **Modèle Ollama** : `ollama create sovereign-cim-lora -f
+  tools/ollama/Modelfile.sovereign-cim` (base `qwen2.5:0.5b` +
+  `ADAPTER ./cim-lora-adapter.gguf`).
+- **Promotion en production** *(faite, 2026-07-23)* : contrôle qualitatif
+  manuel effectué sur des cas cliniques (suggestions cohérentes,
+  ex. antécédent bipolaire + épisode dépressif sévère → F31.4/F32.x
+  correctement priorisés). Retaggé en production via
+  `ollama cp sovereign-cim-lora sovereign-cim` - `sovereign-cim`
+  (le défaut de `OLLAMA_MODEL`) pointe maintenant sur l'adaptateur
+  LoRA. `sovereign-cim-lora` reste le tag explicite pour audit/rollback.
 
 ## Formats ATIH supportés
 
