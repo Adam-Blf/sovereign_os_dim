@@ -1,6 +1,6 @@
 [project]
 name = "sovereign-os-dim"
-version = "37.4.0"
+version = "37.5.0"
 description = "Station DIM PMSI - GHT Sud Paris - moteur ATIH + MPI + identito-vigilance"
 requires-python = ">=3.12"
 readme = "README.md"

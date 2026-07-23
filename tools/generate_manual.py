@@ -2,7 +2,7 @@
 #  SOVEREIGN OS DIM - Générateur de mode d'emploi PDF (fpdf2)
 # ══════════════════════════════════════════════════════════════════════════════
 #  Author  : Adam Beloucif
-#  Project : Sovereign OS V37.4 - Station DIM GHT Sud Paris
+#  Project : Sovereign OS V37.5 - Station DIM GHT Sud Paris
 #
 #  Description:
 #    Script utilitaire qui produit `docs/Sovereign_OS_DIM_Manuel.pdf`, le

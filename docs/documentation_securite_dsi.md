@@ -1,6 +1,6 @@
 # Dossier de Présentation Fonctionnelle et Technique
 ### Conformité SI et Sécurité Informatique - Station PMSI
-**Projet :** Sovereign OS DIM (V37.4)  
+**Projet :** Sovereign OS DIM (V37.5)  
 **Date :** synchronisée automatiquement avec la version du projet (`scripts/sync_version.py`)  
 **Émetteur :** Apprenti Ingénieur PMSI, Département de l'Information Médicale (DIM)  
 **Destinataires :** Direction des Systèmes d'Information (DSI), Département de l'Information Médicale (DIM), Direction des Ressources Numériques (DSN)  
