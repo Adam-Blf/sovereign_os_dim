@@ -27,7 +27,7 @@ OLLAMA_BASE = os.environ.get("OLLAMA_BASE", "")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "sovereign-cim")
 CIM_SUGGEST_TOP_K = int(os.environ.get("CIM_SUGGEST_TOP_K", "5"))
 CIM_SUGGEST_MIN_CONFIDENCE = float(os.environ.get("CIM_SUGGEST_MIN_CONFIDENCE", "0.02"))
-API_VERSION = "37.3"
+API_VERSION = "37.4"
 
 
 def _ml_models_loaded() -> dict[str, bool]:
