@@ -155,6 +155,53 @@ def test_sentinel_cim_suggest_reads_top_k_and_min_confidence_env(monkeypatch):
         importlib.reload(_sentinel)
 
 
+def test_sentinel_cim_suggest_ollama_normalizes_single_object(monkeypatch):
+    """Un petit LoRA renvoie parfois un objet JSON seul au lieu d'un array de 5 -
+    cim_suggest() doit le normaliser en liste plutôt que planter (KeyError sur
+    slice d'un dict, régression observée en test manuel du modèle promu)."""
+    import json as _json
+
+    import backend.interfaces._sentinel as sentinel
+
+    monkeypatch.setenv("OLLAMA_BASE", "http://localhost:11434")
+    monkeypatch.setattr(sentinel, "OLLAMA_BASE", "http://localhost:11434")
+
+    class FakeResponse:
+        def read(self):
+            return _json.dumps(
+                {"response": _json.dumps({"code": "F31.4", "label": "Trouble bipolaire", "confidence": 0.85})}
+            ).encode()
+
+    monkeypatch.setattr("urllib.request.urlopen", lambda *a, **k: FakeResponse())
+
+    result = sentinel.cim_suggest({"das": ["x"], "actes": [], "notes": "y"})
+    assert result["provider"] == "ollama"
+    assert result["suggestions"] == [{"code": "F31.4", "label": "Trouble bipolaire", "confidence": 0.85}]
+
+
+def test_sentinel_cim_suggest_ollama_ignores_trailing_text(monkeypatch):
+    """Le modele ajoute parfois du texte apres le JSON (observe en test manuel) -
+    raw_decode doit extraire le JSON initial sans planter sur le reste."""
+    import json as _json
+
+    import backend.interfaces._sentinel as sentinel
+
+    monkeypatch.setenv("OLLAMA_BASE", "http://localhost:11434")
+    monkeypatch.setattr(sentinel, "OLLAMA_BASE", "http://localhost:11434")
+
+    array = [{"code": "F32.2", "label": "Episode depressif", "confidence": 0.9}]
+    raw_with_garbage = _json.dumps(array) + "\nCeci est un commentaire parasite du modele."
+
+    class FakeResponse:
+        def read(self):
+            return _json.dumps({"response": raw_with_garbage}).encode()
+
+    monkeypatch.setattr("urllib.request.urlopen", lambda *a, **k: FakeResponse())
+
+    result = sentinel.cim_suggest({"das": ["x"], "actes": [], "notes": "y"})
+    assert result["suggestions"] == array
+
+
 def test_sentinel_returns_plain_dicts_when_empty():
     """Sur un MPI vide, les écrans v2 renvoient des dicts honnêtes (pas de crash)."""
     from backend.interfaces.api import Api

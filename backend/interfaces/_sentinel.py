@@ -250,12 +250,33 @@ def cim_suggest(payload: dict) -> dict:
         "diagnostic principal en psychiatrie, avec confiance 0-1. "
         f"DAS: {das}. Actes: {actes}. Notes: {notes[:500]}"
     )
-    body = _json.dumps({"model": OLLAMA_MODEL, "prompt": prompt, "stream": False, "format": "json"}).encode()
+    # Pas de "format": "json" ici - ce mode force un decodage contraint par
+    # grammaire cote Ollama qui, empiriquement avec le LoRA 0.5B, fait
+    # collapser la sortie a un seul objet au lieu de l'array de 5 attendu
+    # (le dataset d'entrainement genere systematiquement un array, voir
+    # gen_cim_lora_dataset.py). Le SYSTEM prompt du Modelfile impose deja le
+    # format JSON strict, qui se respecte de maniere bien plus fiable en
+    # decodage libre.
+    body = _json.dumps({"model": OLLAMA_MODEL, "prompt": prompt, "stream": False}).encode()
     safe_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path.rstrip('/')}/api/generate"
     req_obj = urllib.request.Request(safe_url, data=body, headers={"Content-Type": "application/json"})
     r = urllib.request.urlopen(req_obj, timeout=30)  # nosec B310 - URL validée http(s) ci-dessus
     resp = _json.loads(r.read())
-    parsed_resp = _json.loads(resp.get("response", "[]"))
+    raw_text = resp.get("response", "[]").strip()
+    try:
+        # raw_decode ignore le texte parasite que le modele ajoute parfois
+        # apres le JSON (observe en test manuel), plutot que de tout rejeter.
+        parsed_resp, _ = _json.JSONDecoder().raw_decode(raw_text)
+    except ValueError:
+        parsed_resp = []
+    # Le modele (surtout un petit LoRA 0.5B) ne respecte pas toujours le
+    # format "array de 5 objets" du prompt d'entrainement - il lui arrive de
+    # renvoyer un seul objet JSON. On normalise plutot que de planter, une
+    # suggestion degradee valant mieux qu'une erreur cote UI.
+    if isinstance(parsed_resp, dict):
+        parsed_resp = [parsed_resp]
+    elif not isinstance(parsed_resp, list):
+        parsed_resp = []
     sugg = [
         {"code": s["code"], "label": s["label"], "confidence": float(s.get("confidence", 0.0))}
         for s in parsed_resp[:5]
