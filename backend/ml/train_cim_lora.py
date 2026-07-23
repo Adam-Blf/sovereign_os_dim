@@ -27,6 +27,9 @@ import time
 from pathlib import Path
 
 BASE_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
+# Revision epinglee (bandit B615 - eviter qu'une mise a jour distante du repo
+# HF change silencieusement les poids telecharges entre deux runs).
+BASE_MODEL_REVISION = "7ae557604adf67be50417f59c2c2f167def9a775"
 MODELS_DIR = Path(__file__).resolve().parent / "models"
 ADAPTER_DIR = MODELS_DIR / "cim_lora_adapter"
 CHECKPOINT_DIR = MODELS_DIR / "_cim_lora_checkpoints"
@@ -107,10 +110,10 @@ def train(max_steps: int = 600) -> dict:
     grad_accum = 2 if has_cuda else 8
     print(f"[train_cim_lora] accelerateur : {'CUDA (' + torch.cuda.get_device_name(0) + ')' if has_cuda else 'CPU uniquement'}")
 
-    tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
+    tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, revision=BASE_MODEL_REVISION)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, dtype=dtype)
+    model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, revision=BASE_MODEL_REVISION, dtype=dtype)
 
     lora_config = LoraConfig(
         r=8, lora_alpha=16, lora_dropout=0.05, bias="none",
