@@ -1,0 +1,22 @@
+{
+  "base_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "accelerator": "Tesla T4",
+  "dataset_examples": 4800,
+  "max_steps": 600,
+  "steps_completed": 600,
+  "final_loss": 0.1552154024442037,
+  "wall_clock_seconds": 5284.1,
+  "lora_r": 8,
+  "lora_alpha": 16,
+  "target_modules": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "seed": 42,
+  "timestamp": "2026-07-23T09:37:49"
+}
