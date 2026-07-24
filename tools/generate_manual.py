@@ -393,7 +393,7 @@ def build_pdf(output_path: str) -> str:
     pdf.set_font("Montserrat", "B", 22)
     pdf.set_text_color(15, 23, 42)
     pdf.ln(10)
-    pdf.cell(0, 12, "Sovereign OS DIM V34.0", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 12, "Sovereign OS DIM V37.5", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Montserrat", "", 13)
     pdf.set_text_color(71, 85, 105)
     pdf.cell(0, 8, "Application 100 % locale - information DSI", new_x="LMARGIN", new_y="NEXT")

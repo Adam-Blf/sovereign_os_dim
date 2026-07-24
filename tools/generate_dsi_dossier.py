@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-"""Génère le dossier de conformité DSI en PDF à partir du Markdown source.
+"""Construit le dossier de conformité DSI en PDF à partir du Markdown source.
 
 Source   : docs/documentation_securite_dsi.md
 Sortie   : docs/Dossier_Conformite_DSI.pdf
-Rendu    : fpdf2 (police Unicode Montserrat embarquée dans tools/fonts).
+Rendu    : fpdf2, police Unicode Montserrat embarquée dans tools/fonts.
 
-Les blocs de diagrammes Mermaid sont remplacés par une légende textuelle : un
-PDF ne rend pas le Mermaid, et le schéma reste consultable dans le Markdown source.
+Les diagrammes Mermaid (flowchart, sequenceDiagram) sont traduits en schémas
+lisibles - boîtes reliées ou séquence d'étapes numérotées - directement dans
+le PDF, pas remplacés par un renvoi vers une autre source.
 
 Usage :
     python tools/generate_dsi_dossier.py
@@ -72,6 +73,123 @@ def _write_inline(pdf: FPDF, text: str, size: int = 10, color=INK) -> None:
     pdf.ln(6.4)
 
 
+def _cell_text(cell: str) -> tuple[str, bool]:
+    """Retire le markdown **gras** d'une cellule de tableau, et dit si elle
+    était entièrement en gras (badges de statut type **Conforme**)."""
+    stripped = cell.strip()
+    if stripped.startswith("**") and stripped.endswith("**") and len(stripped) > 4:
+        return stripped[2:-2], True
+    return re.sub(r"\*\*(.+?)\*\*", r"\1", cell), False
+
+
+NODE_RE = re.compile(r'^(\w+)\["(.+?)"\]$')
+EDGE_RE = re.compile(r"^(\w+)\s*-->\s*(?:\|([^|]*)\|\s*)?(\w+)$")
+PARTICIPANT_RE = re.compile(r"^participant\s+(\w+)\s+as\s+(.+)$")
+MESSAGE_RE = re.compile(r"^(\w+)\s*--?>>?\s*(\w+)\s*:\s*(.+)$")
+NOTE_RE = re.compile(r"^Note\s+over\s+([\w, ]+)\s*:\s*(.+)$")
+
+
+def _flow_box(pdf: FPDF, label: str) -> None:
+    pdf.set_font("Montserrat", "B", 9)
+    pdf.set_text_color(*NAVY)
+    pdf.set_fill_color(*QUOTE_BG)
+    pdf.set_draw_color(*RULE)
+    pdf.set_x(pdf.l_margin)
+    pdf.multi_cell(0, 5.5, label.replace("<br/>", " - "), border=1, fill=True, align="C")
+    pdf.set_x(pdf.l_margin)
+
+
+def _flow_arrow(pdf: FPDF, label: str) -> None:
+    x_mid = pdf.w / 2
+    y0 = pdf.get_y() + 0.5
+    pdf.set_draw_color(*BLUE)
+    pdf.set_line_width(0.4)
+    pdf.line(x_mid, y0, x_mid, y0 + 4)
+    pdf.set_xy(pdf.l_margin, y0 + 4.5)
+    if label:
+        pdf.set_font("Montserrat", "I", 8)
+        pdf.set_text_color(*MUTED)
+        pdf.multi_cell(0, 4, label, align="C")
+        pdf.set_x(pdf.l_margin)
+    else:
+        pdf.ln(1)
+        pdf.set_x(pdf.l_margin)
+
+
+def _render_flowchart(pdf: FPDF, lines: list[str]) -> None:
+    nodes: dict[str, str] = {}
+    edges: list[tuple[str, str, str]] = []
+    for raw in lines:
+        m = NODE_RE.match(raw.strip())
+        if m:
+            nodes[m.group(1)] = m.group(2)
+            continue
+        m = EDGE_RE.match(raw.strip())
+        if m:
+            edges.append((m.group(1), m.group(2) or "", m.group(3)))
+    if not edges:
+        return
+    _flow_box(pdf, nodes.get(edges[0][0], edges[0][0]))
+    for src, label, dst in edges:
+        _flow_arrow(pdf, label)
+        _flow_box(pdf, nodes.get(dst, dst))
+    pdf.ln(2)
+
+
+def _render_sequence(pdf: FPDF, lines: list[str]) -> None:
+    participants: dict[str, str] = {}
+    steps: list[tuple] = []
+    for raw in lines:
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("rect") or stripped == "end":
+            continue
+        m = PARTICIPANT_RE.match(stripped)
+        if m:
+            participants[m.group(1)] = m.group(2)
+            continue
+        m = NOTE_RE.match(stripped)
+        if m:
+            targets = ", ".join(participants.get(t.strip(), t.strip()) for t in m.group(1).split(","))
+            steps.append(("note", targets, m.group(2)))
+            continue
+        m = MESSAGE_RE.match(stripped)
+        if m:
+            src = participants.get(m.group(1), m.group(1))
+            dst = participants.get(m.group(2), m.group(2))
+            steps.append(("msg", src, dst, m.group(3)))
+    n = 0
+    for step in steps:
+        if step[0] == "msg":
+            n += 1
+            _, src, dst, text = step
+            pdf.set_font("Montserrat", "B", 9.5)
+            pdf.set_text_color(*BLUE)
+            pdf.write(5.5, f"{n}. ")
+            pdf.set_font("Montserrat", "", 9.5)
+            pdf.set_text_color(*INK)
+            pdf.write(5.5, f"{src} -> {dst} : ")
+            pdf.set_font("Montserrat", "I", 9.5)
+            pdf.write(5.5, text)
+            pdf.ln(6)
+        else:
+            _, targets, text = step
+            pdf.set_font("Montserrat", "I", 8.5)
+            pdf.set_text_color(*MUTED)
+            pdf.multi_cell(0, 5, f"     Note ({targets}) : {text}")
+    pdf.ln(2)
+
+
+def _render_mermaid(pdf: FPDF, lines: list[str]) -> None:
+    content = [l for l in lines if l.strip()]
+    if not content:
+        return
+    kind = content[0].strip().split()[0]
+    if kind == "flowchart":
+        _render_flowchart(pdf, content[1:])
+    elif kind == "sequenceDiagram":
+        _render_sequence(pdf, content[1:])
+
+
 def _table(pdf: FPDF, rows: list[list[str]]) -> None:
     if not rows:
         return
@@ -82,11 +200,12 @@ def _table(pdf: FPDF, rows: list[list[str]]) -> None:
     widths = [usable * 0.32] + [(usable * 0.68) / (ncol - 1)] * (ncol - 1) if ncol > 1 else [usable]
     line_h = 6.2
 
-    def row(cells: list[str], head: bool) -> None:
-        pdf.set_font("Montserrat", "B" if head else "", 9)
+    def row(raw_cells: list[str], head: bool) -> None:
+        cells = [_cell_text(c) for c in raw_cells]
         heights = []
-        for i, c in enumerate(cells):
-            lines = pdf.multi_cell(widths[i], line_h, c, dry_run=True, output="LINES")
+        for i, (text, _) in enumerate(cells):
+            pdf.set_font("Montserrat", "B" if head else "", 9)
+            lines = pdf.multi_cell(widths[i], line_h, text, dry_run=True, output="LINES")
             heights.append(len(lines) * line_h)
         h = max(heights) if heights else line_h
         if pdf.get_y() + h > pdf.page_break_trigger:
@@ -98,11 +217,12 @@ def _table(pdf: FPDF, rows: list[list[str]]) -> None:
         else:
             pdf.set_fill_color(248, 249, 251)
             pdf.set_text_color(*INK)
-        for i, c in enumerate(cells):
+        for i, (text, is_bold) in enumerate(cells):
             x = pdf.get_x()
             pdf.multi_cell(widths[i], h, "", border=0, fill=True, new_x="RIGHT", new_y="TOP")
             pdf.set_xy(x + 1.5, y0 + 1)
-            pdf.multi_cell(widths[i] - 3, line_h, c, border=0, new_x="RIGHT", new_y="TOP")
+            pdf.set_font("Montserrat", "B" if (head or is_bold) else "", 9)
+            pdf.multi_cell(widths[i] - 3, line_h, text, border=0, new_x="RIGHT", new_y="TOP")
             pdf.set_xy(x + widths[i], y0)
         pdf.set_xy(x0, y0 + h)
         pdf.set_draw_color(*RULE)
@@ -172,6 +292,7 @@ def build() -> None:
     table_buf: list[list[str]] = []
     in_code = False
     code_lang = ""
+    mermaid_buf: list[str] = []
 
     def flush_table() -> None:
         nonlocal table_buf
@@ -187,16 +308,16 @@ def build() -> None:
             if not in_code:
                 in_code = True
                 code_lang = stripped[3:].strip()
+                mermaid_buf = []
             else:
                 in_code = False
                 if code_lang.lower() == "mermaid":
-                    pdf.set_font("Montserrat", "I", 9)
-                    pdf.set_text_color(*MUTED)
-                    pdf.multi_cell(0, 5, "[ Schéma d'architecture - voir le Markdown source ]")
-                    pdf.ln(2)
+                    _render_mermaid(pdf, mermaid_buf)
                 code_lang = ""
             continue
         if in_code:
+            if code_lang.lower() == "mermaid":
+                mermaid_buf.append(raw)
             continue
 
         if stripped.startswith("|") and stripped.endswith("|"):
