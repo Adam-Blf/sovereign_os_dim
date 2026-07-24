@@ -853,7 +853,7 @@ def build_pdf(output_path: str) -> str:
     pdf.cell(
         0,
         7,
-        f"Version 36.0  -  {len(SECTIONS)} sections  -  référence technique",
+        f"Version 37.5  -  {len(SECTIONS)} sections  -  référence technique",
         new_x="LMARGIN",
         new_y="NEXT",
         align="L",
@@ -870,7 +870,7 @@ def build_pdf(output_path: str) -> str:
     pdf.set_font(SANS, "I", TYPE["body"])
     pdf.set_text_color(*SLATE_400)
     pdf.cell(
-        0, 5, f"Généré le {date.today().strftime('%d / %m / %Y')}", new_x="LMARGIN", new_y="NEXT", align="L"
+        0, 5, "Édition V37.5 (2026)", new_x="LMARGIN", new_y="NEXT", align="L"
     )
     pdf.cell(0, 5, "Adam Beloucif  -  adam.beloucif@psysudparis.fr", new_x="LMARGIN", new_y="NEXT", align="L")
     pdf.ln(12)
@@ -998,7 +998,7 @@ def main() -> None:
         enrich_pdf(
             path,
             path,
-            title="Sovereign OS DIM - Guide développeur V36",
+            title="Sovereign OS DIM - Guide développeur V37.5",
             author="Adam Beloucif",
             subject="Architecture, build, tests, déploiement, ML stack",
             keywords=(

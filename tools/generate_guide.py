@@ -2374,7 +2374,7 @@ def _ui_mockup(pdf, highlight_zone=None):
     pdf.set_font(SANS, "B", 8)
     pdf.set_text_color(255, 255, 255)
     pdf.set_xy(x0 + 3, y0 + 3)
-    pdf.cell(80, 4, "SOVEREIGN OS DIM V35.0")
+    pdf.cell(80, 4, "SOVEREIGN OS DIM V37.5")
     pdf.set_font(SANS, "", 7)
     pdf.set_xy(x0 + w - 55, y0 + 3)
     pdf.cell(50, 4, "[Dark mode]  [Réinitialiser le registre]", align="R")
@@ -3202,7 +3202,7 @@ def build_pdf(output_path: str) -> str:
     pdf.ln(SPACE["lg"])
     pdf.set_font(SANS, "", TYPE["h3"])
     pdf.set_text_color(*SLATE_500)
-    pdf.cell(0, 7, f"Version 37.0, {total_feats} fonctionnalités", new_x="LMARGIN", new_y="NEXT", align="L")
+    pdf.cell(0, 7, f"Version 37.5, {total_feats} fonctionnalités", new_x="LMARGIN", new_y="NEXT", align="L")
     pdf.cell(
         0,
         7,

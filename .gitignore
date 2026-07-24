@@ -7,7 +7,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
-*.egg-info/
 dist/
 build/
 *.egg
@@ -18,7 +17,6 @@ venv/
 ENV/
 
 # PyInstaller
-*.spec
 *.manifest
 
 # IDE
@@ -39,23 +37,8 @@ design-system/
 # Output
 PILOT_OUTPUT/
 
-# Manuel PDF généré par tools/generate_manual.py (non commité)
-docs/Sovereign_OS_DIM_Manuel.pdf
-
-# Réglages d'agent IDE locaux (allowlist de commandes par utilisateur)
-.claude/
-.cursor/
-.vscode/
-
-# Moulinette FICHCOMP - défense en profondeur contre données et binaires
-# Aucune donnée réelle (exports transports nominatifs) ni binaire ne doit être commité.
-*.xlsx
-*.xlsm
-*.exe
-tools/moulinette_fichcomp/build/
-tools/moulinette_fichcomp/dist/
-tools/moulinette_fichcomp/Utilisateur/
-tools/moulinette_fichcomp/Fichier/
+# Exclusions pour la distribution pre-compilee (accessible sans Python)
+!docs/*.pdf
 
 # Caches outils
 .pytest_cache/

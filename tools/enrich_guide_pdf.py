@@ -141,7 +141,7 @@ def enrich(input_path: str, output_path: str) -> None:
     #    moteurs de recherche internes au DPI hospitalier)
     writer.add_metadata(
         {
-            "/Title": "Sovereign OS DIM - Guide métier V36",
+            "/Title": "Sovereign OS DIM - Guide métier V37.5",
             "/Author": "Adam Beloucif",
             "/Subject": "Station DIM - GHT Psy Sud Paris - Fondation Vallée + "
             "Paul Guiraud - traitement PMSI 100 % local",
