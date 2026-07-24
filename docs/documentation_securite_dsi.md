@@ -1,6 +1,6 @@
 # Dossier de Présentation Fonctionnelle et Technique
 ### Conformité SI et Sécurité Informatique - Station PMSI
-**Projet :** Sovereign OS DIM (V37.4)  
+**Projet :** Sovereign OS DIM (V37.5)  
 **Date :** synchronisée automatiquement avec la version du projet (`scripts/sync_version.py`)  
 **Émetteur :** Apprenti Ingénieur PMSI, Département de l'Information Médicale (DIM)  
 **Destinataires :** Direction des Systèmes d'Information (DSI), Département de l'Information Médicale (DIM), Direction des Ressources Numériques (DSN)  
@@ -84,6 +84,10 @@ Sovereign OS DIM applique les principes de *Privacy by Design* en cantonnant le 
 *   Ces données sont traitées de manière éphémère en mémoire vive lors du parsing des fichiers ATIH et de l'exécution des règles métiers.
 *   Un mécanisme de **pseudonymisation automatique à la volée** est intégré dans le module d'inspection : les identifiants et les données nominatives affichés à l'écran ou exportés dans les rapports d'erreurs techniques sont hachés ou masqués.
 
+### 3.3 Provenance des Modèles d'Intelligence Artificielle Embarqués
+*   **Aucune donnée patient réelle n'entre dans l'entraînement d'un modèle.** Les 7 modèles ML/IA embarqués (`backend/ml/`, dont le suggesteur CIM-10) sont tous entraînés exclusivement sur des **jeux de données synthétiques générés localement** (`backend/ml/synthetic.py`, `backend/ml/gen_cim_lora_dataset.py`), construits à partir des spécifications publiques ATIH, jamais à partir d'exports réels du GHT.
+*   **Adaptateur LoRA CimSuggester (V37.4) :** fine-tuning réalisé sur le modèle ouvert `Qwen2.5-0.5B-Instruct` (Alibaba Cloud, licence Apache 2.0, poids téléchargés une seule fois depuis Hugging Face Hub à une **révision figée** - `backend/ml/train_cim_lora.py`), à partir de 4800 exemples synthétiques déterministes (graine fixe). Cette opération se déroule **exclusivement en amont, sur le poste de développement ou un environnement cloud d'entraînement (Google Colab)** - elle ne fait partie d'aucun flux réseau de l'application en production. L'artefact entraîné (`backend/ml/models/cim_lora_adapter/`) est committé dans le dépôt et embarqué comme n'importe quel autre modèle du projet ; l'exécutable final ne télécharge jamais rien depuis Hugging Face.
+
 ---
 
 ## 4. Flux Réseau et Intégration au SI Hospitalier
@@ -116,7 +120,7 @@ sequenceDiagram
 ### 4.2 Flux Réseau Externes et Internes
 *   **Aucun serveur, aucun port en écoute :** l'application n'ouvre aucune socket et n'expose aucun service HTTP. La communication entre l'interface WebView et le moteur Python se fait exclusivement par appels de fonctions **in-process** (pont natif pywebview), à l'intérieur du même processus. Il n'existe donc aucune surface réseau à interroger, ni en local ni depuis l'extérieur.
 *   **Fonctionnement 100 % hors-ligne :** aucun appel extranet ni cloud n'est effectué par défaut.
-*   **Module de Suggestion CIM-10 (CimSuggester) :** actif par défaut, mais 100 % local et sans flux réseau - il s'appuie sur un modèle statistique léger entraîné localement (`backend/ml/cim_suggester.py`), embarqué dans l'application. Le nombre de suggestions et le seuil de confiance retenu sont pilotables via `CIM_SUGGEST_TOP_K` et `CIM_SUGGEST_MIN_CONFIDENCE`. Un serveur **Ollama** intranet (variable `OLLAMA_BASE`, optionnelle) peut remplacer ce modèle local ; c'est alors la seule configuration pouvant émettre un flux réseau, purement interne au GHT, ne transportant **aucune donnée nominative patient (IPP, DDN, Nom)**, seulement les libellés cliniques bruts à coder.
+*   **Module de Suggestion CIM-10 (CimSuggester) :** actif par défaut, mais 100 % local et sans flux réseau - il s'appuie sur un modèle statistique léger entraîné localement (`backend/ml/cim_suggester.py`), embarqué dans l'application. Le nombre de suggestions et le seuil de confiance retenu sont pilotables via `CIM_SUGGEST_TOP_K` et `CIM_SUGGEST_MIN_CONFIDENCE`. Un serveur **Ollama** intranet (variable `OLLAMA_BASE`, optionnelle) peut remplacer ce modèle local par un adaptateur LoRA fine-tuné localement (voir §3.3) ; c'est alors la seule configuration pouvant émettre un flux réseau, purement interne au GHT, ne transportant **aucune donnée nominative patient (IPP, DDN, Nom)**, seulement les libellés cliniques bruts à coder. Le téléchargement ponctuel des poids du modèle de base depuis Hugging Face (§3.3) a lieu uniquement lors de l'entraînement, en amont et hors production - jamais dans ce flux.
 
 ---
 
@@ -161,4 +165,5 @@ Conformément à la demande de la DSN d'être intégrée dès la conception, les
 | **Secret médical (art. L1110-4 CSP)** | Données de santé cantonnées au poste / réseau interne, aucune divulgation externe. | **Conforme** |
 | **PGSSI-S** | Moindre privilège, cloisonnement, journal d'audit horodaté. | **Conforme** |
 | **Hébergement HDS** | Aucun hébergement externe de données de santé. Non concerné par défaut. | **Non concerné** |
+| **Provenance des modèles IA** | Tous les modèles ML (dont le LoRA CimSuggester) entraînés sur données 100 % synthétiques, aucune donnée patient réelle utilisée. | **Conforme** |
 | **Homologation de sécurité** | Test en environnement isolé + avis DSN requis avant mise en production. | **À valider (DSN)** |

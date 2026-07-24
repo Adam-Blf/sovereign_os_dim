@@ -1,4 +1,4 @@
-![version](https://img.shields.io/badge/version-V37.4-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![ml](https://img.shields.io/badge/ml-XGBoost%20%2B%20LightGBM-FF6F00?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
+![version](https://img.shields.io/badge/version-V37.5-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![ml](https://img.shields.io/badge/ml-XGBoost%20%2B%20LightGBM-FF6F00?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
 
 # Sovereign OS DIM - Station PMSI
 
@@ -9,7 +9,7 @@
 
 [![CI](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml)
 ![Status](https://img.shields.io/badge/status-production-brightgreen)
-![Version](https://img.shields.io/badge/version-V37.4-blue)
+![Version](https://img.shields.io/badge/version-V37.5-blue)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
 ![C#](https://img.shields.io/badge/C%23-.NET_8-239120?logo=c-sharp&logoColor=white)
 ![WebView2](https://img.shields.io/badge/WebView2-Chromium-3C4A5A?logo=microsoftedge&logoColor=white)
@@ -95,6 +95,17 @@ complètes).
   `ollama cp sovereign-cim-lora sovereign-cim` - `sovereign-cim`
   (le défaut de `OLLAMA_MODEL`) pointe maintenant sur l'adaptateur
   LoRA. `sovereign-cim-lora` reste le tag explicite pour audit/rollback.
+- **Fiabilisation post-promotion** *(V37.5, 2026-07-24)* : le premier
+  contrôle qualitatif utilisait `ollama run` en CLI, pas le vrai chemin de
+  code applicatif - un test via `cim_suggest()` a révélé que
+  `format: "json"` (décodage contraint côté Ollama) fait collapser la
+  sortie du LoRA 0.5B à 1 seul objet au lieu de l'array de 5 attendu, et
+  que `cim_suggest()` plantait (`KeyError`) sur cette forme. Corrigé :
+  `format: "json"` retiré (le `SYSTEM` prompt du Modelfile suffit à
+  imposer le JSON), réponse non-array normalisée en liste, texte parasite
+  après le JSON toléré via `json.JSONDecoder().raw_decode`. Leçon : valider
+  un modèle promu via le code applicatif réel, pas seulement le CLI du
+  modèle.
 
 ## Formats ATIH supportés
 
