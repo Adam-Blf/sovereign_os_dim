@@ -53,22 +53,31 @@ flowchart TB
     SENT --> PROC
 ```
 
+## Téléchargement Exécutable (Sans Python)
+
+Pour les utilisateurs ne disposant pas de Python installé (TIM, médecins DIM, gestionnaires) :
+- **Version Portable Windows (Fichier unique `.exe`)** : Téléchargez [`Sovereign_OS_DIM_Portable.exe`](https://github.com/Adam-Blf/sovereign_os_dim/releases/download/v37.5/Sovereign_OS_DIM_Portable.exe) depuis la [Release V37.5](https://github.com/Adam-Blf/sovereign_os_dim/releases/tag/v37.5).
+- **Manuels & Guides PDF Officiels** :
+  - [Guide Métier TIM / Médecin DIM (`docs/Sovereign_OS_DIM_Guide.pdf`)](docs/Sovereign_OS_DIM_Guide.pdf)
+  - [Guide Développeur & Architecture (`docs/Sovereign_OS_DIM_Guide_Dev.pdf`)](docs/Sovereign_OS_DIM_Guide_Dev.pdf)
+  - [Manuel Utilisateur (`docs/Sovereign_OS_DIM_Manuel.pdf`)](docs/Sovereign_OS_DIM_Manuel.pdf)
+  - [Dossier de Conformité DSI (`docs/Dossier_Conformite_DSI.pdf`)](docs/Dossier_Conformite_DSI.pdf)
+
 ## Fonctionnalités
 
 - **23 formats ATIH** - PSY (RPS, RAA, RPSA, R3A, EDGAR, FICHSUP-PSY…), MCO (RSS, RSFA, RSFB, RSFC), SSR/SMR (RHS, SSRHA, RAPSS), HAD (RPSS, RAPSS-HAD), transversal (VID-HOSP, ANO-HOSP).
 - **Master Patient Index** - croisement IPP/DDN, persistance SQLite, reprise batch interrompu.
 - **Identitovigilance** - détection collisions, résolution automatique par fréquence majoritaire ou manuelle.
 - **Preflight DRUIDES** - 15 validateurs avant upload e-PMSI - FINESS, IPP, DDN, CIM-10, mode légal, secteur ARS, chaînage, duplicatas, orphelins.
-- **CimSuggester IA** - suggestion de code CIM-10 quand le DP est absent - modèle local (TF-IDF + régression logistique) par défaut, zéro configuration ; un serveur Ollama intranet peut le remplacer via `OLLAMA_BASE`. Adaptateur LoRA `sovereign-cim-lora` (Qwen2.5-0.5B fine-tuné sur dataset synthétique CIM-10, voir section Fine-tuning ci-dessous) **validé manuellement et promu** modèle Ollama `sovereign-cim` par défaut *(V37.4)*.
-- **Module ML** *(V36-V37.3)* - 6 modèles entraînés sur dataset synthétique, tous locaux : format_detector (58 classes, acc 0.77), collision_risk (AUC 1.0), ddn_validity (AUC 0.86) *(V36, XGBoost/LightGBM)* ; cim_suggester *(TF-IDF + régression logistique)* ; prédicteur de durée de séjour *(XGBoost, MAE 11.1 j, R² 0.404 sur 20 000 séjours synthétiques)* ; regroupement de patients *(KMeans + UMAP)* *(V37.3)*. Benchmark 4 algos par tâche sur les modèles V36 (XGB default + tuned, LightGBM, RF), garde le meilleur. Voir `backend/ml/`.
+- **CimSuggester IA** - suggestion de code CIM-10 quand le DP est absent - modèle local (TF-IDF + régression logistique) par défaut, zéro configuration ; un serveur Ollama intranet peut le remplacer via `OLLAMA_BASE`. Adaptateur LoRA `sovereign-cim-lora` (Qwen2.5-0.5B fine-tuné sur dataset synthétique CIM-10, voir section Fine-tuning ci-dessous) **validé manuellement et promu** modèle Ollama `sovereign-cim` par défaut *(V37.5)*.
+- **Module ML** *(V37.5)* - 6 modèles entraînés sur dataset synthétique, tous locaux : format_detector (58 classes, acc 0.77), collision_risk (AUC 1.0), ddn_validity (AUC 0.86) *(XGBoost/LightGBM)* ; cim_suggester *(TF-IDF + régression logistique)* ; prédicteur de durée de séjour *(XGBoost, MAE 11.1 j, R² 0.404 sur 20 000 séjours synthétiques)* ; regroupement de patients *(KMeans + UMAP)*. Benchmark 4 algos par tâche sur les modèles V37.5 (XGB default + tuned, LightGBM, RF), garde le meilleur. Voir `backend/ml/`.
 - **Structure polaire** - arborescence Pôle/Secteur/UM avec organigramme vectoriel + export PDF multi-pages.
-- **Analyse d'activité par UM** *(V35)* - drop-zone HTML5 accessible clavier, parsing RPS/RAA asynchrone en chunks 5000 lignes, détection des UM dormantes, export CSV UTF-8 BOM, badges rouges clignotants sur l'arbre.
+- **Analyse d'activité par UM** *(V37.5)* - drop-zone HTML5 accessible clavier, parsing RPS/RAA asynchrone en chunks 5000 lignes, détection des UM dormantes, export CSV UTF-8 BOM, badges rouges clignotants sur l'arbre.
 - **Dashboard Live** - 4 graphiques Chart.js + 6 KPI dérivés du MPI, export PDF paysage.
 - **Inspector Terminal** - décomposition ligne par ligne avec 15 validations, pseudonymisation auto.
 - **100% local, zéro réseau** - aucun serveur HTTP, aucune socket en écoute. Le frontend appelle Python via le pont in-process de pywebview (`window.pywebview.api`). Aucune surface de fuite de données.
-- **Moulinette FICHCOMP** *(V37)* - moulinette Excel vers fichier plat FICHCOMP/FICHDMI à largeur fixe (suppléments transports, médicaments, dispositifs médicaux). Nettoyage du classeur source, propagation des dates, génération du format ATIH puis contrôle de longueur (53 caractères médicament, 50 caractères DMI). Code source dans `tools/moulinette_fichcomp/`.
-- **Export PDF** - organigrammes, rapports preflight, dashboards BIQuery (HTML→PDF).
-- **Guides PDF** *(V37)* - `docs/Sovereign_OS_DIM_Guide.pdf` (38 pages, polices Unicode, orientation métier, page Roadmap, références ATIH/ARS vérifiées).
+- **Moulinette FICHCOMP** *(V37.5)* - moulinette Excel vers fichier plat FICHCOMP/FICHDMI à largeur fixe (suppléments transports, médicaments, dispositifs médicaux). Nettoyage du classeur source, propagation des dates, génération du format ATIH puis contrôle de longueur (53 caractères médicament, 50 caractères DMI). Code source dans `tools/moulinette_fichcomp/`.
+- **Export PDF & Guides** *(V37.5)* - organigrammes, rapports preflight, dashboards BIQuery et ensemble des 5 manuels PDF sous `docs/` réactualisés à la version V37.5.
 
 ## Fine-tuning LoRA CimSuggester
 
