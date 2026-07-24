@@ -58,28 +58,30 @@ def _register_fonts(pdf: FPDF) -> None:
 
 
 def _write_inline(pdf: FPDF, text: str, size: int = 10, color=INK) -> None:
-    """Rend un paragraphe avec gestion du gras **...** via multi_cell segmenté."""
+    """Rend un paragraphe avec gestion du titre/label en gras et du gras Markdown **...**."""
     pdf.set_text_color(*color)
-    parts = re.split(r"(\*\*.+?\*\*)", text)
-    for part in parts:
-        if not part:
-            continue
-        if part.startswith("**") and part.endswith("**"):
-            pdf.set_font("Montserrat", "B", size)
-            pdf.write(5.6, part[2:-2])
-        else:
-            pdf.set_font("Montserrat", "", size)
-            pdf.write(5.6, part)
+    clean_text = text.replace("**", "")
+    if " : " in clean_text and not clean_text.startswith("http"):
+        prefix, rest = clean_text.split(" : ", 1)
+        pdf.set_font("Montserrat", "B", size)
+        pdf.write(5.6, prefix + " : ")
+        pdf.set_font("Montserrat", "", size)
+        pdf.write(5.6, rest)
+    else:
+        pdf.set_font("Montserrat", "", size)
+        pdf.write(5.6, clean_text)
     pdf.ln(6.4)
+
+
+STATUS_VALUES = {"Conforme", "Sécurisé", "Non concerné", "À valider (DSN)", "À valider"}
 
 
 def _cell_text(cell: str) -> tuple[str, bool]:
     """Retire le markdown **gras** d'une cellule de tableau, et dit si elle
-    était entièrement en gras (badges de statut type **Conforme**)."""
-    stripped = cell.strip()
-    if stripped.startswith("**") and stripped.endswith("**") and len(stripped) > 4:
-        return stripped[2:-2], True
-    return re.sub(r"\*\*(.+?)\*\*", r"\1", cell), False
+    était en gras ou correspond à un statut."""
+    stripped = re.sub(r"\*\*(.+?)\*\*", r"\1", cell).strip()
+    is_bold = cell.strip().startswith("**") or stripped in STATUS_VALUES
+    return stripped, is_bold
 
 
 NODE_RE = re.compile(r'^(\w+)\["(.+?)"\]$')
@@ -277,8 +279,9 @@ def build() -> None:
     i = 0
     while i < len(md):
         line = md[i]
-        if line.startswith("**") and " :**" in line:
-            meta.append(line.strip())
+        clean_line = line.strip().replace("**", "")
+        if any(clean_line.startswith(k) for k in ["Projet :", "Date :", "Émetteur :", "Destinataires :", "Établissement :"]):
+            meta.append(clean_line)
             i += 1
         elif line.startswith("# ") or line.startswith("### ") or line.strip() == "---" or not line.strip():
             i += 1
