@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip -l \"C:/Users/adamb/Downloads/Insta/Partie 1.zip\")",
+      "Bash(unzip -l C:/Users/adamb/Downloads/Insta/__TRACKED_VAR__.zip)",
+      "Bash(awk '$NF ~ /\\\\.\\(json|html\\)$/ {print $NF}')"
+    ]
+  }
+}
