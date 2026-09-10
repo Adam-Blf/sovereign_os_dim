@@ -318,7 +318,7 @@
                     cutout: "65%",
                     responsive: false,
                     plugins: {
-                        legend: { position: "right", labels: { font: { family: "'Plus Jakarta Sans'", weight: "bold", size: 11 }, padding: 12 } }
+                        legend: { position: "right", labels: { font: { family: "'Montserrat'", weight: "bold", size: 11 }, padding: 12 } }
                     }
                 }
             });

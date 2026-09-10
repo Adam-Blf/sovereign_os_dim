@@ -1,4 +1,4 @@
-![version](https://img.shields.io/badge/version-V36.0-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![ml](https://img.shields.io/badge/ml-XGBoost%20%2B%20LightGBM-FF6F00?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
+![version](https://img.shields.io/badge/version-V36.1-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![ml](https://img.shields.io/badge/ml-XGBoost%20%2B%20LightGBM-FF6F00?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
 
 # Sovereign OS DIM · Station PMSI
 
@@ -9,7 +9,7 @@
 
 [![CI](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml)
 ![Status](https://img.shields.io/badge/status-production-brightgreen)
-![Version](https://img.shields.io/badge/version-V36.0-blue)
+![Version](https://img.shields.io/badge/version-V36.1-blue)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
 ![C#](https://img.shields.io/badge/C%23-.NET_8-239120?logo=c-sharp&logoColor=white)
 ![WebView2](https://img.shields.io/badge/WebView2-Chromium-3C4A5A?logo=microsoftedge&logoColor=white)
@@ -39,6 +39,8 @@ RGPD-safe, aucune donnée patient n'est transmise.**
 - **Bridge HTTP REST** · endpoints sécurisés 127.0.0.1 + token Bearer pour intégration PHP.
 - **Export PDF** · organigrammes, rapports preflight, dashboards BIQuery (HTML→PDF).
 - **Guide utilisateur** *(V36)* · `Sovereign_OS_DIM_Guide.pdf` (38 pages, polices Unicode, orientation métier, page Roadmap, références ATIH/ARS vérifiées).
+- **Assets 100 % locaux** *(V36.1)* · Tailwind, Lucide, Chart.js, anime.js et les polices sont servis depuis le poste, aucun appel CDN. L'interface fonctionne sur une machine coupée du réseau, exigence des postes DIM. Rapatriement reproductible · `python tools/vendor_assets.py`.
+- **Documentation DSI** *(V36.1)* · documentation fonctionnelle et technique + guide utilisateur, générés en PDF depuis des sources Markdown versionnées, avec sommaire, captures et annexe de triage AIPD.
 
 ## Formats ATIH supportés
 
@@ -189,7 +191,8 @@ sovereign_os_dim/
 | Couche | Techno |
 |--------|--------|
 | Desktop | Python 3.12 + pywebview, ou C# .NET 8 + WebView2 |
-| Frontend | HTML + Tailwind CDN + Chart.js + anime.js + Lucide |
+| Frontend | HTML + Tailwind, Chart.js, anime.js, Lucide, tous embarques en local (`frontend/vendor/`) |
+| Polices | Plus Jakarta Sans + IBM Plex Mono, woff2 embarques (`frontend/fonts/`) |
 | Bridge HTTP | Flask (Python) ou ASP.NET Core (C#) |
 | Persistance | SQLite (`Microsoft.Data.Sqlite` pour le port C#) |
 | PDF | fpdf2 (Unicode Segoe UI / DejaVu, fallback latin-1) |
@@ -206,13 +209,28 @@ sovereign_os_dim/
 - **Audit log art. 30 RGPD** · chaque traitement horodaté.
 - **Pseudonymisation IPP** · optionnelle pour rapports non-nominatifs.
 - **Bandit** · 0 issue sur 2457 lignes backend.
+- **Zero dependance CDN** · bibliotheques et polices servies depuis le poste, l'interface s'affiche a l'identique sur une machine sans acces internet (rapatriement reproductible via `python tools/vendor_assets.py`).
 
 ## Version distribuée
 
-Le bundle C# prêt à livrer vit dans `D:\SovereignOS_DIM_CSharp\` ·
-`SovereignOS.Desktop.exe` (97 Mo), `frontend/` (patchs sécurité inclus),
-`Sovereign_OS_DIM_Guide.pdf` (guide métier), `Sovereign_OS_DIM_Guide_Dev.pdf` (guide dev), `LISEZ-MOI.txt`,
-`LICENCE.txt`, `VERSION`, `CHECKSUMS.sha256`. Total 140 Mo.
+Le port C# se livre en **un seul fichier** depuis V35.1 · `SovereignOS.Desktop.exe`
+(98 Mo). Le frontend, les bibliothèques et les polices sont embarqués dans le
+binaire et extraits au premier lancement dans
+`%LOCALAPPDATA%\SovereignOS\frontend\{version}`. Plus de dossier `frontend/` à
+copier à côté de l'exe.
+
+Le dossier de livraison type contient l'exécutable, les deux PDF de
+documentation et l'empreinte SHA-256 ·
+
+| Fichier | Contenu |
+|---|---|
+| `SovereignOS.Desktop.exe` | Application autonome, sans installation |
+| `Sovereign_OS_DIM_Documentation_Technique.pdf` | Documentation fonctionnelle et technique, destinée à la DSI |
+| `Sovereign_OS_DIM_Guide_Utilisateur.pdf` | Guide métier, structuré sur le cahier des charges DIM |
+| `SHA256.txt` | Empreinte du binaire, à recalculer après signature |
+
+Ces deux PDF se régénèrent depuis leurs sources Markdown, dans le projet C# ·
+`python docs/generate_pdf.py`.
 
 ## Roadmap V37+
 

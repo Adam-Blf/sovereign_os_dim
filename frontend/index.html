@@ -6,21 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sovereign OS DIM</title>
 
-    <!-- Bibliothèques de Grade Industriel -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
-        rel="stylesheet">
+    <!-- Bibliothèques embarquées · aucun appel réseau, poste isolé compatible.
+         Rapatriement : voir tools/vendor_assets.py -->
+    <script src="vendor/tailwind.js"></script>
+    <script src="js/icons.js"></script>
+    <script src="vendor/chart.umd.js"></script>
+    <script src="vendor/anime.min.js"></script>
+    <link href="fonts/fonts.css" rel="stylesheet">
 
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'], mono: ['"JetBrains Mono"', 'monospace'] },
+                    fontFamily: { sans: ['"Montserrat"', 'Inter', 'sans-serif'], mono: ['"IBM Plex Mono"', 'monospace'] },
                     colors: {
                         gh: {
                             navy: '#000091', teal: '#00897B', error: '#E11D48', success: '#10B981',
