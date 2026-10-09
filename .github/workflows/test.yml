@@ -51,6 +51,7 @@ jobs:
           node --check frontend/js/htmlpdf-view.js
           node --check frontend/js/tuto-overlay.js
           node --check frontend/js/cockpit-view.js
+          node --check frontend/js/icons.js
           node --check frontend/js/sentinel-helpers.js
           node --check frontend/js/sentinel-views.js
 

@@ -94,6 +94,19 @@ async function main() {
         record("ecran par defaut rend du contenu non vide", false, e.message);
     }
 
+    try {
+        const bilan = await page.evaluate(() => {
+            const nodes = [...document.querySelectorAll("[data-icon]")];
+            const vides = nodes.filter((n) => n.tagName.toLowerCase() !== "svg" || n.childElementCount === 0);
+            return { total: nodes.length, vides: vides.map((n) => n.getAttribute("data-icon")) };
+        });
+        if (bilan.total === 0) throw new Error("aucune icone dans la page");
+        if (bilan.vides.length > 0) throw new Error(`icones non rendues : ${bilan.vides.join(", ")}`);
+        record(`icones Reicon rendues (${bilan.total})`, true);
+    } catch (e) {
+        record("icones Reicon rendues", false, e.message);
+    }
+
     await browser.close();
 
     console.log("\n═══ Smoke test rendu frontend ═══\n");

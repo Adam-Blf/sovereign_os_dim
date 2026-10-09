@@ -217,7 +217,7 @@
             case "structure": renderStructure(vp); break;
             case "tuto": renderTuto(vp); break;
         }
-        if (window.lucide) lucide.createIcons();
+        Icons.render();
     }
 
     // =========================================================================
@@ -230,7 +230,7 @@
 
         vp.innerHTML = `
             <div class="grid grid-cols-4 gap-6 mb-10">
-                ${statCard("folders", "Dossiers", d.folders, "blue")}
+                ${statCard("folder-files", "Dossiers", d.folders, "blue")}
                 ${statCard("file-text", "Fichiers", d.files, "teal")}
                 ${statCard("fingerprint", "IPP Uniques", m.total_ipp, "amber")}
                 ${statCard("alert-triangle", "Collisions", m.collisions, "red", m.collisions > 0 ? "ring-2 ring-gh-error/20" : "")}
@@ -240,7 +240,7 @@
                 <!-- Chart -->
                 <div class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl">
                     <h3 class="font-black text-gh-navy uppercase text-sm tracking-tighter italic mb-6 flex items-center gap-3">
-                        <i data-lucide="pie-chart" class="w-5 h-5 text-gh-teal"></i> Répartition formats
+                        <i data-icon="chart-pie" class="w-5 h-5 text-gh-teal"></i> Répartition formats
                     </h3>
                     <div class="h-64 flex items-center justify-center">
                         <canvas id="chart-formats" width="280" height="280"></canvas>
@@ -250,7 +250,7 @@
                 <!-- Matrice -->
                 <div class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl">
                     <h3 class="font-black text-gh-navy uppercase text-sm tracking-tighter italic mb-6 flex items-center gap-3">
-                        <i data-lucide="database" class="w-5 h-5 text-gh-navy"></i> Matrice ATIH - ${d.formats} formats
+                        <i data-icon="database" class="w-5 h-5 text-gh-navy"></i> Matrice ATIH - ${d.formats} formats
                     </h3>
                     <div class="grid grid-cols-2 gap-3" id="matrix-grid"></div>
                 </div>
@@ -259,7 +259,7 @@
             <!-- MPI Summary -->
             <div class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl">
                 <h3 class="font-black text-gh-navy uppercase text-sm tracking-tighter italic mb-6 flex items-center gap-3">
-                    <i data-lucide="activity" class="w-5 h-5 text-gh-success"></i> État MPI
+                    <i data-icon="wave-pulse" class="w-5 h-5 text-gh-success"></i> État MPI
                 </h3>
                 <div class="grid grid-cols-4 gap-4">
                     <div class="bg-slate-50 rounded-2xl p-5 text-center">
@@ -285,7 +285,7 @@
             <div class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl mt-10" id="active-pop-block">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="font-black text-gh-navy uppercase text-sm tracking-tighter italic flex items-center gap-3">
-                        <i data-lucide="users" class="w-5 h-5 text-gh-teal"></i> File active - par année et par champ
+                        <i data-icon="users" class="w-5 h-5 text-gh-teal"></i> File active - par année et par champ
                     </h3>
                     <span class="text-[9px] font-mono text-slate-400 italic">IPP uniques dé-doublonnés cross-recueils</span>
                 </div>
@@ -360,7 +360,7 @@
             }
         } catch (e) { /* ok */ }
 
-        if (window.lucide) lucide.createIcons();
+        Icons.render();
     }
 
     // =========================================================================
@@ -452,7 +452,7 @@
         const empty = `
             <div class="flex flex-col items-center justify-center py-20 px-8 text-center">
                 <div class="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-6 rotate-3">
-                    <i data-lucide="circle-slash-2" class="w-7 h-7 text-slate-400"></i>
+                    <i data-icon="forbidden-circle" class="w-7 h-7 text-slate-400"></i>
                 </div>
                 <p class="font-black text-slate-500 dark:text-slate-400 uppercase italic tracking-tighter text-lg">Aucun parcours cross-modalités</p>
                 <p class="text-xs text-slate-400 dark:text-slate-500 mt-3 max-w-md">
@@ -465,7 +465,7 @@
                 <header class="px-10 py-8 flex items-end justify-between gap-6 flex-wrap border-b border-slate-100 dark:border-slate-800">
                     <div>
                         <div class="flex items-center gap-4 mb-2">
-                            <i data-lucide="git-fork" class="w-6 h-6 text-gh-teal"></i>
+                            <i data-icon="hierarchy3" class="w-6 h-6 text-gh-teal"></i>
                             <h3 class="font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic text-xl leading-none">
                                 Parcours cross-modalités
                             </h3>
@@ -480,7 +480,7 @@
                             <span class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">patients</span>
                         </div>
                         <label class="relative">
-                            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            <i data-icon="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                             <input id="journey-filter" type="text" placeholder="IPP…"
                                    class="journey-filter pl-9 pr-4 py-2.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-mono text-xs w-40 focus:w-64 focus:bg-white dark:focus:bg-slate-800 outline-none transition-all" />
                         </label>
@@ -509,7 +509,7 @@
                 });
             });
         }
-        if (window.lucide) window.lucide.createIcons();
+        Icons.render();
     }
 
     function renderActivePopulation(ap) {
@@ -576,7 +576,7 @@
         return `
             <div class="stat-card bg-white rounded-[2rem] p-8 border border-slate-100 shadow-lg ${extra}">
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="p-3 ${bg[color]} rounded-xl"><i data-lucide="${icon}" class="w-5 h-5 ${tc[color]}"></i></div>
+                    <div class="p-3 ${bg[color]} rounded-xl"><i data-icon="${icon}" class="w-5 h-5 ${tc[color]}"></i></div>
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${label}</span>
                 </div>
                 <p class="text-4xl font-black ${tc[color]} tracking-tighter">${N(value)}</p>
@@ -591,16 +591,16 @@
             <div class="drop-zone rounded-[3rem] p-14 mb-10 text-center relative transition-colors duration-500" id="drop-zone-area">
                 <div class="pointer-events-none">
                     <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center mx-auto mb-6 transition-colors duration-500">
-                        <i data-lucide="upload-cloud" class="w-10 h-10 text-gh-teal"></i>
+                        <i data-icon="cloud-upload" class="w-10 h-10 text-gh-teal"></i>
                     </div>
                     <h3 class="text-2xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic mb-3">Déposer les fichiers PMSI</h3>
                     <p class="text-slate-400 dark:text-slate-500 mb-6">Glissez vos dossiers ici - fichiers et sous-dossiers inclus</p>
                     <div class="flex justify-center gap-4">
                         <button class="pointer-events-auto px-8 py-4 bg-gh-navy dark:bg-blue-600 text-white rounded-full font-black uppercase text-[10px] tracking-[0.2em] shadow-lg hover:bg-blue-800 dark:hover:bg-blue-700 transition-all active:scale-95" id="btn-add-folder">
-                            <i data-lucide="folder-plus" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Ajouter dossier
+                            <i data-icon="folder-plus" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Ajouter dossier
                         </button>
                         <button class="pointer-events-auto px-8 py-4 bg-gh-teal dark:bg-teal-600 text-white rounded-full font-black uppercase text-[10px] tracking-[0.2em] shadow-lg hover:bg-teal-600 dark:hover:bg-teal-700 transition-all active:scale-95" id="btn-scan">
-                            <i data-lucide="scan" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Scanner & Traiter
+                            <i data-icon="scan" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Scanner & Traiter
                         </button>
                     </div>
                 </div>
@@ -618,7 +618,7 @@
             <div id="folders-panel" class="hidden bg-white dark:bg-slate-800 rounded-[2rem] p-8 border border-slate-100 dark:border-slate-700 shadow-lg dark:shadow-none mb-8 transition-colors duration-500">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-black text-gh-navy dark:text-blue-400 uppercase text-sm tracking-tighter italic flex items-center gap-3">
-                        <i data-lucide="hard-drive" class="w-4 h-4 text-gh-teal"></i> Dossiers
+                        <i data-icon="hard-drive" class="w-4 h-4 text-gh-teal"></i> Dossiers
                     </h3>
                     <button class="text-[10px] font-black text-gh-error uppercase tracking-widest hover:underline" id="btn-clear">Vider</button>
                 </div>
@@ -629,7 +629,7 @@
             <div id="files-section" class="hidden">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="font-black text-gh-navy dark:text-blue-400 uppercase text-lg tracking-tighter italic flex items-center gap-3">
-                        <i data-lucide="file-text" class="w-5 h-5 text-gh-teal"></i> Fichiers détectés
+                        <i data-icon="file-text" class="w-5 h-5 text-gh-teal"></i> Fichiers détectés
                     </h3>
                     <span class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest" id="files-count">0</span>
                 </div>
@@ -690,12 +690,12 @@
             p.classList.remove("hidden");
             l.innerHTML = f.map((x, i) => `
                 <div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 px-5 py-3 rounded-xl text-sm transition-colors duration-500">
-                    <i data-lucide="folder" class="w-4 h-4 text-gh-navy dark:text-blue-400 shrink-0"></i>
+                    <i data-icon="folder" class="w-4 h-4 text-gh-navy dark:text-blue-400 shrink-0"></i>
                     <span class="font-mono text-slate-600 dark:text-slate-300 truncate flex-1 text-[11px]">${escHtml(x)}</span>
                     <span class="text-[9px] font-black text-gh-teal">#${i + 1}</span>
                 </div>
             `).join("");
-            if (window.lucide) lucide.createIcons();
+            Icons.render();
         } else {
             p.classList.add("hidden");
         }
@@ -794,7 +794,7 @@
             });
         });
 
-        if (window.lucide) lucide.createIcons();
+        Icons.render();
     }
 
     // =========================================================================
@@ -816,11 +816,11 @@
                 </div>
                 <div class="flex gap-3">
                     <div class="relative">
-                        <i data-lucide="search" class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-4 top-1/2 -translate-y-1/2"></i>
+                        <i data-icon="search" class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-4 top-1/2 -translate-y-1/2"></i>
                         <input type="text" id="idv-search" placeholder="Rechercher IPP…" class="pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-xs font-mono w-52 focus:outline-none focus:border-gh-navy dark:focus:border-blue-400 transition-all shadow-inner" />
                     </div>
                     <button class="px-8 py-3 bg-gh-warning text-white rounded-full font-black uppercase text-[10px] tracking-[0.15em] shadow-lg hover:bg-amber-600 transition-all active:scale-95" id="btn-auto">
-                        <i data-lucide="wand-2" class="w-4 h-4 inline mr-1 -mt-0.5"></i>Auto-résoudre
+                        <i data-icon="magic-wand" class="w-4 h-4 inline mr-1 -mt-0.5"></i>Auto-résoudre
                     </button>
                 </div>
             </div>
@@ -828,7 +828,7 @@
             ${cols.length === 0 ? `
                 <div class="text-center py-16">
                     <div class="w-20 h-20 bg-green-50 rounded-[2rem] flex items-center justify-center mx-auto mb-5">
-                        <i data-lucide="check-circle" class="w-10 h-10 text-gh-success"></i>
+                        <i data-icon="check-circle" class="w-10 h-10 text-gh-success"></i>
                     </div>
                     <h4 class="text-xl font-black text-gh-success uppercase tracking-tighter italic">Aucune collision</h4>
                     <p class="text-slate-400 text-sm mt-3">Tous les IPP ont une DDN unique.</p>
@@ -866,7 +866,7 @@
                 }
                 list.innerHTML = renderCollisionRows(filtered);
                 bindResolveButtons();
-                if (window.lucide) lucide.createIcons();
+                Icons.render();
             });
         }
 
@@ -885,7 +885,7 @@
             });
         }
 
-        if (window.lucide) lucide.createIcons();
+        Icons.render();
     }
 
     function renderCollisionRows(cols) {
@@ -937,8 +937,8 @@
                         <span class="ml-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">${o.count} fichier(s)</span>
                     </div>
                     ${o.ddn === c.pivot
-                ? '<i data-lucide="check-circle" class="w-7 h-7 text-gh-success"></i>'
-                : '<i data-lucide="circle" class="w-7 h-7 text-slate-300 dark:text-slate-600"></i>'}
+                ? '<i data-icon="check-circle" class="w-7 h-7 text-gh-success"></i>'
+                : '<i data-icon="record" class="w-7 h-7 text-slate-300 dark:text-slate-600"></i>'}
                 </div>
                 <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 font-mono truncate">${o.sources.map(s => escHtml(s)).join(", ")}</p>
             </button>
@@ -958,7 +958,7 @@
         });
 
         modal.classList.remove("hidden");
-        if (window.lucide) lucide.createIcons();
+        Icons.render();
     }
 
     // =========================================================================
@@ -969,7 +969,7 @@
         vp.innerHTML = `
             <div class="bg-white dark:bg-slate-800 rounded-[3rem] p-14 border border-slate-100 dark:border-slate-700 shadow-xl dark:shadow-none text-center max-w-3xl mx-auto transition-colors duration-500">
                 <div class="w-20 h-20 bg-teal-50 dark:bg-teal-900/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 transition-colors duration-500">
-                    <i data-lucide="file-down" class="w-10 h-10 text-gh-teal"></i>
+                    <i data-icon="file-down" class="w-10 h-10 text-gh-teal"></i>
                 </div>
                 <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic mb-3">Export PMSI-Pilot</h3>
                 <p class="text-slate-400 dark:text-slate-500 mb-8">CSV normalisés - séparateur ; - DDN pivot injectées</p>
@@ -980,14 +980,14 @@
                     <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-5 transition-colors duration-500"><p class="text-2xl font-black ${m.pending > 0 ? "text-gh-error" : "text-gh-success"}">${N(m.pending)}</p><p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase mt-1">Conflits</p></div>
                 </div>
 
-                ${m.pending > 0 ? `<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-xl p-4 mb-6 text-left text-xs text-amber-800 dark:text-amber-400 font-bold transition-colors duration-500"><i data-lucide="alert-triangle" class="w-4 h-4 inline mr-1"></i>${m.pending} collision(s) non résolue(s) - auto-résolution appliquée à l'export.</div>` : ""}
+                ${m.pending > 0 ? `<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-xl p-4 mb-6 text-left text-xs text-amber-800 dark:text-amber-400 font-bold transition-colors duration-500"><i data-icon="alert-triangle" class="w-4 h-4 inline mr-1"></i>${m.pending} collision(s) non résolue(s) - auto-résolution appliquée à l'export.</div>` : ""}
 
                 <div class="flex justify-center gap-4">
                     <button class="px-10 py-5 bg-gh-teal dark:bg-teal-600 text-white rounded-full font-black uppercase text-xs tracking-[0.2em] shadow-lg hover:bg-teal-600 dark:hover:bg-teal-700 transition-all active:scale-95" id="btn-exp-def">
-                        <i data-lucide="download" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Exporter
+                        <i data-icon="download" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Exporter
                     </button>
                     <button class="px-10 py-5 bg-gh-navy dark:bg-blue-600 text-white rounded-full font-black uppercase text-xs tracking-[0.2em] shadow-lg hover:bg-blue-800 dark:hover:bg-blue-700 transition-all active:scale-95" id="btn-exp-dir">
-                        <i data-lucide="folder-output" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Choisir dossier
+                        <i data-icon="folder-move" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Choisir dossier
                     </button>
                 </div>
 
@@ -1014,7 +1014,7 @@
             showExportResult(await API().export_csv_to(folder));
         });
 
-        if (window.lucide) lucide.createIcons();
+        Icons.render();
     }
 
     function showExportResult(r) {
@@ -1050,7 +1050,7 @@
         if (sid) sid.textContent = "SID_" + Math.random().toString(36).substring(2, 8).toUpperCase();
         body.innerHTML = '<p class="text-blue-300 animate-pulse">Analyse en cours…</p>';
         modal.classList.remove("hidden");
-        if (window.lucide) lucide.createIcons();
+        Icons.render();
 
         const data = await API().inspect_file(fp);
         if (data.error) { body.innerHTML = `<p class="text-red-400">${escHtml(data.error)}</p>`; return; }
@@ -1098,7 +1098,7 @@
                     <!-- Header -->
                     <div class="flex items-center gap-6 mb-12 border-b border-slate-100 dark:border-slate-700 pb-8 relative z-10 transition-colors duration-500">
                         <div class="w-16 h-16 bg-gh-navy dark:bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg text-white">
-                            <i data-lucide="book-open" class="w-8 h-8"></i>
+                            <i data-icon="book-open" class="w-8 h-8"></i>
                         </div>
                         <div>
                             <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic">Guide Opérationnel</h3>
@@ -1120,11 +1120,11 @@
                             <div class="tuto-connector hidden sm:block"></div>
                             <div class="flex-1 pt-2">
                                 <h4 class="text-lg font-black text-gh-navy dark:text-blue-400 uppercase italic tracking-tighter mb-2 flex items-center gap-2">
-                                    <i data-lucide="folders" class="w-4 h-4 text-gh-teal"></i> Ingestion des données
+                                    <i data-icon="folder-files" class="w-4 h-4 text-gh-teal"></i> Ingestion des données
                                 </h4>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Rendez-vous dans la section <strong>Sélection des fichiers</strong>. Vous pouvez y déposer vos dossiers contenant les fichiers ATIH (.txt) validés ou bruts. Le moteur reconnaît automatiquement 8 formats (RPS, RAA, VID-HOSP, etc.).</p>
                                 <div class="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl p-4 text-[11px] text-slate-600 dark:text-slate-300 font-mono border inline-flex items-center gap-2 transition-colors duration-500">
-                                    <i data-lucide="info" class="w-4 h-4 text-gh-teal"></i> Astuce : Glissez-déposez le dossier racine "Années" directement.
+                                    <i data-icon="info-circle" class="w-4 h-4 text-gh-teal"></i> Astuce : Glissez-déposez le dossier racine "Années" directement.
                                 </div>
                             </div>
                         </div>
@@ -1135,7 +1135,7 @@
                             <div class="tuto-connector hidden sm:block"></div>
                             <div class="flex-1 pt-2">
                                 <h4 class="text-lg font-black text-gh-navy dark:text-blue-400 uppercase italic tracking-tighter mb-2 flex items-center gap-2">
-                                    <i data-lucide="activity" class="w-4 h-4 text-gh-navy dark:text-blue-400"></i> Validation & Traitement
+                                    <i data-icon="wave-pulse" class="w-4 h-4 text-gh-navy dark:text-blue-400"></i> Validation & Traitement
                                 </h4>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Cliquez sur <strong class="text-gh-teal">Scanner & Traiter</strong>. Sovereign OS va lire tous les fichiers en parallèle, filtrer les anomalies géométriques (auto-repair), et recenser l'intégralité des couples (IPP, DDN) présents.</p>
                                 <p class="text-sm text-slate-500 dark:text-slate-400">
@@ -1150,12 +1150,12 @@
                             <div class="tuto-connector hidden sm:block"></div>
                             <div class="flex-1 pt-2">
                                 <h4 class="text-lg font-black text-gh-navy dark:text-blue-400 uppercase italic tracking-tighter mb-2 flex items-center gap-2">
-                                    <i data-lucide="users-2" class="w-4 h-4 text-gh-warning"></i> Résolution des Collisions (Identitovigilance)
+                                    <i data-icon="users2" class="w-4 h-4 text-gh-warning"></i> Résolution des Collisions (Identitovigilance)
                                 </h4>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Si un même IPP possède plusieurs dates de naissance selon les fichiers, une <strong>collision</strong> est signalée. Allez dans l'onglet Identitovigilance.</p>
                                 <ul class="list-disc list-inside text-sm text-slate-500 dark:text-slate-400 space-y-1 mb-3 ml-2">
                                     <li>Cliquez sur <strong>Résoudre</strong> pour choisir manuellement la DDN de référence (Pivot).</li>
-                                    <li>Ou utilisez le bouton <strong class="text-gh-warning text-xs uppercase tracking-widest"><i data-lucide="wand-2" class="w-3 h-3 inline mr-1 -mt-0.5"></i> Auto-résoudre</strong> pour forcer la DDN la plus statistiquement présente.</li>
+                                    <li>Ou utilisez le bouton <strong class="text-gh-warning text-xs uppercase tracking-widest"><i data-icon="magic-wand" class="w-3 h-3 inline mr-1 -mt-0.5"></i> Auto-résoudre</strong> pour forcer la DDN la plus statistiquement présente.</li>
                                 </ul>
                             </div>
                         </div>
@@ -1165,7 +1165,7 @@
                             <div class="tuto-step-number bg-gh-error text-white shadow-lg">4</div>
                             <div class="flex-1 pt-2">
                                 <h4 class="text-lg font-black text-gh-navy dark:text-blue-400 uppercase italic tracking-tighter mb-2 flex items-center gap-2">
-                                    <i data-lucide="file-down" class="w-4 h-4 text-gh-error"></i> Export PMSI-Pilot
+                                    <i data-icon="file-down" class="w-4 h-4 text-gh-error"></i> Export PMSI-Pilot
                                 </h4>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Une fois l'index maître purifié, rendez-vous dans <strong>PMSI Pilot CSV</strong>.</p>
                                 <p class="text-sm text-slate-500 dark:text-slate-400">L'export va générer un fichier CSV par fichier MCO traité, tout en <strong>injectant la DDN pivot choisie</strong> sur l'intégralité du chaînage, annulant de facto l'anomalie.</p>
@@ -1176,7 +1176,7 @@
                     
                     <!-- Shortcuts Footer -->
                     <div class="mt-16 pt-8 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/80 -mx-12 -mb-12 px-12 pb-12 transition-colors duration-500">
-                        <h4 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><i data-lucide="keyboard" class="w-4 h-4"></i> Raccourcis Clavier</h4>
+                        <h4 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><i data-icon="keyboard" class="w-4 h-4"></i> Raccourcis Clavier</h4>
                         <div class="flex flex-wrap gap-4 text-[11px] text-slate-500 dark:text-slate-400">
                             <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">1</kbd> Dashboard</div>
                             <div><kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">Ctrl</kbd> + <kbd class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">2</kbd> Sélection des fichiers</div>
@@ -1188,12 +1188,12 @@
                     </div>
 
                     <!-- Watermark -->
-                    <i data-lucide="book" class="absolute -bottom-10 -right-10 w-64 h-64 text-slate-50 dark:text-slate-800 opacity-[0.4] rotate-12 pointer-events-none transition-colors duration-500"></i>
+                    <i data-icon="book" class="absolute -bottom-10 -right-10 w-64 h-64 text-slate-50 dark:text-slate-800 opacity-[0.4] rotate-12 pointer-events-none transition-colors duration-500"></i>
                 </div>
             </div>
         `;
 
-        if (window.lucide) lucide.createIcons();
+        Icons.render();
     }
 
     // =========================================================================
@@ -1203,13 +1203,13 @@
         vp.innerHTML = `
             <div class="bg-white dark:bg-slate-800 rounded-[3rem] p-14 border border-slate-100 dark:border-slate-700 shadow-xl dark:shadow-none text-center max-w-5xl mx-auto transition-colors duration-500">
                 <div class="w-20 h-20 bg-green-50 dark:bg-green-900/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 transition-colors duration-500">
-                    <i data-lucide="table-2" class="w-10 h-10 text-gh-success"></i>
+                    <i data-icon="grid2" class="w-10 h-10 text-gh-success"></i>
                 </div>
                 <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic mb-3">Import CSV</h3>
                 <p class="text-slate-400 dark:text-slate-500 mb-8">Importez et visualisez un fichier CSV - Auto-détection du séparateur (; , tab)</p>
 
                 <button class="px-10 py-5 bg-gh-success text-white rounded-full font-black uppercase text-xs tracking-[0.2em] shadow-lg hover:bg-green-600 transition-all active:scale-95 mb-8" id="btn-csv-select">
-                    <i data-lucide="file-up" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Sélectionner un fichier CSV
+                    <i data-icon="file-up" class="w-4 h-4 inline mr-2 -mt-0.5"></i>Sélectionner un fichier CSV
                 </button>
 
                 <div id="csv-result" class="hidden text-left"></div>
@@ -1241,7 +1241,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h4 class="font-black text-gh-navy dark:text-blue-400 uppercase text-sm tracking-tighter italic flex items-center gap-2">
-                            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-gh-success"></i> ${escHtml(data.filename)}
+                            <i data-icon="grid2" class="w-4 h-4 text-gh-success"></i> ${escHtml(data.filename)}
                         </h4>
                         <p class="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1">${N(data.total_rows)} lignes - ${data.headers.length} colonnes - sep: "${escHtml(data.separator)}"</p>
                     </div>
@@ -1256,10 +1256,10 @@
             `;
             result.classList.remove("hidden");
             toast("Import", `${data.filename} - ${N(data.total_rows)} lignes`, "success");
-            if (window.lucide) lucide.createIcons();
+            Icons.render();
         });
 
-        if (window.lucide) lucide.createIcons();
+        Icons.render();
     }
 
     // =========================================================================
@@ -1601,7 +1601,7 @@
             <div class="bg-white dark:bg-slate-800 rounded-[3rem] p-14 border border-slate-100 dark:border-slate-700 shadow-xl dark:shadow-none max-w-6xl mx-auto transition-colors duration-500">
                 <div class="text-center mb-8">
                     <div class="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 transition-colors duration-500">
-                        <i data-lucide="git-branch" class="w-10 h-10 text-gh-navy dark:text-blue-400"></i>
+                        <i data-icon="hierarchy2" class="w-10 h-10 text-gh-navy dark:text-blue-400"></i>
                     </div>
                     <h3 class="text-3xl font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic mb-3">Fichier de structure</h3>
                     <p class="text-slate-400 dark:text-slate-500 mb-6">Visualisez l'arborescence des pôles, services et UM d'un établissement</p>
@@ -1610,7 +1610,7 @@
                 <input type="file" id="structure-file-input" accept=".csv,.tsv,.txt" class="hidden" />
                 <div id="structure-drop-zone" role="button" tabindex="0" aria-label="Déposer un fichier structure - ou appuyer sur Entrée pour ouvrir le sélecteur"
                      class="mx-auto max-w-3xl border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-[2rem] p-10 text-center transition-all cursor-pointer hover:border-gh-navy hover:bg-blue-50/40 dark:hover:bg-blue-900/15 focus:outline-none focus:border-gh-navy focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900/40 mb-6">
-                    <i data-lucide="file-up" class="w-12 h-12 text-gh-navy dark:text-blue-400 mx-auto mb-5"></i>
+                    <i data-icon="file-up" class="w-12 h-12 text-gh-navy dark:text-blue-400 mx-auto mb-5"></i>
                     <p class="font-black uppercase tracking-wider text-gh-navy dark:text-blue-400 text-base mb-2">Glissez-déposez votre fichier structure</p>
                     <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">ou cliquez pour ouvrir le sélecteur - Entrée / Espace au clavier</p>
                     <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Formats - CSV, TSV, TXT - colonnes LEVEL / CODE / PARENT / LABEL</p>
@@ -1618,7 +1618,7 @@
 
                 <div class="text-center mb-4">
                     <button class="px-6 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full font-bold uppercase text-[10px] tracking-[0.25em] hover:bg-slate-200 dark:hover:bg-slate-600 transition-all" id="btn-structure-select" title="Utiliser le dialog Windows natif (si disponible)">
-                        <i data-lucide="folder-open" class="w-3.5 h-3.5 inline mr-1.5 -mt-0.5"></i>Ou utiliser le dialog Windows
+                        <i data-icon="folder-open" class="w-3.5 h-3.5 inline mr-1.5 -mt-0.5"></i>Ou utiliser le dialog Windows
                     </button>
                 </div>
 
@@ -1730,15 +1730,15 @@
 
             out.innerHTML = `
                 <div class="grid grid-cols-4 gap-4 mb-8">
-                    ${statCard("list-tree", "Nœuds", s.total_nodes || 0, "blue")}
-                    ${statCard("git-fork", "Racines", s.roots || 0, "teal")}
-                    ${statCard("trending-down", "Profondeur", s.max_depth || 0, "amber")}
+                    ${statCard("diagram-tree", "Nœuds", s.total_nodes || 0, "blue")}
+                    ${statCard("hierarchy3", "Racines", s.roots || 0, "teal")}
+                    ${statCard("trend-down", "Profondeur", s.max_depth || 0, "amber")}
                     ${statCard("file-text", "Fichier", 1, "green")}
                 </div>
 
                 <div class="bg-slate-50 dark:bg-slate-900/40 rounded-2xl p-6 mb-6 flex items-center justify-between flex-wrap gap-3">
                     <div class="flex items-center gap-3">
-                        <i data-lucide="file-spreadsheet" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                        <i data-icon="grid2" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
                         <span class="font-mono text-xs font-bold text-gh-navy dark:text-blue-400">${escHtml(data.filename)}</span>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">${levelChips}</div>
@@ -1748,7 +1748,7 @@
                         <button id="btn-org-zoom-in" class="w-9 h-9 bg-white dark:bg-slate-700 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 flex items-center justify-center" title="Zoom avant">+</button>
                         <button id="btn-org-fit" class="px-4 py-2 bg-white dark:bg-slate-700 rounded-lg text-xs font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600">Ajuster</button>
                         <button id="btn-tree-export-pdf" class="px-4 py-2 bg-gh-navy text-white rounded-lg text-xs font-black uppercase tracking-wider hover:bg-blue-900 transition-all active:scale-95 flex items-center gap-2">
-                            <i data-lucide="file-down" class="w-3.5 h-3.5"></i>Télécharger PDF
+                            <i data-icon="file-down" class="w-3.5 h-3.5"></i>Télécharger PDF
                         </button>
                     </div>
                 </div>
@@ -1763,7 +1763,7 @@
                     <header class="px-10 py-8 flex items-center justify-between gap-6 border-b border-slate-100 dark:border-slate-800 flex-wrap">
                         <div>
                             <div class="flex items-center gap-3 mb-2">
-                                <i data-lucide="activity" class="w-6 h-6 text-gh-teal"></i>
+                                <i data-icon="wave-pulse" class="w-6 h-6 text-gh-teal"></i>
                                 <h3 class="font-black text-gh-navy dark:text-blue-400 tracking-tighter uppercase italic text-xl leading-none">Analyse d'activité par UM</h3>
                             </div>
                             <p class="text-sm text-slate-500 dark:text-slate-400">Déposez vos fichiers <span class="font-mono font-bold">RPS</span> / <span class="font-mono font-bold">RAA</span> pour détecter les UM sans activité sur la période. Traitement 100 % local, aucune donnée envoyée.</p>
@@ -1771,14 +1771,14 @@
                         <div class="flex items-center gap-3">
                             <input type="file" id="act-file-input" multiple accept=".txt,.RPS,.RAA,.RPSA,.R3A,.rps,.raa,.rpsa,.r3a" class="hidden" />
                             <button id="btn-act-reset" class="px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full font-bold uppercase text-[10px] tracking-[0.25em] hover:bg-slate-200 dark:hover:bg-slate-600 transition-all hidden" title="Réinitialiser l'analyse">
-                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                <i data-icon="x" class="w-3.5 h-3.5"></i>
                             </button>
                         </div>
                     </header>
 
                     <div id="act-drop-zone" role="button" tabindex="0" aria-label="Déposer des fichiers RPS ou RAA - ou appuyer sur Entrée pour ouvrir le sélecteur"
                          class="mx-10 my-6 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-[2rem] p-12 text-center transition-all cursor-pointer hover:border-gh-teal hover:bg-teal-50/40 dark:hover:bg-teal-900/15 focus:outline-none focus:border-gh-teal focus:ring-4 focus:ring-teal-200 dark:focus:ring-teal-900/40">
-                        <i data-lucide="file-stack" class="w-12 h-12 text-gh-teal mx-auto mb-5"></i>
+                        <i data-icon="files" class="w-12 h-12 text-gh-teal mx-auto mb-5"></i>
                         <p class="font-black uppercase tracking-wider text-gh-navy dark:text-blue-400 text-base mb-2">Glissez-déposez vos fichiers RPS / RAA ici</p>
                         <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">ou cliquez pour ouvrir le sélecteur - Entrée / Espace au clavier</p>
                         <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Formats - RPS (154 c) - RAA (96 c) - RPSA - R3A - EDGAR - encodage latin-1</p>
@@ -1961,9 +1961,9 @@
                     return;
                 }
 
-                setStatus(`<i data-lucide="loader" class="w-4 h-4 inline mr-2 animate-spin"></i>${files.length} fichier${files.length > 1 ? "s" : ""} - lecture en cours…`, "info");
+                setStatus(`<i data-icon="loader" class="w-4 h-4 inline mr-2 animate-spin"></i>${files.length} fichier${files.length > 1 ? "s" : ""} - lecture en cours…`, "info");
                 setProgress(0, "Lecture…");
-                if (window.lucide) lucide.createIcons();
+                Icons.render();
 
                 const perFile = [];
                 const globalCounts = new Map(umLeaves.map(u => [u.code, 0]));
@@ -1990,8 +1990,8 @@
                     setProgress(100, "Finalisation");
                 } catch (e) {
                     hideProgress();
-                    setStatus(`<i data-lucide="alert-triangle" class="w-4 h-4 inline mr-2"></i>${escHtml(e.message || "Erreur de lecture")}`, "err");
-                    if (window.lucide) lucide.createIcons();
+                    setStatus(`<i data-icon="alert-triangle" class="w-4 h-4 inline mr-2"></i>${escHtml(e.message || "Erreur de lecture")}`, "err");
+                    Icons.render();
                     return;
                 }
 
@@ -2030,7 +2030,7 @@
                 const filesHtml = perFile.map(f => `
                     <div class="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
                         <div class="flex items-center gap-3 min-w-0">
-                            <i data-lucide="file-text" class="w-4 h-4 text-gh-navy dark:text-blue-400 flex-shrink-0"></i>
+                            <i data-icon="file-text" class="w-4 h-4 text-gh-navy dark:text-blue-400 flex-shrink-0"></i>
                             <span class="font-mono text-xs font-bold text-slate-700 dark:text-slate-200 truncate">${escHtml(f.name)}</span>
                             <span class="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-200 text-[10px] font-black uppercase tracking-wider">${escHtml(f.det.format)}</span>
                         </div>
@@ -2043,14 +2043,14 @@
 
                 const inactiveHtml = inactive.length === 0
                     ? `<div class="py-12 text-center">
-                           <i data-lucide="check-circle-2" class="w-12 h-12 text-gh-success mx-auto mb-3"></i>
+                           <i data-icon="check-circle" class="w-12 h-12 text-gh-success mx-auto mb-3"></i>
                            <p class="font-black uppercase tracking-wider text-gh-success">Toutes les UM ont de l'activité</p>
                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Aucune UM de la structure n'est absente des fichiers ATIH déposés.</p>
                        </div>`
                     : [...inactiveByParent.entries()].map(([, grp]) => `
                         <div class="mb-6 last:mb-0">
                             <div class="flex items-center gap-2 mb-2 pb-2 border-b border-slate-100 dark:border-slate-700">
-                                <i data-lucide="folder" class="w-3.5 h-3.5 text-slate-400"></i>
+                                <i data-icon="folder" class="w-3.5 h-3.5 text-slate-400"></i>
                                 <span class="font-black text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-slate-300">${escHtml(grp.label)}</span>
                                 <span class="ml-auto text-[10px] font-mono font-bold text-red-600 dark:text-red-400">${grp.items.length} UM</span>
                             </div>
@@ -2081,8 +2081,8 @@
                 // Hiérarchie métier - 3 cards - actives / inactives / couverture
                 actResult.innerHTML = `
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                        ${statCard("check-circle-2", "UM actives", active.length + " / " + totalUm, "green")}
-                        ${statCard("circle-slash", "UM sans activité", inactive.length, inactive.length > 0 ? "amber" : "green")}
+                        ${statCard("check-circle", "UM actives", active.length + " / " + totalUm, "green")}
+                        ${statCard("forbidden-circle", "UM sans activité", inactive.length, inactive.length > 0 ? "amber" : "green")}
                         ${statCard("gauge", "Couverture", pctActive + " %", pctActive >= 80 ? "green" : pctActive >= 50 ? "amber" : "red")}
                     </div>
 
@@ -2120,11 +2120,11 @@
                     <div class="mb-8">
                         <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
                             <h4 class="font-black uppercase tracking-[0.2em] text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
-                                <i data-lucide="circle-slash" class="w-4 h-4"></i>
+                                <i data-icon="forbidden-circle" class="w-4 h-4"></i>
                                 Unités sans activité - ${inactive.length}
                             </h4>
                             <button id="btn-act-export-csv" class="px-5 py-2.5 bg-gh-navy text-white rounded-full font-black uppercase text-[10px] tracking-[0.25em] shadow hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-2 ${inactive.length === 0 ? "hidden" : ""}">
-                                <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                                <i data-icon="file-down" class="w-3.5 h-3.5"></i>
                                 Exporter CSV
                             </button>
                         </div>
@@ -2135,7 +2135,7 @@
 
                     <details class="rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden">
                         <summary class="px-6 py-4 cursor-pointer bg-slate-50 dark:bg-slate-900/40 font-black uppercase tracking-[0.2em] text-xs text-gh-navy dark:text-blue-400 flex items-center gap-2">
-                            <i data-lucide="trending-up" class="w-4 h-4"></i>
+                            <i data-icon="trend-up" class="w-4 h-4"></i>
                             Top 10 UM les plus actives
                         </summary>
                         <div class="p-6 bg-white dark:bg-slate-800/50">${topActiveHtml}</div>
@@ -2153,10 +2153,10 @@
                 if (btnExport) btnExport.addEventListener("click", () => exportInactiveCsv(inactive, periodLabel));
 
                 setStatus(
-                    `<i data-lucide="check-circle-2" class="w-4 h-4 inline mr-2"></i>Analyse terminée - ${perFile.length} fichier${perFile.length > 1 ? "s" : ""} - ${grandTotalLines.toLocaleString("fr-FR")} lignes - <strong>${inactive.length} UM sans activité</strong> sur la période <strong>${escHtml(periodLabel)}</strong>`,
+                    `<i data-icon="check-circle" class="w-4 h-4 inline mr-2"></i>Analyse terminée - ${perFile.length} fichier${perFile.length > 1 ? "s" : ""} - ${grandTotalLines.toLocaleString("fr-FR")} lignes - <strong>${inactive.length} UM sans activité</strong> sur la période <strong>${escHtml(periodLabel)}</strong>`,
                     inactive.length > 0 ? "warn" : "ok"
                 );
-                if (window.lucide) lucide.createIcons();
+                Icons.render();
             }
 
             if (fileInput) {
@@ -2191,10 +2191,10 @@
             window.__sovActivity = { collectUmLeaves, readAtihFile, detectAtihFormat, countUmActivity, countUmActivityAsync, extractPeriodFromFilenames, umLeaves };
 
             toast("Structure", `${data.filename} - ${s.total_nodes} nœuds`, "success");
-            if (window.lucide) lucide.createIcons();
+            Icons.render();
         }
 
-        if (window.lucide) lucide.createIcons();
+        Icons.render();
     }
 
     // =========================================================================
@@ -2267,8 +2267,8 @@
                 document.documentElement.classList.toggle("dark");
                 const icon = $("icon-theme");
                 if (icon) {
-                    icon.setAttribute("data-lucide", document.documentElement.classList.contains("dark") ? "sun" : "moon");
-                    if (window.lucide) lucide.createIcons();
+                    icon.setAttribute("data-icon", document.documentElement.classList.contains("dark") ? "sun" : "moon");
+                    Icons.render();
                 }
             });
         }
@@ -2289,7 +2289,7 @@
             toast("Reset", "Sovereign OS réinitialisé", "info");
         });
 
-        if (window.lucide) lucide.createIcons();
+        Icons.render();
         runBoot();
     }
 
