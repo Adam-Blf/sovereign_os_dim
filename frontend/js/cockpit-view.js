@@ -68,7 +68,7 @@
           body: "Le Master Patient Index est vide. Importer un lot via "
               + "l'écran Sélection des fichiers (Ctrl+2) pour peupler les indicateurs.",
           action: btn({ label: "Aller à Sélection des fichiers",
-                        kind: "primary", icon: "folders" }),
+                        kind: "primary", icon: "folder-files" }),
         }));
       return;
     }
@@ -81,12 +81,12 @@
 
     const historyChart = data.file_active_history.length === 0
       ? emptyState({
-          icon: "trending-up",
+          icon: "trend-up",
           title: "Historique 12 mois indisponible",
           body: "Le calcul de la file active glissante nécessite "
               + "12 mois de données traitées."
         })
-      : card({ title: "File active glissante - 12 mois", icon: "trending-up",
+      : card({ title: "File active glissante - 12 mois", icon: "trend-up",
           body: histogramHTML(data.file_active_history) });
 
     const alertsCard = data.sector_alerts.length === 0

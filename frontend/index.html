@@ -8,7 +8,7 @@
 
     <!-- Bibliothèques vendorisées en local - aucun CDN, aucun flux réseau -->
     <script src="vendor/tailwind.js"></script>
-    <script src="vendor/lucide.min.js"></script>
+    <script src="vendor/reicon-icons.js"></script>
     <script src="vendor/chart.umd.min.js"></script>
     <script src="vendor/anime.min.js"></script>
 
@@ -74,11 +74,11 @@
         <div class="text-center w-full max-w-xl px-8 relative z-10 animate-fade-in flex flex-col items-center">
             <div id="boot-logo-box" class="relative inline-block mb-8">
                 <div class="w-28 h-28 bg-white rounded-3xl flex items-center justify-center shadow-2xl overflow-hidden border border-white/10">
-                    <i data-lucide="shield-check" class="w-14 h-14 text-gh-navy"></i>
+                    <i data-icon="shield-check" class="w-14 h-14 text-gh-navy"></i>
                     <div class="scanner-bar"></div>
                 </div>
                 <div class="absolute -bottom-2 -right-2 w-9 h-9 bg-gh-success rounded-full border-4 border-gh-terminal flex items-center justify-center shadow-lg">
-                    <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+                    <i data-icon="bolt" class="w-4 h-4 text-white"></i>
                 </div>
             </div>
 
@@ -114,7 +114,7 @@
             <!-- Brand -->
             <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-4">
                 <div class="w-12 h-12 shrink-0 bg-gh-navy rounded-xl p-3 text-white shadow-md">
-                    <i data-lucide="fingerprint" class="w-full h-full"></i>
+                    <i data-icon="fingerprint" class="w-full h-full"></i>
                 </div>
                 <div>
                     <p class="font-extrabold text-gh-navy dark:text-blue-400 text-lg tracking-tight leading-tight">
@@ -133,17 +133,17 @@
                 </div>
                 <button id="nav-dashboard"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="layout-grid" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <i data-icon="category" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
                     <span class="font-semibold text-sm">Tableau de bord</span>
                 </button>
                 <button id="nav-cockpit"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="trending-up" class="w-5 h-5 text-gh-teal"></i>
+                    <i data-icon="trend-up" class="w-5 h-5 text-gh-teal"></i>
                     <span class="font-semibold text-sm">Cockpit du chef de département</span>
                 </button>
                 <button id="nav-health"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="activity" class="w-5 h-5 text-gh-teal"></i>
+                    <i data-icon="wave-pulse" class="w-5 h-5 text-gh-teal"></i>
                     <span class="font-semibold text-sm">Supervision technique</span>
                 </button>
 
@@ -152,17 +152,17 @@
                 </div>
                 <button id="nav-ars"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="shield" class="w-5 h-5 text-gh-warning"></i>
+                    <i data-icon="shield" class="w-5 h-5 text-gh-warning"></i>
                     <span class="font-semibold text-sm">Sentinelle agence régionale de santé</span>
                 </button>
                 <button id="nav-cespa"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="check-circle" class="w-5 h-5 text-gh-success"></i>
+                    <i data-icon="check-circle" class="w-5 h-5 text-gh-success"></i>
                     <span class="font-semibold text-sm">CeSPA / CATTG</span>
                 </button>
                 <button id="nav-diff"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="git-compare" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <i data-icon="swap-horizontal" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
                     <span class="font-semibold text-sm">Comparaison des lots mensuels</span>
                 </button>
 
@@ -171,17 +171,17 @@
                 </div>
                 <button id="nav-cim"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="brain" class="w-5 h-5 text-gh-teal"></i>
+                    <i data-icon="brain" class="w-5 h-5 text-gh-teal"></i>
                     <span class="font-semibold text-sm">Suggestion diagnostique</span>
                 </button>
                 <button id="nav-lstm"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="trending-up" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <i data-icon="trend-up" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
                     <span class="font-semibold text-sm">Prédicteur de durée de séjour</span>
                 </button>
                 <button id="nav-cluster"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="layers" class="w-5 h-5 text-gh-teal"></i>
+                    <i data-icon="layers" class="w-5 h-5 text-gh-teal"></i>
                     <span class="font-semibold text-sm">Regroupement de patients</span>
                 </button>
 
@@ -190,17 +190,17 @@
                 </div>
                 <button id="nav-twin"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="database" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <i data-icon="database" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
                     <span class="font-semibold text-sm">Jumeau hospitalier</span>
                 </button>
                 <button id="nav-heatmap"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="globe" class="w-5 h-5 text-gh-teal"></i>
+                    <i data-icon="globe" class="w-5 h-5 text-gh-teal"></i>
                     <span class="font-semibold text-sm">Carte de chaleur des secteurs</span>
                 </button>
                 <button id="nav-pivot"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="table-2" class="w-5 h-5 text-gh-success"></i>
+                    <i data-icon="grid2" class="w-5 h-5 text-gh-success"></i>
                     <span class="font-semibold text-sm">Tableaux croisés</span>
                 </button>
 
@@ -209,14 +209,14 @@
                 </div>
                 <button id="nav-modo"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="folders" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <i data-icon="folder-files" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
                     <span class="font-semibold text-sm">Sélection des fichiers</span>
                     <span id="badge-files-total"
                         class="hidden absolute right-6 bg-gh-navy text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
                 </button>
                 <button id="nav-idv"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="users-2" class="w-5 h-5 text-gh-warning"></i>
+                    <i data-icon="users2" class="w-5 h-5 text-gh-warning"></i>
                     <span class="font-semibold text-sm">Identitovigilance</span>
                     <span id="badge-idv-conflict"
                         class="hidden absolute right-6 bg-gh-error text-white text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">0</span>
@@ -227,17 +227,17 @@
                 </div>
                 <button id="nav-pilot"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="file-down" class="w-5 h-5 text-gh-teal"></i>
+                    <i data-icon="file-down" class="w-5 h-5 text-gh-teal"></i>
                     <span class="font-semibold text-sm">Exports du programme de médicalisation</span>
                 </button>
                 <button id="nav-csv"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="table-2" class="w-5 h-5 text-gh-success"></i>
+                    <i data-icon="grid2" class="w-5 h-5 text-gh-success"></i>
                     <span class="font-semibold text-sm">Import de fichiers tableurs</span>
                 </button>
                 <button id="nav-structure"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="git-branch" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <i data-icon="hierarchy2" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
                     <span class="font-semibold text-sm">Structure</span>
                 </button>
 
@@ -246,17 +246,17 @@
                 </div>
                 <button id="nav-rgpd"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="fingerprint" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <i data-icon="fingerprint" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
                     <span class="font-semibold text-sm">Protection des données</span>
                 </button>
                 <button id="nav-audit"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="history" class="w-5 h-5 text-gh-teal"></i>
+                    <i data-icon="history" class="w-5 h-5 text-gh-teal"></i>
                     <span class="font-semibold text-sm">Journal d'audit chaîné</span>
                 </button>
                 <button id="nav-workflow"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="workflow" class="w-5 h-5 text-gh-success"></i>
+                    <i data-icon="structure" class="w-5 h-5 text-gh-success"></i>
                     <span class="font-semibold text-sm">Files de travail</span>
                 </button>
 
@@ -265,7 +265,7 @@
                 </div>
                 <button id="nav-tuto"
                     class="nav-item w-full text-left px-6 py-3 flex items-center gap-4 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 relative">
-                    <i data-lucide="book-open" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
+                    <i data-icon="book-open" class="w-5 h-5 text-gh-navy dark:text-blue-400"></i>
                     <span class="font-semibold text-sm">Tutoriel</span>
                 </button>
             </nav>
@@ -313,11 +313,11 @@
                     </div>
                     <button id="btn-theme-toggle"
                         class="p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 hover:text-gh-navy dark:hover:text-blue-400 transition active:scale-95">
-                        <i id="icon-theme" data-lucide="moon" class="w-5 h-5"></i>
+                        <i id="icon-theme" data-icon="moon" class="w-5 h-5"></i>
                     </button>
                     <button id="btn-reset"
                         class="p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 hover:text-gh-error transition active:scale-95">
-                        <i data-lucide="power" class="w-5 h-5"></i>
+                        <i data-icon="power" class="w-5 h-5"></i>
                     </button>
                 </div>
             </header>
@@ -336,11 +336,11 @@
             class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-5xl w-full max-w-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 p-8 sm:p-12 text-center relative">
             <button id="btn-close-idv-modal"
                 class="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-                <i data-lucide="x" class="w-6 h-6 text-slate-400 dark:text-slate-500"></i>
+                <i data-icon="x" class="w-6 h-6 text-slate-400 dark:text-slate-500"></i>
             </button>
             <div
                 class="w-20 h-20 bg-gh-warning text-white rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-md collision-pulse">
-                <i data-lucide="alert-triangle" class="w-10 h-10"></i>
+                <i data-icon="alert-triangle" class="w-10 h-10"></i>
             </div>
             <h3 class="text-3xl sm:text-4xl font-black text-gh-navy dark:text-blue-400 uppercase tracking-tighter mb-4 italic leading-tight">
                 Conflit d'Identité Détecté
@@ -367,7 +367,7 @@
             <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 leading-none">
                 <div class="flex items-center gap-4 leading-none italic">
                     <div class="p-4 bg-gh-terminal text-gh-error rounded-xl shadow-md relative overflow-hidden">
-                        <i data-lucide="microscope" class="w-6 h-6 relative z-10 leading-none"></i>
+                        <i data-icon="microscope" class="w-6 h-6 relative z-10 leading-none"></i>
                         <div class="scanner-bar"></div>
                     </div>
                     <div>
@@ -375,13 +375,13 @@
                             id="ins-file-name">Neural Deep-Scan</h3>
                         <p
                             class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 italic leading-none">
-                            <i data-lucide="shield-check" class="w-4 h-4 text-gh-teal"></i> Matrix Validation System
+                            <i data-icon="shield-check" class="w-4 h-4 text-gh-teal"></i> Matrix Validation System
                         </p>
                     </div>
                 </div>
                 <button id="btn-close-inspector"
                     class="w-10 h-10 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-all text-slate-400 dark:text-slate-500 leading-none">
-                    <i data-lucide="x" class="w-6 h-6 leading-none"></i>
+                    <i data-icon="x" class="w-6 h-6 leading-none"></i>
                 </button>
             </div>
  
@@ -390,11 +390,11 @@
                     <div class="flex gap-8 leading-none">
                         <span
                             class="text-xs font-black text-gh-success uppercase flex items-center gap-2 leading-none italic">
-                            <i data-lucide="filter" class="w-4 h-4 leading-none"></i> Auto-Repair Logic : ON
+                            <i data-icon="filter" class="w-4 h-4 leading-none"></i> Auto-Repair Logic : ON
                         </span>
                         <span
                             class="text-xs font-black text-blue-400 uppercase flex items-center gap-2 leading-none italic">
-                            <i data-lucide="database" class="w-4 h-4 leading-none"></i> REFS_2018-2025_ATIH
+                            <i data-icon="database" class="w-4 h-4 leading-none"></i> REFS_2018-2025_ATIH
                         </span>
                     </div>
                     <span class="text-xs opacity-40 font-black tracking-widest uppercase italic leading-none"
@@ -417,7 +417,7 @@
                 </button>
                 <button id="btn-export-sanitized"
                     class="px-6 py-3 bg-gh-navy dark:bg-blue-600 text-white rounded-xl font-black uppercase text-xs tracking-wider shadow-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-all flex items-center gap-2 transform active:scale-95 leading-none">
-                    <i data-lucide="download-cloud" class="w-4 h-4 text-gh-success leading-none"></i>
+                    <i data-icon="cloud-download" class="w-4 h-4 text-gh-success leading-none"></i>
                     Exporter Flux Purifié (.txt)
                 </button>
             </div>
@@ -429,7 +429,7 @@
         <div
             class="glass-panel px-16 py-10 rounded-[5rem] shadow-6xl flex items-center gap-12 border-2 border-white/60 ring-2 ring-gh-navy/5 leading-none italic">
             <div id="toast-icon-container" class="p-8 bg-gh-navy text-white rounded-[3rem] shadow-4xl leading-none">
-                <i data-lucide="zap" class="w-12 h-12"></i>
+                <i data-icon="bolt" class="w-12 h-12"></i>
             </div>
             <div class="leading-none">
                 <p id="toast-title-text"
@@ -442,6 +442,7 @@
         </div>
     </div>
 
+    <script src="js/icons.js"></script>
     <script src="js/sentinel-helpers.js"></script>
     <script src="js/sentinel-views.js"></script>
     <script src="js/cockpit-view.js"></script>

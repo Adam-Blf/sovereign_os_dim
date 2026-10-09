@@ -1,4 +1,4 @@
-![version](https://img.shields.io/badge/version-V37.5-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![ml](https://img.shields.io/badge/ml-XGBoost%20%2B%20LightGBM-FF6F00?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
+![version](https://img.shields.io/badge/version-V37.6-DC0A2D?style=flat-square) ![python](https://img.shields.io/badge/python-3.12-141418?style=flat-square) ![.net](https://img.shields.io/badge/.net-8-141418?style=flat-square) ![ml](https://img.shields.io/badge/ml-XGBoost%20%2B%20LightGBM-FF6F00?style=flat-square) ![dim-psy](https://img.shields.io/badge/dim--psy-production-4CAF50?style=flat-square)
 
 # Sovereign OS DIM - Station PMSI
 
@@ -8,7 +8,7 @@
 
 [![CI](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Adam-Blf/sovereign_os_dim/actions/workflows/test.yml)
 ![Status](https://img.shields.io/badge/status-production-brightgreen)
-![Version](https://img.shields.io/badge/version-V37.5-blue)
+![Version](https://img.shields.io/badge/version-V37.6-blue)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
 ![C#](https://img.shields.io/badge/C%23-.NET_8-239120?logo=c-sharp&logoColor=white)
 ![WebView2](https://img.shields.io/badge/WebView2-Chromium-3C4A5A?logo=microsoftedge&logoColor=white)
@@ -257,6 +257,7 @@ sovereign_os_dim/
 │   ├── css/style.css
 │   └── js/
 │       ├── app.js          - Logique principale + structure parser JS
+│       ├── icons.js        - Pose les glyphes Reicon (`data-icon`), table dans `vendor/reicon-icons.js`
 │       ├── preflight-view.js
 │       ├── dashboard-live.js
 │       ├── htmlpdf-view.js
@@ -285,6 +286,7 @@ sovereign_os_dim/
 │   ├── generate_guide.py      - PDF guide métier 38 pages (TIM, médecin DIM, chef de pôle)
 │   ├── generate_guide_dev.py  - PDF guide développeur (DSI, contributeurs)
 │   ├── capture_screenshots.py - Playwright headless
+│   ├── vendor_icons.py        - Extrait les glyphes Reicon du paquet npm vers `frontend/vendor/`
 │   └── moulinette_fichcomp/   - Moulinette Excel vers FICHCOMP/FICHDMI (code source)
 ├── tests/
 │   ├── test_data_processor.py - 208 tests Python
@@ -298,7 +300,7 @@ sovereign_os_dim/
 | Couche | Techno |
 |--------|--------|
 | Desktop | Python 3.12 + pywebview, ou C# .NET 8 + WebView2 |
-| Frontend | HTML + Tailwind CDN + Chart.js + anime.js + Lucide |
+| Frontend | HTML + Tailwind (vendorisé) + Chart.js + anime.js + Reicon (MIT, local) |
 | Pont backend | pywebview `js_api` in-process (aucun serveur, aucune socket) |
 | Persistance | SQLite (`Microsoft.Data.Sqlite` pour le port C#) |
 | PDF | fpdf2 (Unicode Segoe UI / DejaVu, fallback latin-1) |

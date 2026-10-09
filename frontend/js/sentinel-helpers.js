@@ -65,7 +65,7 @@
                   display:flex;align-items:center;justify-content:space-between;
                   background:var(--bg-hover);">
         <div style="display:flex;align-items:center;gap:9px;">
-          ${icon ? `<i data-lucide="${icon}" style="width:16px;height:16px;color:${TEAL};"></i>` : ""}
+          ${icon ? `<i data-icon="${icon}" style="width:16px;height:16px;color:${TEAL};"></i>` : ""}
           <span style="font-size:11px;font-weight:700;color:var(--text-primary);
               text-transform:uppercase;letter-spacing:0.14em;">${title || ""}</span>
         </div>
@@ -95,7 +95,7 @@
         background:${c.bg};color:${c.fg};border:1px solid ${c.border};border-radius:8px;
         font-size:${fs}px;font-weight:700;letter-spacing:0.01em;cursor:pointer;
         font-family:inherit;">
-      ${icon ? `<i data-lucide="${icon}" style="width:${sm ? 13 : 14}px;height:${sm ? 13 : 14}px;"></i>` : ""}
+      ${icon ? `<i data-icon="${icon}" style="width:${sm ? 13 : 14}px;height:${sm ? 13 : 14}px;"></i>` : ""}
       ${label}
     </button>`;
   }
@@ -122,7 +122,7 @@
     return `<div style="background:#FEF3C7;border-left:4px solid ${GOLD};
         border-radius:8px;padding:14px 18px;display:flex;
         align-items:center;gap:12px;margin-top:18px;">
-      <i data-lucide="info" style="width:20px;height:20px;color:${GOLD};flex-shrink:0;"></i>
+      <i data-icon="info-circle" style="width:20px;height:20px;color:${GOLD};flex-shrink:0;"></i>
       <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${html}</div>
     </div>`;
   }
@@ -131,12 +131,12 @@
     const vp = document.getElementById("os-viewport");
     if (!vp) return null;
     vp.innerHTML = `<div style="max-width:1440px;margin:0 auto;">${html}</div>`;
-    if (window.lucide) lucide.createIcons();
+    Icons.render();
     return vp;
   }
 
   /** État vide générique - à utiliser quand l'API ne renvoie pas de données.
-   *  PROD - jamais de données fictives. icon = nom Lucide. */
+   *  PROD - jamais de données fictives. icon = nom de glyphe Reicon (vendor/reicon-icons.js). */
   function emptyState({ title, body, icon, action }) {
     return `
       <div style="background:var(--bg-card);border:1px solid var(--border-card);border-radius:12px;
@@ -145,7 +145,7 @@
         <div style="width:56px;height:56px;border-radius:14px;background:var(--bg-hover);
             border:1px solid var(--border-card);margin:0 auto 18px;display:flex;
             align-items:center;justify-content:center;color:var(--text-muted-color);">
-          <i data-lucide="${icon || 'inbox'}" style="width:26px;height:26px;"></i>
+          <i data-icon="${icon || 'inbox'}" style="width:26px;height:26px;"></i>
         </div>
         <div style="font-size:16px;font-weight:700;color:var(--text-primary);
             letter-spacing:-0.015em;margin-bottom:6px;">${title}</div>

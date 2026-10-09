@@ -47,14 +47,14 @@
         ${kpi({ label: "Appels par minute", value: d.requests_per_min || "-", accent: GOLD })}
         ${kpi({ label: "Erreurs sur 24 heures", value: d.errors_24h || 0, accent: SUCCESS })}
       </div>` +
-      card({ title: "Vérifications système", icon: "activity",
+      card({ title: "Vérifications système", icon: "wave-pulse",
         body: d.checks.map(c => `
           <div style="display:flex;align-items:center;gap:12px;padding:12px 0;
               border-bottom:1px solid var(--border-item);">
             <span style="width:24px;height:24px;border-radius:6px;
                 background:${c.ok ? SUCCESS : 'var(--border-card)'};color:white;
                 display:flex;align-items:center;justify-content:center;">
-              <i data-lucide="${c.ok ? "check" : "minus"}" style="width:14px;height:14px;"></i>
+              <i data-icon="${c.ok ? "check" : "minus"}" style="width:14px;height:14px;"></i>
             </span>
             <span style="flex:1;font-size:13px;font-weight:600;color:var(--text-body-color);">${c.label}</span>
             <span style="font-family:'Consolas',monospace;font-size:11px;
@@ -74,7 +74,7 @@
           + "Importer un lot via Sélection des fichiers (Ctrl+2) puis cliquer sur 'Scorer "
           + "ce lot' pour appeler /api/v2/ars/score-lot avec un échantillon.",
       action: btn({ label: "Aller à Sélection des fichiers",
-                    kind: "primary", icon: "folders" }),
+                    kind: "primary", icon: "folder-files" }),
     }));
   }
 
@@ -131,7 +131,7 @@
     if (!r.data.has_data) {
       renderInto(sectionHead({ eyebrow: "Anti-régression",
         title: "Comparaison des lots mensuels" }) + emptyState({
-        icon: "git-compare",
+        icon: "swap-horizontal",
         title: r.data.message || "Aucune comparaison disponible",
         body: "Le diff nécessite des lots traités. Importer un lot pour "
             + "que les indicateurs soient calculés.",
@@ -141,7 +141,7 @@
     const rows = r.data.rows;
     renderInto(sectionHead({ eyebrow: "Anti-régression",
       title: "Comparaison des lots mensuels", meta: `${rows.length} indicateurs` }) +
-      card({ title: "Comparaison volumétrique", icon: "git-compare", padding: 0,
+      card({ title: "Comparaison volumétrique", icon: "swap-horizontal", padding: 0,
         body: `<table style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead><tr style="background:var(--bg-hover);">
             <th style="padding:10px 14px;text-align:left;font-size:9px;
@@ -183,7 +183,7 @@
     renderInto(
       sectionHead({ eyebrow: "IA codage CIM-10", title: "Suggestion diagnostique",
         meta: isLocal ? "Provider - modèle local" : "Provider - Ollama (live)" }) +
-      card({ title: "Saisir DAS / actes / notes pour suggestion", icon: "edit-3",
+      card({ title: "Saisir DAS / actes / notes pour suggestion", icon: "edit2",
         body: "<em>Formulaire à brancher - POST /api/v2/ml/cim-suggest</em>" }));
   }
 
@@ -197,7 +197,7 @@
     const r = await api("/api/v2/duree-sejour");
     if (!r.ok || !r.data || !r.data.has_model) {
       renderInto(head + emptyState({
-        icon: "trending-up",
+        icon: "trend-up",
         title: "Modèle non entraîné",
         body: "Lancer : python -m backend.ml.train_sejour_models",
       }));
@@ -241,7 +241,7 @@
     const r = await api("/api/v2/regroupement-patients");
     if (!r.ok || !r.data || !r.data.has_model) {
       renderInto(head + emptyState({
-        icon: "scatter-chart",
+        icon: "bubble",
         title: "Modèle non entraîné",
         body: "Lancer : python -m backend.ml.train_sejour_models",
       }));
@@ -311,7 +311,7 @@
     renderInto(sectionHead({ eyebrow: "Simulation DFA",
       title: "Jumeau hospitalier",
       meta: `Base: ${fr(r.data.ipp_base)} IPP` }) +
-      card({ title: "Scénarios d'impact tarifaire", icon: "target",
+      card({ title: "Scénarios d'impact tarifaire", icon: "record-circle3",
         body: r.data.scenarios.map((s, i) => `
           <div style="padding:14px 0;
               ${i < r.data.scenarios.length - 1 ? `border-bottom:1px solid var(--border-item);` : ""}
@@ -380,7 +380,7 @@
       eyebrow: "Exploration", title: "Tableaux croisés",
       meta: "Backend en cours",
     }) + emptyState({
-      icon: "table-2",
+      icon: "grid2",
       title: "Pivot ad hoc - backend en cours",
       body: "Le pivot interactif nécessite un endpoint /api/v2/pivot qui "
           + "agrège le MPI selon les axes choisis. Roadmap V37.2.",
@@ -401,7 +401,7 @@
     if (!stats.total_ipp) {
       renderInto(sectionHead({ eyebrow: "Lot courant", title: "Sélection des fichiers",
         meta: "MPI vide" }) + emptyState({
-        icon: "upload-cloud",
+        icon: "cloud-upload",
         title: "Aucun fichier ATIH n'a encore été ingéré",
         body: "Glisser un dossier ATIH ici pour démarrer le scan + traitement. "
             + "Les fichiers sont identifiés automatiquement parmi les 23 "
@@ -538,7 +538,7 @@
         <div style="width:48px;height:48px;border-radius:12px;background:${s.c}22;
             color:${s.c};margin:0 auto 12px;display:flex;align-items:center;
             justify-content:center;">
-          <i data-lucide="${s.icon}" style="width:22px;height:22px;"></i>
+          <i data-icon="${s.icon}" style="width:22px;height:22px;"></i>
         </div>
         <div style="font-size:11px;font-weight:700;color:var(--text-muted-color);
             text-transform:uppercase;letter-spacing:0.16em;">${s.l}</div>

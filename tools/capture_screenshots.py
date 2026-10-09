@@ -420,7 +420,7 @@ def run():
         context.route("**/health", handle_route)
 
         page.goto(index_url, wait_until="domcontentloaded")
-        # Attendre que le frontend ait boot (Lucide icons + Sentinel views)
+        # Attendre que le frontend ait boot (icones Reicon + Sentinel views)
         page.wait_for_timeout(2500)
         # Skip le boot screen si présent - cliquer sur le bouton ignite
         page.evaluate("""
