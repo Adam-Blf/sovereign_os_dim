@@ -1,6 +1,6 @@
 {
   "name": "sovereign-os-dim",
-  "version": "37.3.0",
+  "version": "37.6.0",
   "private": true,
   "description": "Outillage de test JS uniquement - le frontend applicatif (frontend/) reste zero dependance, vanilla JS. Jamais installe sur poste hopital ni embarque dans le build PyInstaller.",
   "scripts": {

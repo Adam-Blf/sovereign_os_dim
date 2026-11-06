@@ -69,6 +69,10 @@ TARGETS = [
     ("backend/interfaces/_sentinel.py", r'API_VERSION = "\d+\.\d+"', 'API_VERSION = "{vnum}"'),
     # pyproject.toml - jusque-la bumpe a la main, oublie une fois par le passe
     ("pyproject.toml", r'version = "\d+\.\d+\.0"', 'version = "{vnum}.0"'),
+    # Badge semver du bloc adam-badges (format X.Y.Z, sans prefixe V), 06/11/2026
+    ("README.md", r"badge/version-\d+\.\d+\.\d+", "badge/version-{vnum}.0"),
+    # package.json des tests JS - etait reste en 37.3.0 pendant que le reste passait en 37.6
+    ("package.json", r'"version": "\d+\.\d+\.\d+"', '"version": "{vnum}.0"'),
 ]
 
 
